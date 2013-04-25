@@ -1,27 +1,104 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using Dapper;
-using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
+using System.Diagnostics;
+using System.ServiceProcess;
+using CommandLine;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	internal class Program
 	{
-		private static void Main(string[] args)
+		private static int Main(string[] args)
 		{
-			IEnumerable<QueryStat> queryStats;
-			using (var conn = new SqlConnection(@"Server=.;Database=YourDatabase;Trusted_Connection=True;"))
+			try
 			{
-				queryStats = conn.Query<QueryStat>(QueryStat.Query, new {Id = 1});
-			}
+				var options = new Options();
 
-			foreach (var queryStat in queryStats)
+				// If bad args were passed, will exit and print usage
+				Parser.Default.ParseArgumentsStrict(args, options);
+
+				if (options.Uninstall)
+				{
+					InstallController.Uninstall();
+				}
+				else if (options.Install)
+				{
+					InstallController.Install();
+				}
+				else if (options.Start)
+				{
+					InstallController.StartService();
+				}
+				else if (options.Stop)
+				{
+					InstallController.StopService();
+				}
+				else if (options.InstallOrStart)
+				{
+					InstallController.InstallOrStart();
+				}
+				else if (Environment.UserInteractive)
+				{
+					RunInteractive(options);
+				}
+				else
+				{
+					ServiceBase[] services = {new SqlMonitorService()};
+					ServiceBase.Run(services);
+				}
+
+				return 0;
+			}
+			catch (Exception ex)
 			{
-				Console.Out.WriteLine("{0}\t{1}\t{2}", queryStat.statement_start_offset, queryStat.creation_time, queryStat.last_execution_time);
-			}
+				Console.Out.WriteLine(ex.Message);
 
-			Console.ReadKey();
+				if (Environment.UserInteractive)
+				{
+					Console.Out.WriteLine();
+					Console.Out.WriteLine("Press any key to exit...");
+					Console.ReadKey();
+				}
+
+				return -1;
+			}
+		}
+
+		/// <summary>
+		/// Runs from the command shell, printing to the Console.
+		/// </summary>
+		/// <param name="options"></param>
+		private static void RunInteractive(Options options)
+		{
+			Console.Out.WriteLine("Starting Server");
+
+			// Start our services
+			var monitor = new SqlMonitor(options.Server, options.Database);
+			monitor.Start();
+
+			// Capture Ctrl+C
+			Console.TreatControlCAsInput = true;
+
+			char key;
+			do
+			{
+				Console.Out.WriteLine("Press Q to quit...");
+				var consoleKeyInfo = Console.ReadKey();
+				Console.WriteLine();
+				key = consoleKeyInfo.KeyChar;
+			} while (key != 'q' && key != 'Q');
+
+			Console.Out.WriteLine("Stopping...");
+
+			// Stop our services
+			monitor.Stop();
+
+#if DEBUG
+			if (Debugger.IsAttached)
+			{
+				Console.Out.WriteLine("Press any key to stop debugging...");
+				Console.ReadKey();
+			}
+#endif
 		}
 	}
 }
