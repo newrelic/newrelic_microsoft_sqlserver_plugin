@@ -1,0 +1,13 @@
+[Oo]bj/
+[Bb]in/
+*.user
+*.suo
+*.cache
+*.docstates
+_ReSharper.*
+*.csproj.user
+*[Rr]e[Ss]harper.user
+_ReSharper.*/
+packages/*
+*DS_Store
+*.log
