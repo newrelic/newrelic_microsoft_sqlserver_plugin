@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E17681
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewRelic.Microsoft.SqlServer.Plugin.Tests", "src\NewRelic.Microsoft.SqlServer.Plugin.Tests\NewRelic.Microsoft.SqlServer.Plugin.Tests.csproj", "{792434D6-C043-42AE-B445-82029E0F48DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,9 @@ Global
 		{D5E2A43F-3302-420E-BFD0-798A328390C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5E2A43F-3302-420E-BFD0-798A328390C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5E2A43F-3302-420E-BFD0-798A328390C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{792434D6-C043-42AE-B445-82029E0F48DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{792434D6-C043-42AE-B445-82029E0F48DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{792434D6-C043-42AE-B445-82029E0F48DA}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

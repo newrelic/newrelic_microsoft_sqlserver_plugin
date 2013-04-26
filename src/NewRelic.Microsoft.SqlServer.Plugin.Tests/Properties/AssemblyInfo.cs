@@ -1,20 +1,15 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("NewRelic.Microsoft.SqlServer.Plugin")]
+[assembly: AssemblyTitle("NewRelic.Microsoft.SqlServer.Plugin.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NewRelic.Microsoft.SqlServer.Plugin")]
+[assembly: AssemblyProduct("NewRelic.Microsoft.SqlServer.Plugin.Tests")]
 [assembly: AssemblyCopyright("Copyright © New Relic 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: Guid("78b520e8-a393-4c1b-bf14-b535b8d111be")]
+[assembly: Guid("c3899452-7423-4340-96e4-60967de0dd20")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-#if DEBUG
-[assembly: InternalsVisibleTo("NewRelic.Microsoft.SqlServer.Plugin.Tests")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-#endif

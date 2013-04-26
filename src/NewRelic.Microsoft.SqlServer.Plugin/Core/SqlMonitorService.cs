@@ -1,12 +1,10 @@
-﻿using System.ComponentModel;
-using System.ServiceProcess;
+﻿using System.ServiceProcess;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
 	/// <summary>
 	/// Windows Service wrapper class.
 	/// </summary>
-	[RunInstaller(true)]
 	public class SqlMonitorService : ServiceBase
 	{
 		private SqlMonitor _monitor;

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ServiceProcess;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
 	[RunInstaller(true)]
 	public sealed class ServiceProcessInstaller : System.ServiceProcess.ServiceProcessInstaller

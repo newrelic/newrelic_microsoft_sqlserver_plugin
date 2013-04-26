@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.ServiceProcess;
 using CommandLine;
+using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {

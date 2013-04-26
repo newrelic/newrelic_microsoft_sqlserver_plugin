@@ -4,9 +4,9 @@ using System.Configuration.Install;
 using System.Linq;
 using System.ServiceProcess;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
-	public static class InstallController
+	internal static class InstallController
 	{
 		public static void Install()
 		{
