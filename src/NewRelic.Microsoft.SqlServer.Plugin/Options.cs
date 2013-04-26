@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -30,5 +31,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		[Option("database", DefaultValue = "master", HelpText = "Name of the database to connect to.")]
 		public string Database { get; set; }
+
+		[Option("poll", HelpText = "Changes the polling interval from the default of 60 seconds")]
+		public int? PollIntervalSeconds { get; set; }
 	}
 }

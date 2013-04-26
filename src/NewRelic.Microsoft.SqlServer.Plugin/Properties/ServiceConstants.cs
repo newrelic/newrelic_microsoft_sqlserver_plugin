@@ -1,6 +1,6 @@
 ﻿using System.ServiceProcess;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin
+namespace NewRelic.Microsoft.SqlServer.Plugin.Properties
 {
 	public static class ServiceConstants
 	{

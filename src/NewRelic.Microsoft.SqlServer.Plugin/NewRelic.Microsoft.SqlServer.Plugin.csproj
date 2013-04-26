@@ -37,6 +37,9 @@
     <Reference Include="CommandLine">
       <HintPath>..\..\packages\CommandLineParser.1.9.71\lib\net35\CommandLine.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\packages\log4net.2.0.0\lib\net35-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="NewRelic.Platform.Binding.DotNET">
       <HintPath>..\..\lib\NewRelic.Platform.Binding.DotNET.dll</HintPath>
     </Reference>
@@ -55,6 +58,8 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
+    <Compile Include="Core\PollingThread.cs" />
+    <Compile Include="Core\PollingThreadSettings.cs" />
     <Compile Include="Core\SqlMonitorQueryAttribute.cs" />
     <Compile Include="Core\Dapper.cs" />
     <Compile Include="Core\ExtensionsForAssembly.cs" />
@@ -67,7 +72,7 @@
     <Compile Include="QueryTypes\SqlConnections.cs" />
     <Compile Include="QueryTypes\Top25CostlyQueries.cs" />
     <Compile Include="SampleMetricGenerator.cs" />
-    <Compile Include="ServiceConstants.cs" />
+    <Compile Include="Properties\ServiceConstants.cs" />
     <Compile Include="Core\ServiceProcessInstaller.cs">
       <SubType>Component</SubType>
     </Compile>

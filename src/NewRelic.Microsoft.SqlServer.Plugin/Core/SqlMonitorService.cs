@@ -1,4 +1,5 @@
 ﻿using System.ServiceProcess;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {

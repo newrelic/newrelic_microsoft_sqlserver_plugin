@@ -3,6 +3,7 @@ using System.Collections;
 using System.Configuration.Install;
 using System.Linq;
 using System.ServiceProcess;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
