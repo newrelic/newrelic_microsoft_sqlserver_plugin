@@ -43,7 +43,7 @@ namespace Dapper
 		}
 
 		/// <summary>
-		/// Implement this interface to change default mapping of reader columns to type memebers
+		/// Implement this interface to change default mapping of reader columns to type members
 		/// </summary>
 		public interface ITypeMap
 		{

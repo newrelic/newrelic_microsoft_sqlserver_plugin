@@ -22,10 +22,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			MutuallyExclusiveSet = "mode")]
 		public bool InstallOrStart { get; set; }
 
+        [Option('t', "sendtest", HelpText = "Launches process that sends simple sample metric data (random ints) to Dashboard", MutuallyExclusiveSet = "mode")]
+        public bool SendTestMetrics { get; set; }
+
 		[Option("server", DefaultValue = ".", HelpText = "The SQL instance to connect to.")]
 		public string Server { get; set; }
 
 		[Option("database", DefaultValue = "master", HelpText = "Name of the database to connect to.")]
 		public string Database { get; set; }
+
+       
+
 	}
 }
