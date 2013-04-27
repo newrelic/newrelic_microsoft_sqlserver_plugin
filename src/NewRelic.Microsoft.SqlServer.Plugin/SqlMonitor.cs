@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Threading;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
@@ -73,16 +72,18 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// Performs the queries against the database
 		/// </summary>
 		/// <param name="queries"></param>
-		private void QueryDatabases(IEnumerable<Func<IDbConnection, IEnumerable<object>>> queries)
+		private void QueryDatabases(IEnumerable<SqlMonitorQuery> queries)
 		{
 			try
 			{
 				Console.Out.WriteLine("Connecting with {0}", _connectionString);
+				Console.Out.WriteLine();
 				using (var conn = new SqlConnection(_connectionString))
 				{
 					foreach (var query in queries)
 					{
-						var results = query(conn);
+						Console.Out.WriteLine("Executing {0}", query.ResourceName);
+						var results = query.Invoke(conn);
 						foreach (var result in results)
 						{
 							Console.Out.WriteLine(result);

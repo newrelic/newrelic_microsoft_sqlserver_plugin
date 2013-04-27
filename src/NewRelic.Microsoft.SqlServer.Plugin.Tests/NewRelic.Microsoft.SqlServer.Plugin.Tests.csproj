@@ -55,6 +55,15 @@
   <ItemGroup>
     <EmbeddedResource Include="Core\ExampleEmbeddedFile.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Core\AnotherQuery.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\ExampleEmbeddedFile.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Core\YetAnotherQuery.sql" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

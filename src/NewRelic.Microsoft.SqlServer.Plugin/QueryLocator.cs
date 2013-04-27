@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -10,37 +9,28 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	internal class QueryLocator
 	{
+		private readonly Assembly _assembly;
 		private readonly IDapperWrapper _dapper;
 
-		public QueryLocator(IDapperWrapper dapper)
+		public QueryLocator(IDapperWrapper dapper, Assembly assembly = null)
 		{
 			_dapper = dapper;
+			// The default is to look for SQL resources in this assembly
+			_assembly = assembly ?? Assembly.GetExecutingAssembly();
 		}
 
-		public IEnumerable<Func<IDbConnection, IEnumerable<object>>> PrepareQueries()
+		public IEnumerable<SqlMonitorQuery> PrepareQueries()
 		{
-			// The SQL resources are in this assembly
-			var assembly = Assembly.GetExecutingAssembly();
-			// The "root" namespace is prepended to the ResourceName of the configured SqlMonitorQueryAttribute attribute
-			var rootNamespace = typeof (Program).Namespace;
-			// Get the static, generic Query method in this class
-			var genericQueryMethod = GetType().GetMethod("Query", BindingFlags.Instance | BindingFlags.NonPublic);
-
 			// Look for all query types
-			return assembly.GetTypes().Select(t => new {QueryType = t, Attribute = (SqlMonitorQueryAttribute) t.GetCustomAttributes(typeof (SqlMonitorQueryAttribute), false).FirstOrDefault(),})
-				// that have a SqlMonitorQueryAttribute
-			               .Where(x => x.Attribute != null)
-			               .Select(x => new
-			                            {
-				                            x.QueryType.Name,
-				                            // Get the SQL resource from this assembly
-				                            Query = assembly.GetStringFromResources(rootNamespace + "." + x.Attribute.ResourceName),
-				                            // Get a pointer to the Query method below with the QueryType as the generic parameter
-				                            Method = genericQueryMethod.MakeGenericMethod(x.QueryType),
-			                            })
-				// Provide a Func that takes a IDbConnection and returns the result set
-			               .Select(x => new Func<IDbConnection, IEnumerable<object>>(conn => ((IEnumerable) x.Method.Invoke(this, new object[] {conn, x.Query})).Cast<object>()))
-			               .ToArray();
+			var types = _assembly.GetTypes();
+
+			return PrepareQueries(types);
+		}
+
+		internal IEnumerable<SqlMonitorQuery> PrepareQueries(Type[] types)
+		{
+			// Search for types with at least one attribute that have a SqlMonitorQueryAttribute
+			return types.SelectMany(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
 		}
 
 		/// <summary>

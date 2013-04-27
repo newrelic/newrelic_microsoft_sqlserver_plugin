@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlMonitorQuery("Queries.Top25CostlyQueries.sql")]
+	[SqlMonitorQuery("Top25CostlyQueries.sql")]
 	internal class Top25CostlyQueries
 	{
 		public long AverageCPU { get; set; }

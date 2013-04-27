@@ -27,7 +27,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Queries
 		{
 			var rootNamespace = typeof (Program).Namespace;
 			var resourceName = rootNamespace + "." + attribute.ResourceName;
-			var sql = queryType.Assembly.GetStringFromResources(resourceName);
+			var sql = queryType.Assembly.GetStringResource(resourceName);
 			Assert.That(sql, Is.Not.Null);
 		}
 	}

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 using NSubstitute;
 using NUnit.Framework;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
@@ -8,6 +9,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	[TestFixture]
 	public class QueryLocatorTests
 	{
+		[SqlMonitorQuery("NewRelic.Microsoft.SqlServer.Plugin.Core.ExampleEmbeddedFile.sql")]
+		public class QueryTypeWithExactResourceName {}
+
+		[SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
+		public class QueryTypeWithPartialResourceName {}
+
+		[SqlMonitorQuery("AnotherQuery.sql")]
+		public class QueryTypeWithJustFileName {}
+
+		[SqlMonitorQuery("AnotherQuery.sql")]
+		[SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
+		public class QueryTypeWithTwoQueries {}
+
 		[Test]
 		public void Assert_funcs_are_correctly_configured()
 		{
@@ -16,27 +30,76 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var queries = new QueryLocator(dapperWrapper).PrepareQueries();
 			foreach (var query in queries)
 			{
-				var results = query(null);
+				var results = query.Invoke(null);
 				Assert.That(results, Is.EqualTo(new object[0]));
 			}
 		}
 
 		[Test]
+		public void Assert_multiple_query_attributes_yield_multiple_queries()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var queryLocator = new QueryLocator(null, assembly);
+
+			var queries = queryLocator.PrepareQueries(new[] {typeof (QueryTypeWithTwoQueries)});
+			Assert.That(queries, Is.Not.Null);
+			var queryNames = queries.Select(q => q.ResourceName).ToArray();
+			var expected = new[] {"AnotherQuery.sql", "Queries.ExampleEmbeddedFile.sql"};
+			Assert.That(queryNames, Is.EquivalentTo(expected));
+		}
+
+		[Test]
+		public void Assert_resource_with_exact_resource_name_is_located()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var queryLocator = new QueryLocator(null, assembly);
+
+			var queries = queryLocator.PrepareQueries(new[] {typeof (QueryTypeWithExactResourceName)});
+			Assert.That(queries, Is.Not.Null);
+			var queryNames = queries.Select(q => q.ResultTypeName).ToArray();
+			Assert.That(queryNames, Is.EqualTo(new[] {typeof (QueryTypeWithExactResourceName).Name}));
+		}
+
+		[Test]
+		public void Assert_resource_with_only_file_name_is_located()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var queryLocator = new QueryLocator(null, assembly);
+
+			var queries = queryLocator.PrepareQueries(new[] {typeof (QueryTypeWithJustFileName)});
+			Assert.That(queries, Is.Not.Null);
+			var queryNames = queries.Select(q => q.ResultTypeName).ToArray();
+			Assert.That(queryNames, Is.EqualTo(new[] {typeof (QueryTypeWithJustFileName).Name}));
+		}
+
+		[Test]
+		public void Assert_resource_with_partial_resource_name_is_located()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var queryLocator = new QueryLocator(null, assembly);
+
+			var queries = queryLocator.PrepareQueries(new[] {typeof (QueryTypeWithPartialResourceName)});
+			Assert.That(queries, Is.Not.Null);
+			var queryNames = queries.Select(q => q.ResultTypeName).ToArray();
+			Assert.That(queryNames, Is.EqualTo(new[] {typeof (QueryTypeWithPartialResourceName).Name}));
+		}
+
+		[Test]
 		public void Assert_some_query_types_are_found()
 		{
-			var assembly = typeof (QueryLocator).Assembly;
+			var assembly = Assembly.GetExecutingAssembly();
 
 			var types = assembly.GetTypes();
-			Assume.That(types, Is.Not.Empty, "Expected at least one type in the Plugin assembly");
+			Assume.That(types, Is.Not.Empty, "Expected at least one type in the test assembly");
 
-			var typesWithAttribute = types.Where(t => t.GetCustomAttributes(typeof (SqlMonitorQueryAttribute), false).Any());
+			var typesWithAttribute = types.Where(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Any());
 			Assert.That(typesWithAttribute, Is.Not.Empty, "Expected at least one QueryType using the " + typeof (SqlMonitorQueryAttribute).Name);
 		}
 
 		[Test]
 		public void Assert_that_queries_are_located()
 		{
-			var queries = new QueryLocator(new DapperWrapper()).PrepareQueries();
+			var queries = new QueryLocator(new DapperWrapper(), Assembly.GetExecutingAssembly()).PrepareQueries();
 			Assert.That(queries, Is.Not.Empty, "Expected some queries to be returned");
 		}
 	}

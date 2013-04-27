@@ -2,7 +2,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlMonitorQuery("Queries.FileIOView.sql")]
+	[SqlMonitorQuery("FileIOView.sql")]
 	internal class FileIoView
 	{
 		public string DatabaseName { get; set; }
