@@ -74,7 +74,9 @@ END
 
 --Return average
 SELECT
-	AVG(SQLProcessUtilization) as AverageSQLCPUUsage
+	AVG(SQLProcessUtilization) as AverageSQLCPUUsage,
+	AVG(SystemIdle) AS AverageIdle,
+	AVG(OtherProcessUtilization) AS AverageOther
 	,MIN(EVENTTIME) StartTime
 	,MAX(EVENTTIME) EndTime
 FROM
