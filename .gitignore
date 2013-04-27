@@ -11,3 +11,11 @@ _ReSharper.*/
 packages/*
 *DS_Store
 *.log
+
+# local/dev artifact dir
+local/
+
+# NuGet Packages Directory
+!packages/
+packages/*
+!packages/repositories.config

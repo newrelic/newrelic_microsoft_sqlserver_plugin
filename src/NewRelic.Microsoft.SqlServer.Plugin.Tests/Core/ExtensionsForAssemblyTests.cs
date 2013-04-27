@@ -12,10 +12,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		{
 			var assembly = Assembly.GetExecutingAssembly();
 
-			var sql = assembly.SearchForStringResources("AnotherQuery.sql");
+			var sql = assembly.SearchForStringResource("AnotherQuery.sql");
 			Assert.That(sql, Is.EqualTo("SELECT [More] FROM [Anything]"));
 
-			sql = assembly.SearchForStringResources("YetAnotherQuery.sql");
+			sql = assembly.SearchForStringResource("YetAnotherQuery.sql");
 			Assert.That(sql, Is.EqualTo("SELECT [YetAnotherColumn] FROM [YetAnotherTable]"));
 		}
 
@@ -29,7 +29,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		public void Assert_partial_resource_name_can_be_searched_for(string partialResourceName)
 		{
 			var assembly = Assembly.GetExecutingAssembly();
-			var sql = assembly.SearchForStringResources(partialResourceName);
+			var sql = assembly.SearchForStringResource(partialResourceName);
 			Assert.That(sql, Is.EqualTo("SELECT [More] FROM [Anything]"));
 		}
 
@@ -45,14 +45,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		public void Should_throw_searching_for_bad_resource_name()
 		{
 			var assembly = Assembly.GetExecutingAssembly();
-			Assert.Throws<Exception>(() => assembly.SearchForStringResources("Foo.sql"));
+			Assert.Throws<Exception>(() => assembly.SearchForStringResource("Foo.sql"));
 		}
 
 		[Test]
 		public void Should_throw_searching_with_ambiguous_match()
 		{
 			var assembly = Assembly.GetExecutingAssembly();
-			var exception = Assert.Throws<Exception>(() => assembly.SearchForStringResources("ExampleEmbeddedFile.sql"));
+			var exception = Assert.Throws<Exception>(() => assembly.SearchForStringResource("ExampleEmbeddedFile.sql"));
 			Assert.That(exception.Message.ToLower(), Is.StringContaining("ambiguous"));
 		}
 

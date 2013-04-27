@@ -22,7 +22,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			ResourceName = attribute.ResourceName;
 
 			// Get the SQL resource the same assembly as the type
-			CommandText = queryType.Assembly.SearchForStringResources(attribute.ResourceName);
+			CommandText = queryType.Assembly.SearchForStringResource(attribute.ResourceName);
 
 			// Get a pointer to the Query method below with the QueryType as the generic parameter
 			var genericMethod = _GenericQueryMethod.MakeGenericMethod(queryType);

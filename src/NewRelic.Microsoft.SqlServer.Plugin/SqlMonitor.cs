@@ -1,30 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	/// <summary>
-	///     Periodically polls SQL databases and reports the data back to a collector.
+	///  Polls SQL databases and reports the data back to a collector.
 	/// </summary>
 	internal class SqlMonitor
 	{
-		private readonly string _connectionString;
 		private readonly ILog _log;
+		private readonly Settings _settings;
 		private readonly object _syncRoot;
 		private PollingThread _pollingThread;
 
-		public SqlMonitor(string server, string database, ILog log = null)
+		public SqlMonitor(Settings settings, ILog log = null)
 		{
+			_settings = settings;
 			_syncRoot = new object();
-			_connectionString = string.Format("Server={0};Database={1};Trusted_Connection=True;", server, database);
 			_log = log ?? LogManager.GetLogger("SqlMonitor");
 		}
 
-		public void Start(int? pollIntervalSeconds = 60)
+		public void Start()
 		{
 			try
 			{
@@ -44,8 +47,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					                            {
 						                            Name = "SQL Monitor Query Polling Thread",
 						                            InitialPollDelaySeconds = 0,
-						                            PollIntervalSeconds = pollIntervalSeconds ?? 60,
-						                            PollAction = () => QueryDatabases(queries),
+						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
+						                            PollAction = () => QueryServers(queries),
 						                            AutoResetEvent = new AutoResetEvent(false),
 					                            };
 
@@ -72,29 +75,37 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// Performs the queries against the database
 		/// </summary>
 		/// <param name="queries"></param>
-		private void QueryDatabases(IEnumerable<SqlMonitorQuery> queries)
+		private void QueryServers(IEnumerable<SqlMonitorQuery> queries)
 		{
 			try
 			{
-				Console.Out.WriteLine("Connecting with {0}", _connectionString);
-				Console.Out.WriteLine();
-				using (var conn = new SqlConnection(_connectionString))
-				{
-					foreach (var query in queries)
-					{
-						Console.Out.WriteLine("Executing {0}", query.ResourceName);
-						var results = query.Invoke(conn);
-						foreach (var result in results)
-						{
-							Console.Out.WriteLine(result);
-						}
-						Console.Out.WriteLine();
-					}
-				}
+				var tasks = _settings.SqlServers
+				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server)).Catch(e => Console.Out.WriteLine(e)))
+				                     .ToArray();
+				Task.WaitAll(tasks);
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine(e);
+			}
+		}
+
+		private static void QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server)
+		{
+			Console.Out.WriteLine("Connecting with {0}", server.ConnectionString);
+			Console.Out.WriteLine();
+			using (var conn = new SqlConnection(server.ConnectionString))
+			{
+				foreach (var query in queries)
+				{
+					Console.Out.WriteLine("Executing {0}", query.ResourceName);
+					var results = query.Invoke(conn);
+					foreach (var result in results)
+					{
+						Console.Out.WriteLine(result);
+					}
+					Console.Out.WriteLine();
+				}
 			}
 		}
 

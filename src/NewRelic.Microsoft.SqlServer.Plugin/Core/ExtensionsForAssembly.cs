@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
@@ -22,7 +22,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 			}
 		}
 
-		public static string SearchForStringResources(this Assembly assembly, string fullOrPartialResourceName)
+		public static string SearchForStringResource(this Assembly assembly, string fullOrPartialResourceName)
 		{
 			var stream = assembly.GetManifestResourceStream(fullOrPartialResourceName);
 			if (stream == null)
@@ -53,6 +53,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 			{
 				return sr.ReadToEnd();
 			}
+		}
+
+		public static string GetLocalPath(this Assembly assembly)
+		{
+			var uri = new Uri(assembly.CodeBase);
+			return Path.GetDirectoryName(uri.LocalPath);
 		}
 	}
 }

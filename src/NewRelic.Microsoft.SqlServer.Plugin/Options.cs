@@ -15,7 +15,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Option('s', "start", HelpText = "Attempts to Start the " + ServiceConstants.DisplayName + " Windows service on this machine", MutuallyExclusiveSet = "mode")]
 		public bool Start { get; set; }
 
-		[Option('p', "stop", HelpText = "Attempts to Stop the " + ServiceConstants.DisplayName + " Windows service on this machine", MutuallyExclusiveSet = "mode")]
+		[Option("stop", HelpText = "Attempts to Stop the " + ServiceConstants.DisplayName + " Windows service on this machine", MutuallyExclusiveSet = "mode")]
 		public bool Stop { get; set; }
 
 		[Option("installorstart",
@@ -26,13 +26,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Option('t', "sendtest", HelpText = "Launches process that sends simple sample metric data (random ints) to Dashboard", MutuallyExclusiveSet = "mode")]
 		public bool SendTestMetrics { get; set; }
 
-		[Option("server", DefaultValue = ".", HelpText = "The SQL instance to connect to.")]
-		public string Server { get; set; }
-
-		[Option("database", DefaultValue = "master", HelpText = "Name of the database to connect to.")]
-		public string Database { get; set; }
-
-		[Option("poll", HelpText = "Changes the polling interval from the default of 60 seconds")]
-		public int? PollIntervalSeconds { get; set; }
+		[Option("config-file", HelpText = "Specify that settings are in a different file than the .exe.config")]
+		public string ConfigFile { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.ServiceProcess;
+using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
@@ -8,10 +9,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 	/// </summary>
 	public class SqlMonitorService : ServiceBase
 	{
+		private readonly Settings _settings;
 		private SqlMonitor _monitor;
 
-		public SqlMonitorService()
+		public SqlMonitorService(Settings settings)
 		{
+			_settings = settings;
 			ServiceName = ServiceConstants.ServiceName;
 		}
 
@@ -19,8 +22,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		{
 			if (_monitor == null)
 			{
-				// TODO Get values from config
-				_monitor = new SqlMonitor(".", "master");
+				_monitor = new SqlMonitor(_settings);
 			}
 
 			_monitor.Start();

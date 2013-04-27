@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.ServiceProcess;
 using CommandLine;
+using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
@@ -41,14 +42,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				{
 					SampleMetricGenerator.SendSimpleMetricData();
 				}
-				else if (Environment.UserInteractive)
-				{
-					RunInteractive(options);
-				}
 				else
 				{
-					ServiceBase[] services = {new SqlMonitorService()};
-					ServiceBase.Run(services);
+					var settings = ConfigurationParser.ParseSettings(options.ConfigFile);
+
+					if (Environment.UserInteractive)
+					{
+						RunInteractive(settings);
+					}
+					else
+					{
+						ServiceBase[] services = { new SqlMonitorService(settings) };
+						ServiceBase.Run(services);
+					}
 				}
 
 				return 0;
@@ -71,14 +77,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <summary>
 		///     Runs from the command shell, printing to the Console.
 		/// </summary>
-		/// <param name="options"></param>
-		private static void RunInteractive(Options options)
+		/// <param name="settings"></param>
+		private static void RunInteractive(Settings settings)
 		{
 			Console.Out.WriteLine("Starting Server");
 
 			// Start our services
-			var monitor = new SqlMonitor(options.Server, options.Database);
-			monitor.Start(options.PollIntervalSeconds);
+			var monitor = new SqlMonitor(settings);
+			monitor.Start();
 
 			// Capture Ctrl+C
 			Console.TreatControlCAsInput = true;
