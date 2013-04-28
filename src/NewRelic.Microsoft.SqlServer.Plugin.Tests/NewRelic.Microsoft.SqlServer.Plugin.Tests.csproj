@@ -24,6 +24,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NewRelic.Platform.Binding.DotNET, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\NewRelic.Microsoft.SqlServer.Plugin\bin\Debug\NewRelic.Platform.Binding.DotNET.dll</HintPath>
+    </Reference>
     <Reference Include="NSubstitute">
       <HintPath>..\..\packages\NSubstitute.1.6.0.0\lib\NET35\NSubstitute.dll</HintPath>
     </Reference>
@@ -43,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Configuration\ConfigurationParserTests.cs" />
     <Compile Include="Core\ExtensionsForAssemblyTests.cs" />
+    <Compile Include="NewRelicExplorationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\QueryTypeValidationTests.cs" />
     <Compile Include="QueryLocatorTests.cs" />

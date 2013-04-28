@@ -120,44 +120,29 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		private IEnumerable<SqlRequest> MapQueryResultsToMetrics(SqlServerToMonitor server, IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> resultSets)
+		private SqlRequest MapQueryResultsToMetrics(SqlServerToMonitor server, IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> resultSets)
 		{
-			var agent = server.Name;
-			var platformData = new PlatformData(new AgentData {Host = "Microsoft SQL Server", Pid = 1, Version = "1.0.0",});
-			return resultSets.SelectMany(kvp => kvp.Value.Select(r => new
-			                                                          {
-				                                                          AgentName = r.DefineComponent(agent),
-				                                                          Query = kvp.Key,
-				                                                          QueryResult = r,
-			                                                          }))
-			                 .GroupBy(r => r.AgentName)
-			                 .Select(grp =>
-			                         {
-				                         grp.Select(r =>
-				                                    {
-					                                    var componentName = r.QueryResult.DefineComponent(server.Name);
-					                                    var componentData = new ComponentData(componentName, componentName, 1);
-					                                    r.QueryResult.AddMetrics(componentData);
-					                                    return componentData;
-				                                    })
-				                            .ForEach(platformData.AddComponent);
-
-				                         return new SqlRequest(_settings.LicenseKey) {Data = platformData};
-			                         });
+			var platformData = new PlatformData(new AgentData {Host = server.Name, Pid = 1, Version = "1.0.0",});
+			resultSets.SelectMany(kvp => kvp.Value.Select(r =>
+			                                              {
+				                                              var componentName = r.DefineComponent(server.Name);
+				                                              var componentData = new ComponentData(componentName, Constants.ComponentGuid, 1);
+				                                              r.AddMetrics(componentData);
+				                                              return componentData;
+			                                              }))
+			          .ForEach(platformData.AddComponent);
+			return new SqlRequest(_settings.LicenseKey) {Data = platformData};
 		}
 
-		private void SendMetricsToConnector(IEnumerable<SqlRequest> result)
+		private void SendMetricsToConnector(SqlRequest request)
 		{
-			foreach (var request in result)
+			try
 			{
-				try
-				{
-					request.SendData();
-				}
-				catch (Exception e)
-				{
-					_log.Error("Error sending data to connector", e);
-				}
+				request.SendData();
+			}
+			catch (Exception e)
+			{
+				_log.Error("Error sending data to connector", e);
 			}
 		}
 

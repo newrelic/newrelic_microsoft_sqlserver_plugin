@@ -16,16 +16,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 			return string.Format("{0}\t{1}\t{2}\t{3}", DatabaseName, BytesRead, BytesWritten, SizeInBytes);
 		}
 
-		public string DefineComponent(string agent)
+		public string DefineComponent(string sqlInstance)
 		{
-			return string.Format("{0}.{1}", agent, DatabaseName);
+			return string.Format(@"{0} - {1}", sqlInstance, DatabaseName);
 		}
 
 		public void AddMetrics(ComponentData componentData)
 		{
-			componentData.AddMetric("File I/O - Bytes Read", (int)BytesRead);
-			componentData.AddMetric("File I/O - Bytes Written", (int)BytesWritten);
-			componentData.AddMetric("File I/O - Size In Bytes", (int)SizeInBytes);
+			componentData.AddMetric("FileIO/BytesRead", (int)BytesRead);
+			componentData.AddMetric("FileIO/BytesWritten", (int)BytesWritten);
+			componentData.AddMetric("FileIO/SizeInBytes", (int)SizeInBytes);
 		}
 	}
 }

@@ -4,7 +4,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	public interface IQueryResult
 	{
-		string DefineComponent(string agent);
+		string DefineComponent(string sqlInstance);
 		void AddMetrics(ComponentData componentData);
 	}
 }
