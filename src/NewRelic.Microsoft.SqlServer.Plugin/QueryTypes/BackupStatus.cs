@@ -2,8 +2,8 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlMonitorQuery("BackupStatus.sql")]
-	[SqlMonitorQuery("LogBackupStatus.sql")]
+	[SqlMonitorQuery("BackupStatus.sql", QueryName = "Backup Status", Enabled = false)]
+	[SqlMonitorQuery("LogBackupStatus.sql", QueryName = "Log Backup Status", Enabled = false)]
 	internal class BackupStatus
 	{
 		public string Database { get; set; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Queries
 {

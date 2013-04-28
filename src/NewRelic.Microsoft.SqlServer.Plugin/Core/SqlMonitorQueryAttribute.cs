@@ -6,10 +6,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 	public sealed class SqlMonitorQueryAttribute : Attribute
 	{
 		public string ResourceName { get; private set; }
+		public string QueryName { get; set; }
+		public bool Enabled { get; set; }
 
 		public SqlMonitorQueryAttribute(string resourceName)
 		{
 			ResourceName = resourceName;
+			Enabled = true;
 		}
 	}
 }

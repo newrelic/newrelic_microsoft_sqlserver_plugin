@@ -4,8 +4,12 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NewRelic.Microsoft.SqlServer.Plugin.Communication;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
+using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
+using NewRelic.Platform.Binding.DotNET;
 using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
@@ -80,7 +84,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			try
 			{
 				var tasks = _settings.SqlServers
-				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server)).Catch(e => Console.Out.WriteLine(e)))
+				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server))
+				                                           .Catch(e => Console.Out.WriteLine(e))
+				                                           .ContinueWith(t => MapQueryResultsToMetrics(server, t.Result))
+				                                           .Catch(e => Console.Out.WriteLine(e))
+				                                           .ContinueWith(t => SendMetricsToConnector(t.Result)))
 				                     .ToArray();
 				Task.WaitAll(tasks);
 			}
@@ -90,21 +98,65 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		private static void QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server)
+		private static IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server)
 		{
 			Console.Out.WriteLine("Connecting with {0}", server.ConnectionString);
 			Console.Out.WriteLine();
+
 			using (var conn = new SqlConnection(server.ConnectionString))
 			{
 				foreach (var query in queries)
 				{
 					Console.Out.WriteLine("Executing {0}", query.ResourceName);
-					var results = query.Invoke(conn);
+					var results = query.Invoke(conn).ToArray();
 					foreach (var result in results)
 					{
 						Console.Out.WriteLine(result);
 					}
 					Console.Out.WriteLine();
+
+					yield return new KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>(query, results);
+				}
+			}
+		}
+
+		private IEnumerable<SqlRequest> MapQueryResultsToMetrics(SqlServerToMonitor server, IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> resultSets)
+		{
+			var agent = server.Name;
+			var platformData = new PlatformData(new AgentData {Host = "Microsoft SQL Server", Pid = 1, Version = "1.0.0",});
+			return resultSets.SelectMany(kvp => kvp.Value.Select(r => new
+			                                                          {
+				                                                          AgentName = r.DefineComponent(agent),
+				                                                          Query = kvp.Key,
+				                                                          QueryResult = r,
+			                                                          }))
+			                 .GroupBy(r => r.AgentName)
+			                 .Select(grp =>
+			                         {
+				                         grp.Select(r =>
+				                                    {
+					                                    var componentName = r.QueryResult.DefineComponent(server.Name);
+					                                    var componentData = new ComponentData(componentName, componentName, 1);
+					                                    r.QueryResult.AddMetrics(componentData);
+					                                    return componentData;
+				                                    })
+				                            .ForEach(platformData.AddComponent);
+
+				                         return new SqlRequest(_settings.LicenseKey) {Data = platformData};
+			                         });
+		}
+
+		private void SendMetricsToConnector(IEnumerable<SqlRequest> result)
+		{
+			foreach (var request in result)
+			{
+				try
+				{
+					request.SendData();
+				}
+				catch (Exception e)
+				{
+					_log.Error("Error sending data to connector", e);
 				}
 			}
 		}

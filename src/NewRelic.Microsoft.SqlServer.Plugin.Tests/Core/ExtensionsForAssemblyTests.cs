@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using NUnit.Framework;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {

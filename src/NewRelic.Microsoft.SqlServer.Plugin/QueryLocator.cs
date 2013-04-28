@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -30,7 +31,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		internal IEnumerable<SqlMonitorQuery> PrepareQueries(Type[] types)
 		{
 			// Search for types with at least one attribute that have a SqlMonitorQueryAttribute
-			return types.SelectMany(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
+			return types.SelectMany(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Where(a => a.Enabled).Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
 		}
 
 		/// <summary>

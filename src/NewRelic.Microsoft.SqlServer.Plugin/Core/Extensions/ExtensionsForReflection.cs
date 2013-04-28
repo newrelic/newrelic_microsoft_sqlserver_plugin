@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin.Core
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions
 {
 	public static class ExtensionsForReflection
 	{

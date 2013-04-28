@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {

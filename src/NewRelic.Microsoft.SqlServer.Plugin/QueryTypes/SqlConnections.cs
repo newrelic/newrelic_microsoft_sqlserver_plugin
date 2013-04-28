@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlMonitorQuery("SQLConnections.sql")]
+	[SqlMonitorQuery("SQLConnections.sql", QueryName = "SQL Connections", Enabled = false)]
 	internal class SqlConnections
 	{
 		public Guid ConnectionId { get; set; }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin.Core
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions
 {
 	public static class ExtensionsForAssembly
 	{

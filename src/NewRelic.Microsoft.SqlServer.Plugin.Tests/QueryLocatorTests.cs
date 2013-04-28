@@ -3,6 +3,7 @@ using System.Reflection;
 using NSubstitute;
 using NUnit.Framework;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -21,6 +22,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[SqlMonitorQuery("AnotherQuery.sql")]
 		[SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
 		public class QueryTypeWithTwoQueries {}
+
+		[SqlMonitorQuery("Foo.sql", Enabled = false)]
+		public class QueryTypeDisabled {}
+
+		[SqlMonitorQuery("Foo.sql", Enabled = false)]
+		[SqlMonitorQuery("AnotherQuery.sql", QueryName = "This is enabled")]
+		public class QueryTypeSomeEnabled {}
 
 		[Test]
 		public void Assert_funcs_are_correctly_configured()
@@ -94,6 +102,29 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			var typesWithAttribute = types.Where(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Any());
 			Assert.That(typesWithAttribute, Is.Not.Empty, "Expected at least one QueryType using the " + typeof (SqlMonitorQueryAttribute).Name);
+		}
+
+		[Test]
+		public void Assert_that_disabled_queries_are_ignored()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var queryLocator = new QueryLocator(null, assembly);
+
+			var queries = queryLocator.PrepareQueries(new[] {typeof (QueryTypeDisabled)});
+			Assert.That(queries, Is.Empty);
+		}
+
+		[Test]
+		public void Assert_that_only_enabled_queries_are_found()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var queryLocator = new QueryLocator(null, assembly);
+
+			var queries = queryLocator.PrepareQueries(new[] {typeof (QueryTypeSomeEnabled)})
+			                          .Select(q => q.QueryName)
+			                          .ToArray();
+
+			Assert.That(queries, Is.EqualTo(new[] {"This is enabled"}));
 		}
 
 		[Test]

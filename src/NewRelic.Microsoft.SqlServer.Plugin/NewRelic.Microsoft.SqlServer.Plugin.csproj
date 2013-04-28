@@ -69,13 +69,14 @@
     <Compile Include="Configuration\SqlServerSection.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
-    <Compile Include="Core\ExtensionsForReflection.cs" />
-    <Compile Include="Core\ExtensionsForTask.cs" />
+    <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
+    <Compile Include="Core\Extensions\ExtensionsForEnumerable.cs" />
+    <Compile Include="Core\Extensions\ExtensionsForReflection.cs" />
+    <Compile Include="Core\Extensions\ExtensionsForTask.cs" />
     <Compile Include="Core\PollingThread.cs" />
     <Compile Include="Core\PollingThreadSettings.cs" />
     <Compile Include="Core\SqlMonitorQueryAttribute.cs" />
     <Compile Include="Core\Dapper.cs" />
-    <Compile Include="Core\ExtensionsForAssembly.cs" />
     <Compile Include="Core\InstallController.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="QueryLocator.cs" />
     <Compile Include="QueryTypes\BackupStatus.cs" />
     <Compile Include="QueryTypes\FileIoView.cs" />
+    <Compile Include="QueryTypes\IQueryResult.cs" />
     <Compile Include="QueryTypes\SqlConnections.cs" />
     <Compile Include="QueryTypes\Top25CostlyQueries.cs" />
     <Compile Include="SampleMetricGenerator.cs" />

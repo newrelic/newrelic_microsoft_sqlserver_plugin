@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin.Core
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions
 {
 	public static class ExtensionsForTask
 	{
