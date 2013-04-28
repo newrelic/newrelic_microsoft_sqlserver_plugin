@@ -85,7 +85,10 @@
     <Compile Include="QueryTypes\BackupStatus.cs" />
     <Compile Include="QueryTypes\FileIoView.cs" />
     <Compile Include="QueryTypes\IQueryResult.cs" />
+    <Compile Include="QueryTypes\RecompileDetail.cs" />
+    <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlConnections.cs" />
+    <Compile Include="QueryTypes\SqlCpuUsage.cs" />
     <Compile Include="QueryTypes\Top25CostlyQueries.cs" />
     <Compile Include="SampleMetricGenerator.cs" />
     <Compile Include="Properties\ServiceConstants.cs" />
@@ -116,6 +119,13 @@
   <ItemGroup>
     <EmbeddedResource Include="Queries\BackupStatus.sql" />
     <EmbeddedResource Include="Queries\LogBackupStatus.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\RecompileSummary.sql" />
+    <EmbeddedResource Include="Queries\SQL-NonSQL-IdleCPUUsage.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\RecompileDetail.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
