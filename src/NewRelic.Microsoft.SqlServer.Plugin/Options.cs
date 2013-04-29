@@ -23,8 +23,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			MutuallyExclusiveSet = "mode")]
 		public bool InstallOrStart { get; set; }
 
-		[Option('t', "sendtest", HelpText = "Launches process that sends simple sample metric data (random ints) to Dashboard", MutuallyExclusiveSet = "mode")]
-		public bool SendTestMetrics { get; set; }
+		[Option("collect-only", DefaultValue = false, HelpText = "Collect metrics, but do not send them to New Relic")]
+		public bool CollectOnly { get; set; }
 
 		[Option("config-file", HelpText = "Specify that settings are in a different file than the .exe.config")]
 		public string ConfigFile { get; set; }

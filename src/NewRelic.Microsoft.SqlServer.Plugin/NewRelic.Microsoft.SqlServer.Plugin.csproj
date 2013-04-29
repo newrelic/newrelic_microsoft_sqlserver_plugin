@@ -90,7 +90,6 @@
     <Compile Include="QueryTypes\SqlConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />
     <Compile Include="QueryTypes\Top25CostlyQueries.cs" />
-    <Compile Include="SampleMetricGenerator.cs" />
     <Compile Include="Properties\ServiceConstants.cs" />
     <Compile Include="Core\ServiceProcessInstaller.cs">
       <SubType>Component</SubType>

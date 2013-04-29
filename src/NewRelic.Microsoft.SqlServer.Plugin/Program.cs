@@ -38,13 +38,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				{
 					InstallController.InstallOrStart();
 				}
-				else if (options.SendTestMetrics)
-				{
-					SampleMetricGenerator.SendSimpleMetricData();
-				}
 				else
 				{
 					var settings = ConfigurationParser.ParseSettings(options.ConfigFile);
+					settings.CollectOnly = options.CollectOnly;
 
 					if (Environment.UserInteractive)
 					{

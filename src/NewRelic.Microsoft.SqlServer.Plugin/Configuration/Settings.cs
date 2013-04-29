@@ -14,6 +14,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public bool UseSsl { get; set; }
 		public int PollIntervalSeconds { get; set; }
 		public SqlServerToMonitor[] SqlServers { get; private set; }
+		public bool CollectOnly { get; set; }
 
 		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
 		{

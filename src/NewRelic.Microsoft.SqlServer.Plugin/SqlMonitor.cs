@@ -136,6 +136,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		private void SendMetricsToConnector(SqlRequest request)
 		{
+			// Allows a testing mode that does not send data to New Relic
+			if (_settings.CollectOnly) return;
+
 			try
 			{
 				request.SendData();
