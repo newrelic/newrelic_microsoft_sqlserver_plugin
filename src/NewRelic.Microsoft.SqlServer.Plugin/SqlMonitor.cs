@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NewRelic.Microsoft.SqlServer.Plugin.Communication;
@@ -100,7 +101,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		private static IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server)
 		{
-			Console.Out.WriteLine("Connecting with {0}", server.ConnectionString);
+			// Remove password from logging
+			var safeConnectionString = new SqlConnectionStringBuilder(server.ConnectionString);
+			if (!string.IsNullOrEmpty(safeConnectionString.Password))
+			{
+				safeConnectionString.Password = "[redacted]";
+			}
+
+			Console.Out.WriteLine("Connecting with {0}", safeConnectionString);
 			Console.Out.WriteLine();
 
 			using (var conn = new SqlConnection(server.ConnectionString))
