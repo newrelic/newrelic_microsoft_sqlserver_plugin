@@ -47,7 +47,6 @@
   <ItemGroup>
     <Compile Include="Configuration\ConfigurationParserTests.cs" />
     <Compile Include="Core\ExtensionsForAssemblyTests.cs" />
-    <Compile Include="NewRelicExplorationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\QueryTypeValidationTests.cs" />
     <Compile Include="QueryLocatorTests.cs" />
