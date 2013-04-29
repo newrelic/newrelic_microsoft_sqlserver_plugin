@@ -37,6 +37,7 @@ WITH SumsByDatabase AS (
 				WHERE d2.UseCounts > 1 AND d2.DBName = d.DBName AND d2.ObjectType = d.ObjectType)
 			AS MultipleUseObjects
 		FROM @Details d
+		WHERE d.DBName IS NOT NULL
 		GROUP BY	d.DBName,
 					d.ObjectType)
 SELECT
@@ -44,5 +45,7 @@ SELECT
 	ObjectType,
 	SingleUseObjects,
 	MultipleUseObjects,
-	CAST(SingleUseObjects AS decimal(18, 2)) / (SingleUseObjects + MultipleUseObjects) * 100	AS SingleUsePercent
+	CASE
+		WHEN (SingleUseObjects + MultipleUseObjects) = 0 THEN 0 ELSE CAST(SingleUseObjects AS decimal(18, 2)) / (SingleUseObjects + MultipleUseObjects)
+	END	AS SingleUsePercent
 FROM SumsByDatabase
