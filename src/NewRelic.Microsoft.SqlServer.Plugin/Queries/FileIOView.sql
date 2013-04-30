@@ -1,5 +1,5 @@
 -- File I/O View. This data will reset on SQL Server Restart.
--- Size in Bytes good for basic pie chart etc.
+-- Size in Bytes good for basic pie or stacked bar chart etc.
 
 SELECT
 	CAST(DB_NAME(a.database_id) AS varchar(150)) AS DatabaseName,
