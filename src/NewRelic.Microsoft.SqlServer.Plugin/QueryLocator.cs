@@ -11,9 +11,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	{
 		private readonly Assembly _assembly;
 		private readonly IDapperWrapper _dapper;
+	    private readonly Type[] _ignoreTypes;
 
-		public QueryLocator(IDapperWrapper dapper, Assembly assembly = null)
-		{
+	    public QueryLocator(IDapperWrapper dapper, Assembly assembly = null, Type[] ignoreTypes = null)
+	    {
+	        _ignoreTypes = ignoreTypes ?? new Type[0];
+
 			_dapper = dapper;
 			// The default is to look for SQL resources in this assembly
 			_assembly = assembly ?? Assembly.GetExecutingAssembly();
@@ -30,7 +33,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		internal IEnumerable<SqlMonitorQuery> PrepareQueries(Type[] types)
 		{
 			// Search for types with at least one attribute that have a SqlMonitorQueryAttribute
-			return types.SelectMany(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Where(a => a.Enabled).Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
+			return types.Where(t => !_ignoreTypes.Contains(t)).SelectMany(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Where(a => a.Enabled).Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
 		}
 	}
 }
