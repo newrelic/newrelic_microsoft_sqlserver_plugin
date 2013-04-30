@@ -4,7 +4,6 @@ DECLARE @Details TABLE (
 			BucketID bigint NULL,
 			UseCounts bigint NULL,
 			SizeInBytes bigint NULL,
-			ObjectType varchar(25) NULL,
 			Text varchar(MAX) NULL
 		)
 
@@ -14,7 +13,6 @@ INSERT INTO @Details
 		cp.BucketID			AS BucketID,
 		cp.UseCounts		AS UseCounts,
 		cp.size_in_bytes	AS SizeInBytes,
-		cp.objtype			AS ObjectType,
 		st.Text				AS Text
 	FROM sys.dm_exec_cached_plans cp
 	CROSS APPLY sys.dm_exec_sql_text(cp.plan_handle) st
@@ -23,26 +21,22 @@ INSERT INTO @Details
 WITH SumsByDatabase AS (
 		SELECT
 			d.DBName,
-			d.ObjectType,
 			(
 				SELECT
 					COUNT(*)
 				FROM @Details d2
-				WHERE d2.UseCounts = 1 AND d2.DBName = d.DBName AND d2.ObjectType = d.ObjectType)
+				WHERE d2.UseCounts = 1 AND d2.DBName = d.DBName)
 			AS SingleUseObjects,
 			(
 				SELECT
 					COUNT(*)
 				FROM @Details d2
-				WHERE d2.UseCounts > 1 AND d2.DBName = d.DBName AND d2.ObjectType = d.ObjectType)
+				WHERE d2.UseCounts > 1 AND d2.DBName = d.DBName)
 			AS MultipleUseObjects
 		FROM @Details d
-		WHERE d.DBName IS NOT NULL
-		GROUP BY	d.DBName,
-					d.ObjectType)
+		GROUP BY d.DBName)
 SELECT
 	DBName,
-	ObjectType,
 	SingleUseObjects,
 	MultipleUseObjects,
 	CASE
