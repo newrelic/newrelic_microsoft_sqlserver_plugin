@@ -5,7 +5,7 @@ SELECT
 		WHEN b.backup_start_date > DATEADD(mi, -60, GETDATE()) THEN 'Log Backup OK to: ' + CAST(b.backup_start_date AS varchar(30)) ELSE 'Log Backup is NOT current within a hour'
 	END AS [Comment],
 	CASE
-		WHEN b.backup_start_date > DATEADD(dd, -1, GETDATE()) THEN 'OK' ELSE 'ERROR'
+		WHEN b.backup_start_date > DATEADD(mi, -60, GETDATE()) THEN 'OK' ELSE 'ERROR'
 	END AS [Flag]
 FROM master..sysdatabases s
 LEFT OUTER JOIN msdb..backupset b
