@@ -4,6 +4,8 @@ using NSubstitute;
 using NUnit.Framework;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
+using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
+using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -11,24 +13,29 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	public class QueryLocatorTests
 	{
 		[SqlMonitorQuery("NewRelic.Microsoft.SqlServer.Plugin.Core.ExampleEmbeddedFile.sql")]
-		public class QueryTypeWithExactResourceName {}
+		private class QueryTypeWithExactResourceName : FakeQueryResultBase {}
 
 		[SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
-		public class QueryTypeWithPartialResourceName {}
+		private class QueryTypeWithPartialResourceName : FakeQueryResultBase {}
 
 		[SqlMonitorQuery("AnotherQuery.sql")]
-		public class QueryTypeWithJustFileName {}
+		private class QueryTypeWithJustFileName : FakeQueryResultBase {}
 
 		[SqlMonitorQuery("AnotherQuery.sql")]
 		[SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
-		public class QueryTypeWithTwoQueries {}
+		private class QueryTypeWithTwoQueries : FakeQueryResultBase {}
 
 		[SqlMonitorQuery("Foo.sql", Enabled = false)]
-		public class QueryTypeDisabled {}
+		private class QueryTypeDisabled : FakeQueryResultBase {}
 
 		[SqlMonitorQuery("Foo.sql", Enabled = false)]
 		[SqlMonitorQuery("AnotherQuery.sql", QueryName = "This is enabled")]
-		public class QueryTypeSomeEnabled {}
+		private class QueryTypeSomeEnabled : FakeQueryResultBase {}
+
+		private class FakeQueryResultBase : IQueryResult
+		{
+			public void AddMetrics(ComponentData componentData) {}
+		}
 
 		[Test]
 		public void Assert_funcs_are_correctly_configured()

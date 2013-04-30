@@ -12,14 +12,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public int MultiUseObjects { get; set; }
 		public decimal SingleUsePercent { get; set; }
 
-		public string DefineComponent(string sqlInstance)
-		{
-			return string.Format(@"{0} - {1}", sqlInstance, DBName);
-		}
-
 		public void AddMetrics(ComponentData componentData)
 		{
-			var recompileType = string.Format("Recompile/{0}/", ObjectType);
+			var recompileType = string.Format("Recompile/{0}/", DBName);
 			componentData.AddMetric(recompileType + "SingleUseObjects", SingleUseObjects);
 			componentData.AddMetric(recompileType + "MultiUseObjects", MultiUseObjects);
 			componentData.AddMetric(recompileType + "SingleUsePercent", SingleUsePercent);

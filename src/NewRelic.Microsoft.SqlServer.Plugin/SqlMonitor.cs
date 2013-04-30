@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NewRelic.Microsoft.SqlServer.Plugin.Communication;
@@ -20,6 +20,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	/// </summary>
 	internal class SqlMonitor
 	{
+		private readonly AgentData _agentData;
 		private readonly ILog _log;
 		private readonly Settings _settings;
 		private readonly object _syncRoot;
@@ -30,6 +31,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			_settings = settings;
 			_syncRoot = new object();
 			_log = log ?? LogManager.GetLogger("SqlMonitor");
+
+			_agentData = new AgentData {Host = Environment.MachineName, Pid = Process.GetCurrentProcess().Id, Version = "1.0.0",};
 		}
 
 		public void Start()
@@ -75,7 +78,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-
 		/// <summary>
 		/// Performs the queries against the database
 		/// </summary>
@@ -87,9 +89,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				var tasks = _settings.SqlServers
 				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server))
 				                                           .Catch(e => Console.Out.WriteLine(e))
-				                                           .ContinueWith(t => MapQueryResultsToMetrics(server, t.Result))
+				                                           .ContinueWith(t => t.Result.SelectMany(ctx => ctx.Results).ToArray())
+				                                           .ContinueWith(t => t.Result.Select(r =>
+				                                                                              {
+					                                                                              var componentData = new ComponentData(server.Name, Constants.ComponentGuid, _settings.PollIntervalSeconds);
+					                                                                              r.AddMetrics(componentData);
+					                                                                              return componentData;
+				                                                                              })
+				                                                               .ToArray())
 				                                           .Catch(e => Console.Out.WriteLine(e))
-				                                           .ContinueWith(t => SendMetricsToConnector(t.Result)))
+				                                           .ContinueWith(t => SendComponentDataToCollector(t.Result)))
 				                     .ToArray();
 				Task.WaitAll(tasks);
 			}
@@ -99,7 +108,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		private static IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server)
+		private static IEnumerable<QueryContext> QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server)
 		{
 			// Remove password from logging
 			var safeConnectionString = new SqlConnectionStringBuilder(server.ConnectionString);
@@ -123,33 +132,21 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					}
 					Console.Out.WriteLine();
 
-					yield return new KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>(query, results);
+					yield return new QueryContext {Query = query, Results = results,};
 				}
 			}
 		}
 
-		private SqlRequest MapQueryResultsToMetrics(SqlServerToMonitor server, IEnumerable<KeyValuePair<SqlMonitorQuery, IEnumerable<IQueryResult>>> resultSets)
-		{
-			var platformData = new PlatformData(new AgentData {Host = server.Name, Pid = 1, Version = "1.0.0",});
-			resultSets.SelectMany(kvp => kvp.Value.Select(r =>
-			                                              {
-				                                              var componentName = r.DefineComponent(server.Name);
-				                                              var componentData = new ComponentData(componentName, Constants.ComponentGuid, 1);
-				                                              r.AddMetrics(componentData);
-				                                              return componentData;
-			                                              }))
-			          .ForEach(platformData.AddComponent);
-			return new SqlRequest(_settings.LicenseKey) {Data = platformData};
-		}
-
-		private void SendMetricsToConnector(SqlRequest request)
+		private void SendComponentDataToCollector(IEnumerable<ComponentData> componentData)
 		{
 			// Allows a testing mode that does not send data to New Relic
 			if (_settings.CollectOnly) return;
 
 			try
 			{
-				request.SendData();
+				var platformData = new PlatformData(_agentData);
+				componentData.ForEach(platformData.AddComponent);
+				new SqlRequest(_settings.LicenseKey) {Data = platformData}.SendData();
 			}
 			catch (Exception e)
 			{
@@ -183,6 +180,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					_log.Info("Service Stopped");
 				}
 			}
+		}
+
+		private class QueryContext
+		{
+			public SqlMonitorQuery Query { get; set; }
+			public IEnumerable<IQueryResult> Results { get; set; }
 		}
 	}
 }

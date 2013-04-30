@@ -11,21 +11,17 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public long BytesWritten { get; set; }
 		public long SizeInBytes { get; set; }
 
+		public void AddMetrics(ComponentData componentData)
+		{
+			var metricPerDatabase = string.Format("FileIO/{0}/", DatabaseName);
+			componentData.AddMetric(metricPerDatabase + "BytesRead", (int) BytesRead);
+			componentData.AddMetric(metricPerDatabase + "BytesWritten", (int) BytesWritten);
+			componentData.AddMetric(metricPerDatabase + "SizeInBytes", (int) SizeInBytes);
+		}
+
 		public override string ToString()
 		{
 			return string.Format("{0}\t{1}\t{2}\t{3}", DatabaseName, BytesRead, BytesWritten, SizeInBytes);
-		}
-
-		public string DefineComponent(string sqlInstance)
-		{
-			return string.Format(@"{0} - {1}", sqlInstance, DatabaseName);
-		}
-
-		public void AddMetrics(ComponentData componentData)
-		{
-			componentData.AddMetric("FileIO/BytesRead", (int)BytesRead);
-			componentData.AddMetric("FileIO/BytesWritten", (int)BytesWritten);
-			componentData.AddMetric("FileIO/SizeInBytes", (int)SizeInBytes);
 		}
 	}
 }
