@@ -1,4 +1,6 @@
-
+-- Memory View
+-- Returns ratio of memory cache hits to non-memory cache hits
+-- Returns memory page life expectancy for entire instance for NUMA and non-NUMA processor/memory configs
 SELECT
 	(SELECT
 		cntr_value
@@ -11,10 +13,10 @@ SELECT
 	(SELECT
 		cntr_value
 	FROM sys.dm_os_performance_counters
-	WHERE counter_name = 'Page life expectancy' AND OBJECT_NAME LIKE '%Manager%')
+	WHERE counter_name = 'Page life expectancy' AND [OBJECT_NAME] = 'SQLServer:Buffer Manager')
 	AS 'PageLifeExpectancyInSeconds',
 	(SELECT
 		cntr_value
 	FROM sys.dm_os_performance_counters
-	WHERE counter_name = 'Page life expectancy' AND OBJECT_NAME NOT LIKE '%Manager%')
+	WHERE counter_name = 'Page life expectancy' AND [OBJECT_NAME] = 'SQLServer:Buffer Node')
 	AS 'PageLifeExpectancyInSeconds-NUMA'

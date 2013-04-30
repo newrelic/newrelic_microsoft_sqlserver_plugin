@@ -1,4 +1,5 @@
 -- Aggregated Wait States. 
+-- Identifies bottlenecks within SQL Server
 -- Is reset on SQL Server Reset
 -- Expected wait states are omitted from view
 

@@ -1,3 +1,6 @@
+-- Recomplie Detail
+-- Returns use count without a recompile for each object
+
 SELECT
 	DB_NAME(st.dbid)	AS DBName,
 	cp.bucketid			AS Bucketid,

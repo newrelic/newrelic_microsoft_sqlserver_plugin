@@ -1,3 +1,8 @@
+-- Database Log Backup Status View
+-- Returns status of every DB on instance except system dbs.
+-- Assumes one backup an hour is ok
+-- No backup within a day or none ever is an error
+
 SELECT
 	SUBSTRING(s.name, 1, 40) AS [Database],
 	CAST(b.backup_start_date AS char(11)) AS [BackupDate],

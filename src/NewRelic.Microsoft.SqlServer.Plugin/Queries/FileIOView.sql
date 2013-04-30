@@ -7,7 +7,7 @@ SELECT
 	SUM(a.num_of_bytes_written) AS BytesWritten,
 	SUM(a.size_on_disk_bytes) AS SizeInBytes,
 	SUM(a.num_of_reads) AS NumberOfReads,
-	SUM(a.num_of_writes) AS NumberOfReads
+	SUM(a.num_of_writes) AS NumberOfWrites
 
 FROM sys.dm_io_virtual_file_stats(NULL, NULL) a
 GROUP BY CAST(DB_NAME(a.database_id) AS varchar(150))
