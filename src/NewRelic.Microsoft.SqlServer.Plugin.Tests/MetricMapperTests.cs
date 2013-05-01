@@ -46,14 +46,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			var fake = new FakeQueryType {Decimal = 12.3m,};
 			var componentData = new ComponentData();
-			const string metricName = "Decimal";
 
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty(metricName));
+			var queryContext = new QueryContext {ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "")};
 
-			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
+			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Decimal"));
 
-			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
-			var condition = componentData.Metrics[metricName];
+			metricMapper.AddMetric(queryContext, fake);
+
+			const string metricKey = "Fake/Decimal";
+			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
+			var condition = componentData.Metrics[metricKey];
 			Assert.That(condition, Is.EqualTo(fake.Decimal), "Metric not mapped correctly");
 		}
 
@@ -80,14 +82,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			propertyInfo.SetValue(fake, value, null);
 
 			var componentData = new ComponentData();
-			var metricName = propertyName;
+
+			var queryContext = new QueryContext {ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "")};
 
 			var metricMapper = new MetricMapper(propertyInfo);
 
-			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
+			metricMapper.AddMetric(queryContext, fake);
 
-			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
-			var condition = componentData.Metrics[metricName];
+			var metricKey = "Fake/" + propertyName;
+			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
+			var condition = componentData.Metrics[metricKey];
 			Assert.That(condition, Is.EqualTo(value), "Metric not mapped correctly");
 		}
 
@@ -124,15 +128,18 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var fake = new FakeQueryType {Decimal = 12.3m};
 
 			var componentData = new ComponentData();
-			const string metricName = "Decimal";
 
-			var mapper = MetricMapper.TryCreate(fake.GetType().GetProperty(metricName));
+			var queryContext = new QueryContext {ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "")};
+
+			var mapper = MetricMapper.TryCreate(fake.GetType().GetProperty("Decimal"));
 			Assert.That(mapper, Is.Not.Null, "Mapping Decimal failed");
 
-			mapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
-			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
+			mapper.AddMetric(queryContext, fake);
 
-			var condition = componentData.Metrics[metricName];
+			const string metricKey = "Fake/Decimal";
+			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
+
+			var condition = componentData.Metrics[metricKey];
 			Assert.That(condition, Is.EqualTo(fake.Decimal), "Metric not mapped correctly");
 		}
 
@@ -148,15 +155,18 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			propertyInfo.SetValue(fake, value, null);
 
 			var componentData = new ComponentData();
-			var metricName = propertyName;
+
+			var queryContext = new QueryContext { ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "") };
 
 			var mapper = MetricMapper.TryCreate(propertyInfo);
 			Assert.That(mapper, Is.Not.Null, "Mapping {0} failed", propertyInfo.PropertyType.Name);
 
-			mapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
-			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
+			mapper.AddMetric(queryContext, fake);
 
-			var condition = componentData.Metrics[metricName];
+			var metricKey = "Fake/" + propertyName;
+			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
+
+			var condition = componentData.Metrics[metricKey];
 			Assert.That(condition, Is.EqualTo(value), "Metric not mapped correctly");
 		}
 	}

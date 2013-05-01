@@ -17,6 +17,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		private readonly IDapperWrapper _dapperWrapper;
 		private readonly MethodInfo _genericMethod;
 		private readonly MetricMapper[] _metricMappers;
+		private string _metricPattern;
 
 		internal SqlMonitorQuery(Type queryType, QueryAttribute attribute, IDapperWrapper dapperWrapper, string commandText = null)
 		{
@@ -36,7 +37,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		public string QueryName { get; private set; }
-		public string MetricPattern { get; set; }
+
+		public string MetricPattern
+		{
+			get { return _metricPattern ?? string.Format("Custom/{0}", ResultTypeName); }
+			set { _metricPattern = value; }
+		}
+
 		public string ResultTypeName { get; private set; }
 		public string ResourceName { get; private set; }
 		public string CommandText { get; private set; }

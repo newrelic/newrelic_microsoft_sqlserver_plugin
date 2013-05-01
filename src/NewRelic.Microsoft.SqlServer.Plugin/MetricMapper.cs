@@ -71,23 +71,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		public void AddMetric(QueryContext queryContext, object result)
 		{
-			_metricSetter(queryContext, this, result);
+			var metricName = queryContext.FormatMetricKey(result, MetricName);
+			_metricSetter(queryContext, metricName, _propertyInfo, result);
 		}
 
-		private static void AddIntMetric(QueryContext queryContext, MetricMapper mapper, object result)
+		private static void AddIntMetric(QueryContext queryContext, string metricName, PropertyInfo propertyInfo, object result)
 		{
-			queryContext.ComponentData.AddMetric(mapper.MetricName, (int) mapper._propertyInfo.GetValue(result, null));
+			queryContext.AddMetric(metricName, (int) propertyInfo.GetValue(result, null));
 		}
 
-		private static void ConvertToIntMetric(QueryContext queryContext, MetricMapper mapper, object result)
+		private static void ConvertToIntMetric(QueryContext queryContext, string metricName, PropertyInfo propertyInfo, object result)
 		{
-			var value = Convert.ToInt32(mapper._propertyInfo.GetValue(result, null));
-			queryContext.ComponentData.AddMetric(mapper.MetricName, value);
+			var value = Convert.ToInt32(propertyInfo.GetValue(result, null));
+			queryContext.AddMetric(metricName, value);
 		}
 
-		private static void AddDecimalMetric(QueryContext queryContext, MetricMapper mapper, object result)
+		private static void AddDecimalMetric(QueryContext queryContext, string metricName, PropertyInfo propertyInfo, object result)
 		{
-			queryContext.ComponentData.AddMetric(mapper.MetricName, (decimal) mapper._propertyInfo.GetValue(result, null));
+			queryContext.AddMetric(metricName, (decimal) propertyInfo.GetValue(result, null));
 		}
 
 		public static MetricMapper TryCreate(PropertyInfo propertyInfo)
@@ -100,6 +101,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return setter != null ? new MetricMapper(propertyInfo, setter, metricName) : null;
 		}
 
-		private delegate void MapAction(QueryContext queryContext, MetricMapper metricMapper, object result);
+		private delegate void MapAction(QueryContext queryContext, string metricName, PropertyInfo propertyInfo, object result);
 	}
 }

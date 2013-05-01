@@ -4,6 +4,7 @@ using NSubstitute;
 using NUnit.Framework;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Platform.Binding.DotNET;
+using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -50,12 +51,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				            }
 			            };
 
-			var sqlMonitorQuery = new SqlMonitorQuery(typeof (FakeQueryType), new QueryAttribute(null, null), Substitute.For<IDapperWrapper>(), "");
+			var sqlMonitorQuery = new SqlMonitorQuery(typeof(FakeQueryType), new QueryAttribute("foo.sql", "Fake/"), Substitute.For<IDapperWrapper>(), "");
 
 			var componentData = new ComponentData();
-			sqlMonitorQuery.AddMetrics(new QueryContext {ComponentData = componentData, Query = sqlMonitorQuery, Results = fakes});
+			sqlMonitorQuery.AddMetrics(new QueryContext {ComponentData = componentData, Query = sqlMonitorQuery, Results = fakes,});
 
-			var expected = new[] {"Long", "Integer", "Short", "Decimal", "Byte"};
+			var expected = new[] { "Fake/Long", "Fake/Integer", "Fake/Short", "Fake/Decimal", "Fake/Byte" };
 			var actual = componentData.Metrics.Keys.ToArray();
 			Assert.That(actual, Is.EquivalentTo(expected), "Properties discovered and mapped wrong");
 		}

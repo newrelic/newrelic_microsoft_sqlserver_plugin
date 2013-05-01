@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.ServiceProcess;
 using CommandLine;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using log4net;
 using log4net.Config;
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -81,7 +83,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         public static ILog SetUpLogConfig()
         {
             const string log4NetConfig = "log4net.config";
-            XmlConfigurator.ConfigureAndWatch(new FileInfo(log4NetConfig));
+	        var assemblyPath = Assembly.GetExecutingAssembly().GetLocalPath();
+	        var configPath = Path.Combine(assemblyPath, log4NetConfig);
+			XmlConfigurator.ConfigureAndWatch(new FileInfo(configPath));
             return LogManager.GetLogger(Constants.SqlMonitorLogger);
 
         }
@@ -106,7 +110,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             do
             {
                 Console.Out.WriteLine("Press Q to quit...");
-                ConsoleKeyInfo consoleKeyInfo = Console.ReadKey();
+                ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(true);
                 Console.WriteLine();
                 key = consoleKeyInfo.KeyChar;
             } while (key != 'q' && key != 'Q');
