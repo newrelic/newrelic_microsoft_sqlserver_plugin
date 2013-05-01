@@ -9,7 +9,6 @@ using NewRelic.Microsoft.SqlServer.Plugin.Communication;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
-using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Binding.DotNET;
 using log4net;
 
@@ -87,18 +86,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         {
             try
             {
-                Task[] tasks = _settings.SqlServers
+				var tasks = _settings.SqlServers
                                         .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server, _log))
                                                               .Catch(e => _log.Debug(e))
-                                                              .ContinueWith(t => t.Result
-                                                                                  .SelectMany(ctx => ctx.Results
-                                                                                                        .Select(r =>
-                                                                                                        {
-                                                                                                            var componentData = new ComponentData(server.Name, Constants.ComponentGuid, 1);
-                                                                                                            r.AddMetrics(componentData);
-                                                                                                            return componentData;
-                                                                                                        })
-                                                                                     ).ToArray())
+				                                           .ContinueWith(t => RecordMetrics(server, t.Result))
                                                               .Catch(e => _log.Error(e))
                                                               .ContinueWith(t => SendComponentDataToCollector(t.Result)))
                                         .ToArray();
@@ -108,6 +99,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             {
                 _log.Error(e);
             }
+		}
+
+		private static ComponentData[] RecordMetrics(SqlServerToMonitor server, IEnumerable<QueryContext> queryContexts)
+		{
+			return queryContexts
+				.SelectMany(ctx => ctx.Results
+				                      .Select(r =>
+				                              {
+					                              ctx.ComponentData = new ComponentData(server.Name, Constants.ComponentGuid, 1);
+					                              ctx.Query.AddMetrics(ctx);
+					                              return ctx.ComponentData;
+				                              }))
+				.ToArray();
         }
 
         private static IEnumerable<QueryContext> QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server, ILog log)
@@ -127,8 +131,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 foreach (SqlMonitorQuery query in queries)
                 {
                     log.DebugFormat("Executing {0}", query.ResourceName);
-                    IQueryResult[] results = query.Invoke(conn).ToArray();
-                    foreach (IQueryResult result in results)
+					var results = query.Query(conn).ToArray();
+					foreach (var result in results)
                     {
                         log.Debug(result.ToString());
                     }
@@ -187,11 +191,4 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             }
         }
 	}
-
-	public class QueryContext
-		{
-			public SqlMonitorQuery Query { get; set; }
-			public IEnumerable<IQueryResult> Results { get; set; }
-		public ComponentData ComponentData { get; set; }
-    }
 }

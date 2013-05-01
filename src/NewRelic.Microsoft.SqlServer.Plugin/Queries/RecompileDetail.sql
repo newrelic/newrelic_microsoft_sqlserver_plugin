@@ -2,7 +2,7 @@
 -- Returns use count without a recompile for each object
 
 SELECT
-	DB_NAME(st.dbid)	AS DBName,
+	DB_NAME(st.dbid)	AS DatabaseName,
 	cp.bucketid			AS Bucketid,
 	cp.usecounts		AS UseCounts,
 	cp.size_in_bytes	AS SizeInBytes,

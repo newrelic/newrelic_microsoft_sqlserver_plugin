@@ -32,8 +32,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		internal IEnumerable<SqlMonitorQuery> PrepareQueries(Type[] types)
 		{
+<<<<<<< HEAD
+			// Search for types with at least one attribute that have a SqlMonitorQueryAttribute
+			return types.Where(t => !_ignoreTypes.Contains(t)).SelectMany(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Where(a => a.Enabled).Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
+=======
 			// Search for types with at least one attribute that have a QueryAttribute
-			return types.Where(t => !_ignoreTypes.Contains(t)).SelectMany(t => t.GetCustomAttributes<QueryAttribute>().Where(a => a.Enabled).Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
+			return types.SelectMany(t => t.GetCustomAttributes<QueryAttribute>().Where(a => a.Enabled).Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
+>>>>>>> Added MetricPattern to allow a query to determine how the metric looks. This is crucial for queries with > 1 query per type.
 		}
 	}
 }

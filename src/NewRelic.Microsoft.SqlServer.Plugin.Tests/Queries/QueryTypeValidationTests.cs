@@ -15,16 +15,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Queries
 			get
 			{
 				var assembly = typeof (QueryLocator).Assembly;
-				var typesWithAttribute = assembly.GetTypes().Where(t => t.GetCustomAttributes(typeof (SqlMonitorQueryAttribute), false).Any());
+				var typesWithAttribute = assembly.GetTypes().Where(t => t.GetCustomAttributes(typeof (QueryAttribute), false).Any());
 
-				return typesWithAttribute.Select(t => new {Type = t, Attribute = t.GetCustomAttributes(typeof (SqlMonitorQueryAttribute), false).FirstOrDefault() as SqlMonitorQueryAttribute})
+				return typesWithAttribute.Select(t => new {Type = t, Attribute = t.GetCustomAttributes(typeof (QueryAttribute), false).FirstOrDefault() as QueryAttribute})
 				                         .Select(t => new TestCaseData(t.Type, t.Attribute).SetName(t.Type.Name));
 			}
 		}
 
 		[Test]
 		[TestCaseSource("QueryTypes")]
-		public void Assert_query_type_has_attribute_with_valid_resource_name(Type queryType, SqlMonitorQueryAttribute attribute)
+		public void Assert_query_type_has_attribute_with_valid_resource_name(Type queryType, QueryAttribute attribute)
 		{
 			var sql = queryType.Assembly.SearchForStringResource(attribute.ResourceName);
 			Assert.That(sql, Is.Not.Null);

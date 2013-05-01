@@ -1,4 +1,6 @@
+using System;
 using NUnit.Framework;
+using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
@@ -6,39 +8,47 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	[TestFixture]
 	public class MetricMapperTests
 	{
-		private class FakeQueryType
+		protected class FakeQueryType
 		{
 			public long Long { get; set; }
 			public int Integer { get; set; }
 			public short Short { get; set; }
 			public byte Byte { get; set; }
 			public decimal Decimal { get; set; }
+			public string Comment { get; set; }
+			public DateTime EventTime { get; set; }
 		}
 
-		[Test]
-		public void Assert_byte_is_mapped()
+		protected class MarkedUpFakeQueryType
 		{
-			var fake = new FakeQueryType {Byte = 96,};
-			var componentData = new ComponentData("", "", 0);
-			const string metricName = "Foo";
+			public string IgnoredCompletely { get; set; }
 
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Byte")) {MetricName = metricName,};
+			[Metric(Ignore = true)]
+			public DateTime DoublyIgnored { get; set; }
 
-			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
+			[Metric(Ignore = false)]
+			public object IgnoreAnyways { get; set; }
 
-			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
-			var condition = componentData.Metrics[metricName];
-			Assert.That(condition, Is.EqualTo(fake.Byte), "Metric not mapped correctly");
+			[Metric(MetricName = "FancyName")]
+			public int MetricNameOverridden { get; set; }
+
+			[Metric(MetricName = "SuperImportant", Ignore = true)]
+			public int NiceNameButIgnored { get; set; }
+
+			[Metric(Ignore = true)]
+			public int SimplyIgnored { get; set; }
+
+			public long ConventionalProperty { get; set; }
 		}
 
 		[Test]
 		public void Assert_decimal_is_mapped()
 		{
 			var fake = new FakeQueryType {Decimal = 12.3m,};
-			var componentData = new ComponentData("", "", 0);
-			const string metricName = "Foo";
+			var componentData = new ComponentData();
+			const string metricName = "Decimal";
 
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Decimal")) {MetricName = metricName,};
+			var metricMapper = new MetricMapper(fake.GetType().GetProperty(metricName));
 
 			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
 
@@ -48,51 +58,106 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		[Test]
-		public void Assert_int_is_mapped()
+		[TestCase("Comment", TestName = "string")]
+		[TestCase("EventTime", TestName = "DateTime")]
+		public void Assert_invalid_type_throws(string propertyName)
 		{
-			var fake = new FakeQueryType {Integer = 42,};
-			var componentData = new ComponentData("", "", 0);
-			const string metricName = "Foo";
+			var propertyInfo = typeof (FakeQueryType).GetProperty(propertyName);
+			Assume.That(propertyInfo, Is.Not.Null, "Expected a property name '{0}' on {1}", propertyName, typeof (FakeQueryType).Name);
 
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Integer")) {MetricName = metricName,};
-
-			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
-
-			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
-			var condition = componentData.Metrics[metricName];
-			Assert.That(condition, Is.EqualTo(fake.Integer), "Metric not mapped correctly");
+			Assert.Throws<ArgumentException>(() => new MetricMapper(propertyInfo));
 		}
 
 		[Test]
-		public void Assert_long_is_mapped()
+		[TestCase("Byte", (byte) 27, TestName = "Byte")]
+		[TestCase("Short", (short) 32045, TestName = "Short")]
+		[TestCase("Integer", 42, TestName = "Integer")]
+		[TestCase("Long", 555L, TestName = "Long")]
+		public void Assert_numeric_types_are_mapped(string propertyName, object value)
 		{
-			var fake = new FakeQueryType {Long = 27,};
-			var componentData = new ComponentData("", "", 0);
-			const string metricName = "Foo";
+			var fake = new FakeQueryType();
+			var propertyInfo = fake.GetType().GetProperty(propertyName);
+			propertyInfo.SetValue(fake, value, null);
 
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Long")) {MetricName = metricName,};
+			var componentData = new ComponentData();
+			var metricName = propertyName;
+
+			var metricMapper = new MetricMapper(propertyInfo);
 
 			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
 
 			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
 			var condition = componentData.Metrics[metricName];
-			Assert.That(condition, Is.EqualTo(fake.Long), "Metric not mapped correctly");
+			Assert.That(condition, Is.EqualTo(value), "Metric not mapped correctly");
+		}
+
+		[Test(Description = "Returns the MetricName when the map is created. Otherwise, null.")]
+		[TestCase("IgnoredCompletely", Result = null, TestName = "Assert non-numeric is still ignored without an attribute")]
+		[TestCase("ConventionalProperty", Result = "ConventionalProperty", TestName = "Assert numeric is still discovered without an attribute")]
+		[TestCase("DoublyIgnored", Result = null, TestName = "Assert non-numeric is ignored with an attribute where Ignore == true")]
+		[TestCase("IgnoreAnyways", Result = null, TestName = "Assert non-numeric is ignored despite an attribute where Ignore == false")]
+		[TestCase("MetricNameOverridden", Result = "FancyName", TestName = "Assert numeric with attribute has MetricName overriden")]
+		[TestCase("NiceNameButIgnored", Result = null, TestName = "Assert numeric is ignored with attribute where MetricName is set and Ignore == true")]
+		[TestCase("SimplyIgnored", Result = null, TestName = "Assert numeric is ignored with attribute where Ignore == true")]
+		public string Assert_that_metric_attribute_is_respected(string propertyName)
+		{
+			var fakeType = typeof (MarkedUpFakeQueryType);
+			var metricMapper = MetricMapper.TryCreate(fakeType.GetProperty(propertyName));
+			return metricMapper != null ? metricMapper.MetricName : null;
 		}
 
 		[Test]
-		public void Assert_short_is_mapped()
+		[TestCase("Comment", TestName = "string")]
+		[TestCase("EventTime", TestName = "DateTime")]
+		public void Assert_try_create_mapper_gracefully_refuses_invalid_types(string propertyName)
 		{
-			var fake = new FakeQueryType {Short = 32045,};
-			var componentData = new ComponentData("", "", 0);
-			const string metricName = "Foo";
+			var propertyInfo = typeof (FakeQueryType).GetProperty(propertyName);
+			Assume.That(propertyInfo, Is.Not.Null, "Expected a property name '{0}' on {1}", propertyName, typeof (FakeQueryType).Name);
 
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Short")) {MetricName = metricName,};
+			var mapper = MetricMapper.TryCreate(propertyInfo);
+			Assert.That(mapper, Is.Null, "Should not have mapped {0}", propertyName);
+		}
 
-			metricMapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
+		[Test]
+		public void Assert_try_create_mapper_handles_decimal_correctly()
+		{
+			var fake = new FakeQueryType {Decimal = 12.3m};
 
+			var componentData = new ComponentData();
+			const string metricName = "Decimal";
+
+			var mapper = MetricMapper.TryCreate(fake.GetType().GetProperty(metricName));
+			Assert.That(mapper, Is.Not.Null, "Mapping Decimal failed");
+
+			mapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
 			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
+
 			var condition = componentData.Metrics[metricName];
-			Assert.That(condition, Is.EqualTo(fake.Short), "Metric not mapped correctly");
+			Assert.That(condition, Is.EqualTo(fake.Decimal), "Metric not mapped correctly");
+		}
+
+		[Test]
+		[TestCase("Byte", (byte) 27, TestName = "Byte")]
+		[TestCase("Short", (short) 32045, TestName = "Short")]
+		[TestCase("Integer", 42, TestName = "Integer")]
+		[TestCase("Long", 555L, TestName = "Long")]
+		public void Assert_try_create_mapper_handles_numerics_correctly(string propertyName, object value)
+		{
+			var fake = new FakeQueryType();
+			var propertyInfo = fake.GetType().GetProperty(propertyName);
+			propertyInfo.SetValue(fake, value, null);
+
+			var componentData = new ComponentData();
+			var metricName = propertyName;
+
+			var mapper = MetricMapper.TryCreate(propertyInfo);
+			Assert.That(mapper, Is.Not.Null, "Mapping {0} failed", propertyInfo.PropertyType.Name);
+
+			mapper.AddMetric(new QueryContext {ComponentData = componentData,}, fake);
+			Assert.That(componentData.Metrics.ContainsKey(metricName), "Expected metric with correct name to be added");
+
+			var condition = componentData.Metrics[metricName];
+			Assert.That(condition, Is.EqualTo(value), "Metric not mapped correctly");
 		}
 	}
 }

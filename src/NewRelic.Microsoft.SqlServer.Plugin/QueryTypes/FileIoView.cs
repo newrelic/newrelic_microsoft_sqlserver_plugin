@@ -1,23 +1,14 @@
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
-using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlMonitorQuery("FileIOView.sql", QueryName = "File I/O", Enabled = true)]
-	internal class FileIoView : IQueryResult
+	[Query("FileIOView.sql", "Custom/FileIO/{DatabaseName}", QueryName = "File I/O", Enabled = true)]
+	internal class FileIoView : IDatabaseMetric
 	{
-		public string DatabaseName { get; set; }
 		public long BytesRead { get; set; }
 		public long BytesWritten { get; set; }
 		public long SizeInBytes { get; set; }
-
-		public void AddMetrics(ComponentData componentData)
-		{
-			var metricPerDatabase = string.Format("FileIO/{0}/", DatabaseName);
-			componentData.AddMetric(metricPerDatabase + "BytesRead", (int) BytesRead);
-			componentData.AddMetric(metricPerDatabase + "BytesWritten", (int) BytesWritten);
-			componentData.AddMetric(metricPerDatabase + "SizeInBytes", (int) SizeInBytes);
-		}
+		public string DatabaseName { get; set; }
 
 		public override string ToString()
 		{

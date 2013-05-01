@@ -3,7 +3,7 @@
 -- Returns ratio of the 2
 
 DECLARE @Details TABLE (
-			DBName varchar(200) NULL,
+			DatabaseName varchar(200) NULL,
 			BucketID bigint NULL,
 			UseCounts bigint NULL,
 			SizeInBytes bigint NULL,
@@ -12,7 +12,7 @@ DECLARE @Details TABLE (
 
 INSERT INTO @Details
 	SELECT
-		DB_NAME(st.dbid)	AS DBName,
+		DB_NAME(st.dbid)	AS DatabaseName,
 		cp.BucketID			AS BucketID,
 		cp.UseCounts		AS UseCounts,
 		cp.size_in_bytes	AS SizeInBytes,
@@ -23,23 +23,23 @@ INSERT INTO @Details
 
 WITH SumsByDatabase AS (
 		SELECT
-			d.DBName,
+			d.DatabaseName,
 			(
 				SELECT
 					COUNT(*)
 				FROM @Details d2
-				WHERE d2.UseCounts = 1 AND d2.DBName = d.DBName)
+				WHERE d2.UseCounts = 1 AND d2.DatabaseName = d.DatabaseName)
 			AS SingleUseObjects,
 			(
 				SELECT
 					COUNT(*)
 				FROM @Details d2
-				WHERE d2.UseCounts > 1 AND d2.DBName = d.DBName)
+				WHERE d2.UseCounts > 1 AND d2.DatabaseName = d.DatabaseName)
 			AS MultipleUseObjects
 		FROM @Details d
-		GROUP BY d.DBName)
+		GROUP BY d.DatabaseName)
 SELECT
-	DBName,
+	DatabaseName,
 	SingleUseObjects,
 	MultipleUseObjects,
 	CASE

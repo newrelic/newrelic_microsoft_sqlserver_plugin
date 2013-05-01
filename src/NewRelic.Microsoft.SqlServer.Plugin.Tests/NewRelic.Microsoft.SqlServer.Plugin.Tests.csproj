@@ -55,7 +55,9 @@
     <Compile Include="MetricMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\QueryTypeValidationTests.cs" />
+    <Compile Include="QueryContextTests.cs" />
     <Compile Include="QueryLocatorTests.cs" />
+    <Compile Include="SqlMonitoryQueryTests.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>

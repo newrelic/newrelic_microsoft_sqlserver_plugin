@@ -1,45 +1,34 @@
-using System;
 using System.Linq;
 using System.Reflection;
 using NSubstitute;
 using NUnit.Framework;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
-using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
-using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     [TestFixture]
     public class QueryLocatorTests
     {
-        [SqlMonitorQuery("NewRelic.Microsoft.SqlServer.Plugin.Core.ExampleEmbeddedFile.sql")]
-        private class QueryTypeWithExactResourceName : FakeQueryResultBase {}
+		[Query("NewRelic.Microsoft.SqlServer.Plugin.Core.ExampleEmbeddedFile.sql", "")]
+		private class QueryTypeWithExactResourceName {}
 
-        [SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
-        private class QueryTypeWithPartialResourceName : FakeQueryResultBase {}
+		[Query("Queries.ExampleEmbeddedFile.sql", "")]
+		private class QueryTypeWithPartialResourceName {}
 
-        [SqlMonitorQuery("AnotherQuery.sql")]
-        private class QueryTypeWithJustFileName : FakeQueryResultBase {}
+		[Query("AnotherQuery.sql", "")]
+		private class QueryTypeWithJustFileName {}
 
-        [SqlMonitorQuery("AnotherQuery.sql")]
-        [SqlMonitorQuery("Queries.ExampleEmbeddedFile.sql")]
-        private class QueryTypeWithTwoQueries : FakeQueryResultBase {}
+		[Query("AnotherQuery.sql", "")]
+		[Query("Queries.ExampleEmbeddedFile.sql", "")]
+		private class QueryTypeWithTwoQueries {}
 
-        [SqlMonitorQuery("Foo.sql", Enabled = false)]
-        private class QueryTypeDisabled : FakeQueryResultBase {}
+		[Query("Foo.sql", "", Enabled = false)]
+		private class QueryTypeDisabled {}
 
-        [SqlMonitorQuery("Foo.sql", Enabled = false)]
-        [SqlMonitorQuery("AnotherQuery.sql", QueryName = "This is enabled")]
-        private class QueryTypeSomeEnabled : FakeQueryResultBase {}
-
-        [SqlMonitorQuery("AnotherQuery.sql", QueryName = "This is enabled")]
-        private class QueryThatIsNotIQueryResult {}
-
-        private class FakeQueryResultBase : IQueryResult
-        {
-            public void AddMetrics(ComponentData componentData) {}
-        }
+		[Query("Foo.sql", "", Enabled = false)]
+		[Query("AnotherQuery.sql", "", QueryName = "This is enabled")]
+		private class QueryTypeSomeEnabled {}
 
 
         [Test]
@@ -50,7 +39,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             var queries = new QueryLocator(dapperWrapper).PrepareQueries();
             foreach (var query in queries)
             {
-                var results = query.Invoke(null);
+				var results = query.Query(null);
                 Assert.That(results, Is.EqualTo(new object[0]));
             }
         }
@@ -66,16 +55,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             var queryNames = queries.Select(q => q.ResourceName).ToArray();
             var expected = new[] {"AnotherQuery.sql", "Queries.ExampleEmbeddedFile.sql"};
             Assert.That(queryNames, Is.EquivalentTo(expected));
-        }
 
-        [Test]
-        [ExpectedException(typeof (ArgumentException))]
-        public void Assert_queries_not_IQueryResult_throws_exception()
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var queryLocator = new QueryLocator(null, assembly);
 
-            queryLocator.PrepareQueries(new[] {typeof (QueryThatIsNotIQueryResult)});
         }
 
         [Test]
@@ -122,8 +103,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             var types = assembly.GetTypes();
             Assume.That(types, Is.Not.Empty, "Expected at least one type in the test assembly");
 
-            var typesWithAttribute = types.Where(t => t.GetCustomAttributes<SqlMonitorQueryAttribute>().Any());
-            Assert.That(typesWithAttribute, Is.Not.Empty, "Expected at least one QueryType using the " + typeof (SqlMonitorQueryAttribute).Name);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttributes<QueryAttribute>().Any());
+			Assert.That(typesWithAttribute, Is.Not.Empty, "Expected at least one QueryType using the " + typeof (QueryAttribute).Name);
         }
 
         [Test]
@@ -152,7 +133,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         [Test]
         public void Assert_that_queries_are_located()
         {
-            var queries = new QueryLocator(new DapperWrapper(), Assembly.GetExecutingAssembly(), new[] {typeof (QueryThatIsNotIQueryResult)}).PrepareQueries();
+			var queries = new QueryLocator(new DapperWrapper(), Assembly.GetExecutingAssembly()).PrepareQueries();
             Assert.That(queries, Is.Not.Empty, "Expected some queries to be returned");
         }
     }

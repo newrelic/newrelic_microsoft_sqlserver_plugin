@@ -2,10 +2,10 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlMonitorQuery("RecompileDetail.sql", QueryName = "Recompile Detail", Enabled = false)]
-	public class RecompileDetail
+	[Query("RecompileDetail.sql", "Custom/RecompileDetail/{DatabaseName}", QueryName = "Recompile Detail", Enabled = false)]
+	public class RecompileDetail : IDatabaseMetric
 	{
-		public string DBName { get; set; }
+		public string DatabaseName { get; set; }
 		public int BucketID { get; set; }
 		public int UseCounts { get; set; }
 		public int SizeInBytes { get; set; }
