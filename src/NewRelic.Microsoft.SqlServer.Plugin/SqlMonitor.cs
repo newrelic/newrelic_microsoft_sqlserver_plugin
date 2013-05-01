@@ -32,6 +32,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			_syncRoot = new object();
 			_log = log ?? LogManager.GetLogger("SqlMonitor");
 
+			// TODO Get AssemblyInfoVersion
 			_agentData = new AgentData {Host = Environment.MachineName, Pid = Process.GetCurrentProcess().Id, Version = "1.0.0",};
 		}
 
@@ -89,14 +90,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				var tasks = _settings.SqlServers
 				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server))
 				                                           .Catch(e => Console.Out.WriteLine(e))
-				                                           .ContinueWith(t => t.Result.SelectMany(ctx => ctx.Results).ToArray())
-				                                           .ContinueWith(t => t.Result.Select(r =>
-				                                                                              {
-					                                                                              var componentData = new ComponentData(server.Name, Constants.ComponentGuid, _settings.PollIntervalSeconds);
-					                                                                              r.AddMetrics(componentData);
-					                                                                              return componentData;
-				                                                                              })
-				                                                               .ToArray())
+				                                           .ContinueWith(t => t.Result
+				                                                               .SelectMany(ctx => ctx.Results
+				                                                                                     .Select(r =>
+				                                                                                             {
+					                                                                                             var componentData = new ComponentData(server.Name, Constants.ComponentGuid, 1);
+					                                                                                             r.AddMetrics(componentData);
+					                                                                                             return componentData;
+				                                                                                             })
+																									 ).ToArray())
 				                                           .Catch(e => Console.Out.WriteLine(e))
 				                                           .ContinueWith(t => SendComponentDataToCollector(t.Result)))
 				                     .ToArray();

@@ -2,7 +2,7 @@
 -- Detail: Returns 1 line for each minute in range. 
 -- Summary: Returns Average of range. 
 
-DECLARE	@StartTime datetime = DATEADD(MINUTE, -10, GETDATE()),
+DECLARE	@StartTime datetime = DATEADD(MINUTE, -2, GETDATE()),
 		@EndTime datetime = GETDATE()
 
 
@@ -49,7 +49,7 @@ INSERT INTO @Results (RecordID
 
 
 --Return details
-SELECT
+SELECT TOP 1
 	RecordID,
 	EventTime,
 	SQLProcessUtilization,

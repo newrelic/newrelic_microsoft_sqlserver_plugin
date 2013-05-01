@@ -1,8 +1,7 @@
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using NewRelic.Microsoft.SqlServer.Plugin.Core;
-using System.Linq;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration

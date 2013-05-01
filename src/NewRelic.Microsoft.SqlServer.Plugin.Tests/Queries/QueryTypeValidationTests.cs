@@ -26,9 +26,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Queries
 		[TestCaseSource("QueryTypes")]
 		public void Assert_query_type_has_attribute_with_valid_resource_name(Type queryType, SqlMonitorQueryAttribute attribute)
 		{
-			var rootNamespace = typeof (Program).Namespace;
-			var resourceName = rootNamespace + "." + attribute.ResourceName;
-			var sql = queryType.Assembly.GetStringResource(resourceName);
+			var sql = queryType.Assembly.SearchForStringResource(attribute.ResourceName);
 			Assert.That(sql, Is.Not.Null);
 		}
 	}

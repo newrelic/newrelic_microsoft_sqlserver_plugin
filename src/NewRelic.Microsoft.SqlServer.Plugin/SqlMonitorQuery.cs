@@ -35,7 +35,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		public string QueryName { get; private set; }
-		public string ComponentGuid { get; private set; }
 		public string ResultTypeName { get; private set; }
 		public string ResourceName { get; private set; }
 		public string CommandText { get; private set; }
