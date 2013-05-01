@@ -186,11 +186,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 }
             }
         }
+	}
 
-        private class QueryContext
-        {
-            public SqlMonitorQuery Query { get; set; }
-            public IEnumerable<IQueryResult> Results { get; set; }
-        }
+	public class QueryContext
+		{
+			public SqlMonitorQuery Query { get; set; }
+			public IEnumerable<IQueryResult> Results { get; set; }
+		public ComponentData ComponentData { get; set; }
     }
 }

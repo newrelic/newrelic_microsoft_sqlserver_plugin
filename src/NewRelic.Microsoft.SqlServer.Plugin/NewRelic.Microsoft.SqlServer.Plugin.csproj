@@ -78,6 +78,7 @@
     <Compile Include="Core\SqlMonitorQueryAttribute.cs" />
     <Compile Include="Core\Dapper.cs" />
     <Compile Include="Core\InstallController.cs" />
+    <Compile Include="MetricMapper.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
