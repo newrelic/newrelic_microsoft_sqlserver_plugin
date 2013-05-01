@@ -1,4 +1,5 @@
 using System.Linq;
+using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
@@ -15,6 +16,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public int PollIntervalSeconds { get; set; }
 		public SqlServerToMonitor[] SqlServers { get; private set; }
 		public bool CollectOnly { get; set; }
+
 
 		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
 		{

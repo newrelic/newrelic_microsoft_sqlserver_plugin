@@ -4,26 +4,34 @@ using System.Configuration.Install;
 using System.Linq;
 using System.ServiceProcess;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
-	internal static class InstallController
+	internal class InstallController
 	{
-		public static void Install()
+	    private readonly ILog _log;
+
+	    public InstallController(ILog log)
+        {
+            _log = log;
+        }
+
+	    public void Install()
 		{
 			Install(false);
 		}
 
-		public static void Uninstall()
+		public void Uninstall()
 		{
 			Install(true);
 		}
 
-		private static void Install(bool uninstall)
+		private void Install(bool uninstall)
 		{
 			try
 			{
-				Console.WriteLine(uninstall ? "Uninstalling" : "Installing");
+                _log.Info(uninstall ? "Uninstalling" : "Installing");
 				using (var inst = new AssemblyInstaller(typeof (Program).Assembly, null))
 				{
 					IDictionary state = new Hashtable();
@@ -49,8 +57,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 						}
 						catch (Exception ex)
 						{
-							Console.Error.WriteLine("Error Rolling back");
-							Console.Error.WriteLine(ex.Message);
+                            _log.Error("Error Rolling back");
+							_log.Error(ex.Message);
 						}
 						throw;
 					}
@@ -58,61 +66,61 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 			}
 			catch (Exception ex)
 			{
-				Console.Error.WriteLine(ex.Message);
+                _log.Error(ex.Message);
 			}
 		}
 
-		public static void StartService()
+		public void StartService()
 		{
 			AdjustService(false);
 		}
 
-		public static void StopService()
+		public void StopService()
 		{
 			AdjustService(true);
 		}
 
-		private static void AdjustService(bool stop)
+		private void AdjustService(bool stop)
 		{
 			var controller = GetServiceController();
 
 			if (controller == null)
 			{
-				Console.Out.WriteLine("Service not found");
+				_log.Info("Service not found");
 				return;
 			}
 
-			Console.Out.WriteLine("Service found");
+            _log.Info("Service found");
 
 			if (stop)
 			{
 				if (controller.Status.Equals(ServiceControllerStatus.Running)
 				    && controller.CanStop)
 				{
-					Console.Out.WriteLine("Service is running. Attempting to stop service");
+                    _log.Info("Service is running. Attempting to stop service");
 					controller.Stop();
-					Console.Out.WriteLine("Service successfully stopped");
+                    _log.Info("Service successfully stopped");
 				}
 				else
 				{
-					Console.Out.WriteLine("Service is not running; skipping attempt to stop service");					
+                    _log.Info("Service is not running; skipping attempt to stop service");					
 				}
 			}
 			else
 			{
-				Console.Out.WriteLine("Attempting to start service");
+                _log.Info("Attempting to start service");
 				controller.Start();
-				Console.Out.WriteLine("Service successfully started");
+                _log.Info("Service successfully started");
 			}
 		}
 
-		private static ServiceController GetServiceController()
+		private ServiceController GetServiceController()
 		{
-			Console.Out.WriteLine("Checking if service {0} exists", ServiceConstants.ServiceName);
+            _log.InfoFormat("Checking if service {0} exists", ServiceConstants.ServiceName);
 			return ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == ServiceConstants.ServiceName);
 		}
 
-		public static void InstallOrStart()
+		public void InstallOrStart()
 		{
 			var serviceController = GetServiceController();
 			if (serviceController == null)
