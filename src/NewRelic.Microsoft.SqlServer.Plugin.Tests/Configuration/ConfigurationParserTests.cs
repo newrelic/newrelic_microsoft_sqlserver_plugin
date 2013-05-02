@@ -27,14 +27,28 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             Assert.That(settings.PollIntervalSeconds, Is.EqualTo(45), "PollIntervalSeconds not mapped correctly");
             Assert.That(settings.UseSsl, Is.EqualTo(true), "UseSsl not mapped correctly");
 
+
             var expectedSqlInstances = new[]
                 {
-                    "Local -> Server=.;Database=master;Trusted_Connection=True;",
-                    "Important Server -> Server=192.168.10.123,1234;Database=master;User Id=foo;Password=bar;",
-                };
+                    new
+                        {
+                            Name = "Local",
+                            ConnectionString = "Server=.;Database=master;Trusted_Connection=True;",
+                            IncludedDatabases = new string[0],
+                            ExcludedDatabases = new string[0],
+                        },
+                    new
+                        {
+                            Name = "Important Server",
+                            ConnectionString = "Server=192.168.10.123,1234;Database=master;User Id=foo;Password=bar;",
+                            IncludedDatabases = new[]{"Northwind"},
+                            ExcludedDatabases = Constants.SystemDatabases.Concat(new[]{"foo%", "bar%"}).ToArray(),
+                        },
+                }.Select(i => SqlServerToMonitor.FormatProperties(i.Name, i.ConnectionString, i.IncludedDatabases, i.ExcludedDatabases)).ToArray();
 
-            var actualInstances = settings.SqlServers.Select(s => string.Format("{0} -> {1}", s.Name, s.ConnectionString)).ToArray();
-            Assert.That(actualInstances, Is.EquivalentTo(expectedSqlInstances));
+            var actualInstances = settings.SqlServers.Select(s => s.ToString()).ToArray();
+
+            Assert.That(actualInstances, Is.EquivalentTo(expectedSqlInstances), "SqlServers Found different from expected");
         }
     }
 }

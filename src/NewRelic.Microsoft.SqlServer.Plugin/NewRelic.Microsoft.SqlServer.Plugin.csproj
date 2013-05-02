@@ -61,12 +61,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ConfigurationParser.cs" />
+    <Compile Include="Configuration\DatabaseCollection.cs" />
+    <Compile Include="Configuration\DatabaseElement.cs" />
     <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="Configuration\SqlServerToMonitor.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
-    <Compile Include="Configuration\SqlServerSection.cs" />
+    <Compile Include="Configuration\SqlServerElement.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
     <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
