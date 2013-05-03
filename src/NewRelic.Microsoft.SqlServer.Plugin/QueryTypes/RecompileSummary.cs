@@ -9,5 +9,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public int MultipleUseObjects { get; set; }
 		public decimal SingleUsePercent { get; set; }
 		public string DatabaseName { get; set; }
+
+		public string ParameterizeQuery(string commandText, string[] includeDBs, string[] excludeDBs)
+		{
+			// TODO 
+			return commandText;
+		}
 	}
 }

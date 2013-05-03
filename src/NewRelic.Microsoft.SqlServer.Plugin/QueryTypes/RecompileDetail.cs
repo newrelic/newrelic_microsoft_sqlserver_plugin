@@ -11,5 +11,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public string ObjectType { get; set; }
 		public string Text { get; set; }
 		public string DatabaseName { get; set; }
+
+		public string ParameterizeQuery(string commandText, string[] includeDBs, string[] excludeDBs)
+		{
+			// TODO 
+			return commandText;
+		}
 	}
 }

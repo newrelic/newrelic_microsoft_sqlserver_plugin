@@ -9,7 +9,7 @@
 
 		public static string[] SystemDatabases
 		{
-			get { return new[] {"tempdb", "master", "model", "msdb"}; }
+			get { return new[] {"tempdb", "master", "model", "msdb",}; }
 		}
 	}
 }

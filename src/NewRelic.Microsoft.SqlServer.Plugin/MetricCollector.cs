@@ -82,9 +82,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					try
 					{
 						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
-						results = query.Query(conn).ToArray();
+						results = query.Query(conn, server).ToArray();
 						foreach (var result in results)
 						{
+							// TODO Replace ToString() with something more useful that prints each property in the object
 							_VerboseSqlOutputLogger.Info(result.ToString());
 						}
 						_VerboseSqlOutputLogger.Info("");

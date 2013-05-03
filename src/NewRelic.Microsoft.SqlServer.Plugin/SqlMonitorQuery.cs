@@ -5,8 +5,10 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
+using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -50,13 +52,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public string CommandText { get; private set; }
 
 		/// <summary>
-		/// Queries data from the database and returns the results
+		/// Queries data from the database and returns the results.
 		/// </summary>
-		/// <param name="dbConnection"></param>
-		/// <returns>An enumeration of a the type where the <see cref="QueryAttribute"/> for this query object was found during initialization</returns>
-		public IEnumerable<object> Query(IDbConnection dbConnection)
+		/// <param name="dbConnection">Open connection to the database.</param>
+		/// <param name="server">Settings for the server that is queried.</param>
+		/// <returns>An enumeration of a the type where the <see cref="QueryAttribute"/> for this query object was found during initialization.</returns>
+		public IEnumerable<object> Query(IDbConnection dbConnection, SqlServerToMonitor server)
 		{
-			return ((IEnumerable) _genericMethod.Invoke(this, new object[] {dbConnection})).Cast<object>();
+			return ((IEnumerable) _genericMethod.Invoke(this, new object[] {dbConnection, server,})).Cast<object>();
 		}
 
 		public void AddMetrics(QueryContext context)
@@ -67,10 +70,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <summary>
 		/// Never called directly, rather called via reflection.
 		/// </summary>
-		protected IEnumerable<T> Query<T>(IDbConnection dbConnection)
+		protected IEnumerable<T> Query<T>(IDbConnection dbConnection, SqlServerToMonitor server)
+			where T : class, new()
 		{
+			var commandText = PrepareCommandText<T>(CommandText, server);
 			// Pass the simple Id=1 anonymous object to support Dapper's hashing and caching of queries
-			return _dapperWrapper.Query<T>(dbConnection, CommandText, new {Id = 1});
+			return _dapperWrapper.Query<T>(dbConnection, commandText, new {Id = 1});
+		}
+
+		internal static string PrepareCommandText<T>(string commandText, SqlServerToMonitor server)
+			where T : class, new()
+		{
+			var typeofT = typeof (T);
+			if (!typeof (IDatabaseMetric).IsAssignableFrom(typeofT)) return commandText;
+
+			var metricInstance = (IDatabaseMetric)new T();
+			return metricInstance.ParameterizeQuery(commandText, server.IncludedDatabases, server.ExcludedDatabases);
 		}
 
 		/// <summary>

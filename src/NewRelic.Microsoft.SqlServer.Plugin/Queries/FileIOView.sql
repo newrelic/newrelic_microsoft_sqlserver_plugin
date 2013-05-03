@@ -10,5 +10,6 @@ SELECT
 	SUM(a.num_of_writes) AS NumberOfWrites
 
 FROM sys.dm_io_virtual_file_stats(NULL, NULL) a
+/*{WHERE}*/
 GROUP BY CAST(DB_NAME(a.database_id) AS varchar(150))
 ORDER BY CAST(DB_NAME(a.database_id) AS varchar(150))

@@ -11,9 +11,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public string Flag { get; set; }
 		public string DatabaseName { get; set; }
 
-		public override string ToString()
+		public string ParameterizeQuery(string commandText, string[] includeDBs, string[] excludeDBs)
 		{
-			return string.Format("{0}\t{1}\t{2}\t{3}", DatabaseName, BackupDate, Comment, Flag);
+			// TODO
+			return commandText;
 		}
 	}
 }
