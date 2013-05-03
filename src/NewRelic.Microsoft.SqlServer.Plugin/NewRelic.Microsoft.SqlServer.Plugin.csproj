@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -90,7 +91,6 @@
     <Compile Include="QueryTypes\BackupStatus.cs" />
     <Compile Include="QueryTypes\FileIoView.cs" />
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
-    <Compile Include="QueryTypes\IQueryResult.cs" />
     <Compile Include="QueryTypes\RecompileDetail.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlConnections.cs" />
@@ -101,7 +101,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="QueryTypes\WaitState.cs" />
-    <Compile Include="SqlMonitor.cs" />
+    <Compile Include="MetricCollector.cs" />
     <Compile Include="Core\SqlMonitorService.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -110,6 +110,7 @@
     </Compile>
     <Compile Include="Communication\SqlRequest.cs" />
     <Compile Include="SqlMonitorQuery.cs" />
+    <Compile Include="Core\SqlPoller.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

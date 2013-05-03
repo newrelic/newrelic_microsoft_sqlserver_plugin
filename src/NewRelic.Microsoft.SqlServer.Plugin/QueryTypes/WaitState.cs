@@ -14,12 +14,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public decimal AvgWaitSeconds { get; set; }
 		public decimal AvgResourceSeconds { get; set; }
 		public decimal AvgSignalSeconds { get; set; }
-
-		public override string ToString()
-		{
-			var waitState = string.IsNullOrEmpty(WaitType) ? "(none)" : WaitType;
-			return string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}", waitState, WaitSeconds, ResourceSeconds, SignalSeconds, WaitCount, Percentage, AvgWaitSeconds, AvgResourceSeconds,
-			                     AvgSignalSeconds);
-		}
 	}
 }

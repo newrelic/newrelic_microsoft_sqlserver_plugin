@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 

@@ -54,7 +54,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var sqlMonitorQuery = new SqlMonitorQuery(typeof(FakeQueryType), new QueryAttribute("foo.sql", "Fake/"), Substitute.For<IDapperWrapper>(), "");
 
 			var componentData = new ComponentData();
-			sqlMonitorQuery.AddMetrics(new QueryContext {ComponentData = componentData, Query = sqlMonitorQuery, Results = fakes,});
+			sqlMonitorQuery.AddMetrics(new QueryContext(sqlMonitorQuery) {ComponentData = componentData, Results = fakes,});
 
 			var expected = new[] { "Fake/Long", "Fake/Integer", "Fake/Short", "Fake/Decimal", "Fake/Byte" };
 			var actual = componentData.Metrics.Keys.ToArray();

@@ -1,5 +1,7 @@
 using System;
+
 using NUnit.Framework;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Platform.Binding.DotNET;
 
@@ -47,7 +49,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var fake = new FakeQueryType {Decimal = 12.3m,};
 			var componentData = new ComponentData();
 
-			var queryContext = new QueryContext {ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "")};
+			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var queryContext = new QueryContext(query) {ComponentData = componentData,};
 
 			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Decimal"));
 
@@ -83,7 +86,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			var componentData = new ComponentData();
 
-			var queryContext = new QueryContext {ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "")};
+			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var queryContext = new QueryContext(query) {ComponentData = componentData,};
 
 			var metricMapper = new MetricMapper(propertyInfo);
 
@@ -129,7 +133,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			var componentData = new ComponentData();
 
-			var queryContext = new QueryContext {ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "")};
+			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var queryContext = new QueryContext(query) {ComponentData = componentData,};
 
 			var mapper = MetricMapper.TryCreate(fake.GetType().GetProperty("Decimal"));
 			Assert.That(mapper, Is.Not.Null, "Mapping Decimal failed");
@@ -156,7 +161,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			var componentData = new ComponentData();
 
-			var queryContext = new QueryContext { ComponentData = componentData, Query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "") };
+			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var queryContext = new QueryContext(query) {ComponentData = componentData,};
 
 			var mapper = MetricMapper.TryCreate(propertyInfo);
 			Assert.That(mapper, Is.Not.Null, "Mapping {0} failed", propertyInfo.PropertyType.Name);

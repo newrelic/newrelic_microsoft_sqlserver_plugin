@@ -1,4 +1,5 @@
 using System;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
@@ -13,10 +14,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public byte SQLProcessUtilization { get; set; }
 		public byte SystemIdle { get; set; }
 		public byte OtherProcessUtilization { get; set; }
-
-		public override string ToString()
-		{
-			return string.Format("{0}\t{1}\t{2}", SQLProcessUtilization, OtherProcessUtilization, SystemIdle);
-		}
 	}
 }

@@ -40,7 +40,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		/// <summary>
-		/// The part of the metric name for this metric value. For example, the metric SqlMonitor/SqlCpuUsage/*/SystemIdle, <see cref="MetricName"/> would be "SystemIdle".
+		/// The part of the metric name for this metric value. For example, the metric Custom/SqlCpuUsage/*/SystemIdle, <see cref="MetricName"/> would be "SystemIdle".
 		/// </summary>
 		public string MetricName { get; set; }
 

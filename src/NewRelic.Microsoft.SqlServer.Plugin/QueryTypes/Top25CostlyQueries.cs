@@ -1,9 +1,8 @@
-using System;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[Query("Top25CostlyQueries.sql", "Custom/CostlyQueries",  QueryName = "Top 25 Costly Queries", Enabled = false)]
+	[Query("Top25CostlyQueries.sql", "Custom/CostlyQueries", QueryName = "Top 25 Costly Queries", Enabled = false)]
 	internal class Top25CostlyQueries
 	{
 		public long AverageCPU { get; set; }
@@ -14,11 +13,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public long TotalReads { get; set; }
 		public long ExecutionCount { get; set; }
 		public string SQLStatement { get; set; }
-
-		public override string ToString()
-		{
-			var sqlStatement = SQLStatement.Substring(0, Math.Min(50, SQLStatement.Length)).Replace('\n', ' ').Replace('\r', ' ').Replace('\t', ' ');
-			return string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}", AverageCPU, TotalCPU, AverageDuration, TotalDuration, AverageReads, TotalReads, ExecutionCount, sqlStatement);
-		}
 	}
 }

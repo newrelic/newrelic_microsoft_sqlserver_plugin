@@ -1,7 +1,9 @@
 using System;
+
 using NSubstitute;
+
 using NUnit.Framework;
-using NewRelic.Microsoft.SqlServer.Plugin.Core;
+
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
@@ -9,61 +11,167 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	[TestFixture]
 	public class QueryContextTests
 	{
-		[Test]
-		public void Assert_metric_pattern_substitution_appends_metric_name_if_substitution_wildcard_missing()
+		private class FakeQueryWithCustomPlaceHolder
 		{
-			// With trailing slash in the pattern
-			var metricName = QueryContext.FormatMetricKey("Custom/Memory/{DatabaseName}/", new Lazy<string>(() => "Tableriffic"), "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash present");
+			// ReSharper disable UnusedAutoPropertyAccessor.Local
+			// ReSharper disable UnusedMember.Local
+			public string ThePlaceholder { get; set; }
+			public string AnotherPlaceholder { get; set; }
+			internal string NotPublicProperty { get; set; }
+			public static string NotInstanceProperty { get; set; }
+			public string NotPublicGetterProperty { private get; set; }
+			public string CaseMattersPeople { get; set; }
 
-			// Without the trailing slash
-			metricName = QueryContext.FormatMetricKey("Custom/Memory/{DatabaseName}", new Lazy<string>(() => "Tableriffic"), "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash is missing");
+			public string PropertyWithoutGetter
+			{
+				// ReSharper disable ValueParameterNotUsed
+				set { }
+				// ReSharper restore ValueParameterNotUsed
+			}
+
+			public int TheMetric { get; set; }
+			// ReSharper restore UnusedMember.Local
+			// ReSharper restore UnusedAutoPropertyAccessor.Local
 		}
 
 		[Test]
-		public void Assert_metric_pattern_substitution_replaces_database_and_metric_name()
+		public void Assert_custom_placeholders_have_non_alphanumerics_replaced_with_underbar()
 		{
-			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}";
-			var metricName = QueryContext.FormatMetricKey(metricPattern, new Lazy<string>(() => "ManyTablesDB"), "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/ManyTablesDB/MyMetric"), "Substitution failed");
+			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "I ->have.bad_45+stuff!", TheMetric = 42,};
+			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
+
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/I___have_bad_45_stuff_/TheMetric"), "Substitution failed");
+		}
+
+		[Test]
+		public void Assert_custom_placeholders_have_whitespace_trimmed()
+		{
+			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "  space then tab\t", TheMetric = 42,};
+			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
+
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/space_then_tab/TheMetric"), "Substitution failed");
+		}
+
+		[Test]
+		public void Assert_custom_placeholders_in_pattern_are_replaced()
+		{
+			const string metricPattern = "Custom/Memory/{ThePlaceholder}/Machine/{AnotherPlaceholder}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "Tada", AnotherPlaceholder = "Flexible", TheMetric = 42,};
+			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
+
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tada/Machine/Flexible/TheMetric"), "Substitution failed");
+		}
+
+		[Test]
+		public void Assert_custom_placeholders_with_empty_values_are_replaced_with_empty_string()
+		{
+			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "", TheMetric = 42,};
+			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
+
+			Assert.That(metricName, Is.EqualTo("Custom/Memory//TheMetric"), "Substitution failed");
+		}
+
+		[Test]
+		public void Assert_custom_placeholders_with_null_values_are_replaced_with_null_text()
+		{
+			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = null, TheMetric = 42,};
+			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
+
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/null/TheMetric"), "Substitution failed");
+		}
+
+		[Test]
+		public void Assert_metric_pattern_substitution_appends_metric_name_if_metric_name_wildcard_missing()
+		{
+			var databaseMetric = Substitute.For<IDatabaseMetric>();
+			databaseMetric.DatabaseName.Returns("Tableriffic");
+
+			// With trailing slash in the pattern
+			var metricName = QueryContext.FormatMetricKey("Custom/Memory/{DatabaseName}/", databaseMetric, "MyMetric");
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash present");
+
+			// Without the trailing slash
+			metricName = QueryContext.FormatMetricKey("Custom/Memory/{DatabaseName}", databaseMetric, "MyMetric");
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash is missing");
 		}
 
 		[Test]
 		public void Assert_metric_pattern_substitution_replaces_database_with_name_from_result()
 		{
-			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}";
-			var context = new QueryContext
-			              {
-				              Query = new SqlMonitorQuery(GetType(), new QueryAttribute(null, metricPattern), null, ""),
-			              };
+			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}/Foo";
 
 			var databaseMetric = Substitute.For<IDatabaseMetric>();
 			databaseMetric.DatabaseName.Returns("ManyTablesDB");
 
-			var metricName = context.FormatMetricKey(databaseMetric, "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/ManyTablesDB/MyMetric"), "Substitution failed");
-		}
-
-		[Test]
-		public void Assert_metric_pattern_substitution_sets_database_name_to_none_for_result_without_database_name()
-		{
-			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}";
-			var context = new QueryContext
-			              {
-				              Query = new SqlMonitorQuery(GetType(), new QueryAttribute(null, metricPattern), null, ""),
-			              };
-
-			var metricName = context.FormatMetricKey(new object(), "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/(none)/MyMetric"), "Substitution failed");
+			var metricName = QueryContext.FormatMetricKey(metricPattern, databaseMetric, "MyMetric");
+			Assert.That(metricName, Is.EqualTo("Custom/Memory/ManyTablesDB/MyMetric/Foo"), "Substitution failed");
 		}
 
 		[Test]
 		public void Assert_missing_database_name_replaced_with_none()
 		{
 			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}";
-			var metricName = QueryContext.FormatMetricKey(metricPattern, null, "MyMetric");
+			var queryResult = new object();
+			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "MyMetric");
 			Assert.That(metricName, Is.EqualTo("Custom/Memory/(none)/MyMetric"), "Substitution failed");
+		}
+
+		[Test]
+		public void Should_throw_when_placeholder_case_is_not_exact()
+		{
+			const string metricPattern = "Custom/Memory/{CASEMATTERSPEOPLE}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {CaseMattersPeople = "Why are you yelling?",};
+			var exception = Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
+			Assert.That(exception.Message.ToLower(), Is.StringMatching("case-sensitive"), "Expected a helpful error message");
+		}
+
+		[Test]
+		public void Should_throw_with_custom_placeholders_in_pattern_without_getter_property()
+		{
+			const string metricPattern = "Custom/Memory/{PropertyWithoutGetter}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder();
+
+			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
+		}
+
+		[Test]
+		public void Should_throw_with_custom_placeholders_in_pattern_without_matching_property()
+		{
+			const string metricPattern = "Custom/Memory/{ThisMatchesNothing}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "BooHiss"};
+
+			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
+		}
+
+		[Test]
+		public void Should_throw_with_custom_placeholders_in_pattern_without_public_getter_property()
+		{
+			const string metricPattern = "Custom/Memory/{NotPublicGetterProperty}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {NotPublicGetterProperty = "BooHiss"};
+
+			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
+		}
+
+		[Test]
+		public void Should_throw_with_custom_placeholders_in_pattern_without_public_instance_property()
+		{
+			const string metricPattern = "Custom/Memory/{NotInstanceProperty}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder();
+
+			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
+		}
+
+		[Test]
+		public void Should_throw_with_custom_placeholders_in_pattern_without_public_property()
+		{
+			const string metricPattern = "Custom/Memory/{NotPublicProperty}/{MetricName}";
+			var queryResult = new FakeQueryWithCustomPlaceHolder {NotPublicProperty = "BooHiss",};
+
+			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 	public class SqlMonitorService : ServiceBase
 	{
 		private readonly Settings _settings;
-		private SqlMonitor _monitor;
+		private SqlPoller _sqlPoller;
 
 		public SqlMonitorService(Settings settings)
 		{
@@ -20,22 +20,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 
 		protected override void OnStart(string[] args)
 		{
-			if (_monitor == null)
+			if (_sqlPoller == null)
 			{
-				_monitor = new SqlMonitor(_settings);
+				_sqlPoller = new SqlPoller(_settings);
 			}
 
-			_monitor.Start();
+			_sqlPoller.Start();
 		}
 
 		protected override void OnStop()
 		{
-			if (_monitor != null)
+			if (_sqlPoller != null)
 			{
-				_monitor.Stop();
+				_sqlPoller.Stop();
 			}
 
-			_monitor = null;
+			_sqlPoller = null;
 		}
 	}
 }
