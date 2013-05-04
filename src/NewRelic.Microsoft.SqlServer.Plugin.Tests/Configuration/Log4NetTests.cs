@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+
 using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
@@ -10,8 +11,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         public void AssertCanFindLog4NetConfig()
         {
             Program.SetUpLogConfig();
-            ILog logger = LogManager.GetLogger(Constants.SqlMonitorLogger);
-            Assert.That(logger, Is.Not.Null);
+            var logger = LogManager.Exists(Constants.SqlMonitorLogger);
+            Assert.That(logger, Is.Not.Null, "Couldn't Find Logger with name '{0}'", Constants.SqlMonitorLogger);
         }
     }
 }

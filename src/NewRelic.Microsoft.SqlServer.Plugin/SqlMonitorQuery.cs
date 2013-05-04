@@ -57,7 +57,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <param name="dbConnection">Open connection to the database.</param>
 		/// <param name="server">Settings for the server that is queried.</param>
 		/// <returns>An enumeration of a the type where the <see cref="QueryAttribute"/> for this query object was found during initialization.</returns>
-		public IEnumerable<object> Query(IDbConnection dbConnection, SqlServerToMonitor server)
+		public IEnumerable<object> Query(IDbConnection dbConnection, ISqlServerToMonitor server)
 		{
 			return ((IEnumerable) _genericMethod.Invoke(this, new object[] {dbConnection, server,})).Cast<object>();
 		}
@@ -70,7 +70,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <summary>
 		/// Never called directly, rather called via reflection.
 		/// </summary>
-		protected IEnumerable<T> Query<T>(IDbConnection dbConnection, SqlServerToMonitor server)
+        protected IEnumerable<T> Query<T>(IDbConnection dbConnection, ISqlServerToMonitor server)
 			where T : class, new()
 		{
 			var commandText = PrepareCommandText<T>(CommandText, server);
@@ -78,7 +78,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return _dapperWrapper.Query<T>(dbConnection, commandText, new {Id = 1});
 		}
 
-		internal static string PrepareCommandText<T>(string commandText, SqlServerToMonitor server)
+		internal static string PrepareCommandText<T>(string commandText, ISqlServerToMonitor server)
 			where T : class, new()
 		{
 			var typeofT = typeof (T);

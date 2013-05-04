@@ -92,6 +92,7 @@
     <Compile Include="QueryTypes\FileIoView.cs" />
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
     <Compile Include="QueryTypes\RecompileDetail.cs" />
+    <Compile Include="QueryTypes\RecompileQueryBase.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />

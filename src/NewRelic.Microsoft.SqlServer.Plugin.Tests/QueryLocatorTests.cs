@@ -60,7 +60,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var queries = new QueryLocator(dapperWrapper).PrepareQueries();
 			foreach (var query in queries)
 			{
-				var results = query.Query(null, null);
+				var results = query.Query(null, Substitute.For<ISqlServerToMonitor>());
 				Assert.That(results, Is.EqualTo(new object[0]));
 			}
 		}

@@ -7,7 +7,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	public static class TestHelper
 	{
 		/// <summary>
-		/// Finds the "local" dir that serves as the artifacti directory for tests.
+		/// Finds the "local" dir that serves as the artifact directory for tests.
 		/// </summary>
 		/// <returns></returns>
 		public static string GetArtifactDir()

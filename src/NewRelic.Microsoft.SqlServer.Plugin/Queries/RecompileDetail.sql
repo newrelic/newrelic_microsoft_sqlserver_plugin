@@ -11,3 +11,4 @@ SELECT
 FROM sys.dm_exec_cached_plans cp
 CROSS APPLY sys.dm_exec_sql_text(cp.plan_handle) st
 WHERE cp.cacheobjtype = 'Compiled Plan'
+/*{AND_WHERE}*/

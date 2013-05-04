@@ -34,15 +34,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                         {
                             Name = "Local",
                             ConnectionString = "Server=.;Database=master;Trusted_Connection=True;",
-                            IncludedDatabases = new string[0],
+                            IncludedDatabases = new[]{"Northwind"},
                             ExcludedDatabases = new string[0],
                         },
                     new
                         {
                             Name = "Important Server",
                             ConnectionString = "Server=192.168.10.123,1234;Database=master;User Id=foo;Password=bar;",
-                            IncludedDatabases = new[]{"Northwind"},
-                            ExcludedDatabases = Constants.SystemDatabases.Concat(new[]{"foo%", "bar%"}).ToArray(),
+                            IncludedDatabases = new string[0],
+                            ExcludedDatabases = Constants.SystemDatabases.Concat(new[]{"foo", "bar"}).ToArray(),
                         },
                 }.Select(i => SqlServerToMonitor.FormatProperties(i.Name, i.ConnectionString, i.IncludedDatabases, i.ExcludedDatabases)).ToArray();
 

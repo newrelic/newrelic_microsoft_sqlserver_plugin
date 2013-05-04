@@ -1,9 +1,3 @@
--- Database Backup Status View
--- Returns status of every DB on instance except tempdb.
--- Assumes one backup a day is ok
--- No backup within a day or none ever is an error
-
-
 SELECT
 	SUBSTRING(s.name, 1, 40)				AS [DatabaseName],
 	CAST(b.backup_start_date AS char(11))	AS [BackupDate],
@@ -21,4 +15,4 @@ LEFT OUTER JOIN msdb..backupset b ON s.name = b.database_name
 		FROM msdb..backupset
 		WHERE database_name = b.database_name
 		AND type = 'D') -- full database backups only, not log backups
-WHERE s.name <> 'tempdb'
+/*{WHERE}*/

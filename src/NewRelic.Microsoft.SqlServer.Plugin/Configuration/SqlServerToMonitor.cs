@@ -3,8 +3,16 @@ using System.Linq;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
-	public class SqlServerToMonitor
-	{
+    public interface ISqlServerToMonitor {
+        string Name { get; }
+        string ConnectionString { get; }
+        string[] IncludedDatabases { get; }
+        string[] ExcludedDatabases { get; }
+        string ToString();
+    }
+
+    public class SqlServerToMonitor : ISqlServerToMonitor
+    {
 		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases)
 			: this(name, connectionString, includeSystemDatabases, null, null) {}
 

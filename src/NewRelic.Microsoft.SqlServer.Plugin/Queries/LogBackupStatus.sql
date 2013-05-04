@@ -20,4 +20,4 @@ LEFT OUTER JOIN msdb..backupset b ON s.name = b.database_name
 		FROM msdb..backupset
 		WHERE database_name = b.database_name
 		AND type = 'L') -- Logs
-WHERE s.name NOT IN ('tempdb', 'master', 'model', 'msdb')
+/*{WHERE}*/
