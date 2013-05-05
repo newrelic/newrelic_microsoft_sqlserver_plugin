@@ -57,7 +57,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                     var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
                     settings.CollectOnly = options.CollectOnly;
                     
-                    log.DebugFormat("Loaded Settings: {0}", settings.ToString());
+                    log.Debug("Loaded Settings:");
+					settings.ToLog(log);
 
                     if (Environment.UserInteractive)
                     {
