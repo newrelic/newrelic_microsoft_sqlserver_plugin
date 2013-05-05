@@ -6,8 +6,5 @@
         <PatchVersion>0</PatchVersion>
 
         <BuildQuality>alpha</BuildQuality>
-
-        <!-- Ensure that we come up with a new version every 65535 years -->
-        <VersionStartYear>2013</VersionStartYear>
     </PropertyGroup>
 </Project>

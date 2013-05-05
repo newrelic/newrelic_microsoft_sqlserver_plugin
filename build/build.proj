@@ -28,11 +28,11 @@
 
   <ItemGroup>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
-      <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
+      <Find>AssemblyVersion\("[^"]+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
-      <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
+      <Find>AssemblyInformationalVersion\("[^"]+"\)</Find>
       <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
     </RegexTransform>
   </ItemGroup>
@@ -49,7 +49,7 @@
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
   </Target>
 
-    <Target Name="UpdateVersion">
+  <Target Name="UpdateVersion">
     <RegexTransform Items="@(RegexTransform)" />
   </Target>
 
@@ -66,14 +66,15 @@
            OutputXmlFile="$(TestResultsPath)\NunitResults.xml"
            ToolPath="$(NUnitPath)"/>
   </Target>
-  
+
   <Target Name="Package" DependsOnTargets="Build">
     <ItemGroup>
       <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.dll" />
       <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.exe" />
-      <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.exe.config" />
+      <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.config" />
     </ItemGroup>
-    <Zip Files="@(FilesToZip)" ZipFileName="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.$(PackageVersion).zip" />
+    <Zip Files="@(FilesToZip)" ZipFileName="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.$(PackageVersion).zip" ZipLevel="9"
+         WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\"/>
   </Target>
 
   <!-- Required to restore solution-level packages -->
