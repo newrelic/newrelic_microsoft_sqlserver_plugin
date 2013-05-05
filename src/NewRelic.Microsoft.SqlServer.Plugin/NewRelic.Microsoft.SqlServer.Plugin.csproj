@@ -92,6 +92,7 @@
     <Compile Include="QueryTypes\DatabaseMetricBase.cs" />
     <Compile Include="QueryTypes\FileIoView.cs" />
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
+    <Compile Include="QueryTypes\MemoryView.cs" />
     <Compile Include="QueryTypes\RecompileDetail.cs" />
     <Compile Include="QueryTypes\RecompileQueryBase.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
