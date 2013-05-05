@@ -89,6 +89,7 @@
     <Compile Include="QueryContext.cs" />
     <Compile Include="QueryLocator.cs" />
     <Compile Include="QueryTypes\BackupStatus.cs" />
+    <Compile Include="QueryTypes\DatabaseMetricBase.cs" />
     <Compile Include="QueryTypes\FileIoView.cs" />
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
     <Compile Include="QueryTypes\RecompileDetail.cs" />
@@ -110,6 +111,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Communication\SqlRequest.cs" />
+    <Compile Include="QueryTypes\WhereClauseTokenEnum.cs" />
     <Compile Include="SqlMonitorQuery.cs" />
     <Compile Include="Core\SqlPoller.cs" />
   </ItemGroup>

@@ -11,3 +11,4 @@ FROM sys.dm_exec_connections c
 	JOIN sys.sysprocesses s
 		ON c.session_id = s.spid
 WHERE c.session_id >= 51
+/*{AND_WHERE}*/

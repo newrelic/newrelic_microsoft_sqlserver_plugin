@@ -1,6 +1,6 @@
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	public interface IDatabaseMetric
+	internal interface IDatabaseMetric
 	{
 		string DatabaseName { get; }
 

@@ -5,7 +5,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	[Query("SQL-NonSQL-IdleCPUUsage.sql", "Custom/SqlCpuUsage", QueryName = "SQL CPU Usage", Enabled = true)]
-	public class SqlCpuUsage
+	internal class SqlCpuUsage
 	{
 		[Metric(Ignore = true)]
 		public long RecordID { get; set; }

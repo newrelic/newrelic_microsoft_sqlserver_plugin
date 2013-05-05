@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	[Query("WaitStates.sql", "Custom/WaitState/{WaitType}", QueryName = "Wait States", Enabled = true)]
-	public class WaitState
+	internal class WaitState
 	{
 		public string WaitType { get; set; }
 		public decimal WaitSeconds { get; set; }
