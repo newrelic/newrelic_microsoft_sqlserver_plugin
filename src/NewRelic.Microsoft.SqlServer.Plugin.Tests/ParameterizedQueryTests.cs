@@ -1,3 +1,6 @@
+using System.Linq;
+using System.Reflection;
+
 using NUnit.Framework;
 
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
@@ -105,6 +108,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                     Assert.That(actual, Is.StringContaining(testCase.ExpectedWhereClause), "Expected Where clause not found in testcase '{0}' and query '{1}'", testCase.TestName, query.QueryName);
                 }
             }
+
+            var testedParameterizedQueries = testCases.Select(tc => tc.QueryMetric.GetType()).Distinct().ToArray();
+            var concreteImplementationsOfDatabaseMetricBase = Assembly.GetAssembly(typeof (DatabaseMetricBase)).GetTypes()
+                                                                      .Where(t => t.IsSubclassOf(typeof (DatabaseMetricBase))
+                                                                                  && !t.IsInterface
+                                                                                  && !t.IsAbstract)
+                                                                      .ToArray();
+
+            Assert.That(concreteImplementationsOfDatabaseMetricBase, Is.EquivalentTo(testedParameterizedQueries), "Expected all Implementations of DatabaseMetricBase to be tested");
         }
     }
 }
