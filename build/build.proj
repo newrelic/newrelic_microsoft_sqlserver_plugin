@@ -8,9 +8,7 @@
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\local\$(Configuration)</ArtifactsDir>
     <TestResultsPath>$(ArtifactsDir)\tests</TestResultsPath>
-    <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
-    <NUnitPath>$(ToolsPath)\NUnit\</NUnitPath>
-    <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
+    <NUnitPath>$(ProjectRoot)\tools\NUnit\</NUnitPath>
     <KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\TODO.snk</KeyFile>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
   </PropertyGroup>
@@ -29,11 +27,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <BuildProjects Include="$(ProjectRoot)\src\NewRelic.Microsoft.SqlServer.Plugin\NewRelic.Microsoft.SqlServer.Plugin.csproj"></BuildProjects>
-    <BuildProjects Include="$(ProjectRoot)\src\NewRelic.Microsoft.SqlServer.Plugin.Tests\NewRelic.Microsoft.SqlServer.Plugin.Tests.csproj"></BuildProjects>
-  </ItemGroup>
-
-  <ItemGroup>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
@@ -44,18 +37,10 @@
     </RegexTransform>
   </ItemGroup>
 
-  <Target Name="UpdateVersion">
-    <RegexTransform Items="@(RegexTransform)" />
-  </Target>
-
   <Target Name="Go" DependsOnTargets="Build; RunTests;">
   </Target>
 
-  <Target Name="RunTests">
-    <NUnit Assemblies="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\NewRelic.Microsoft.SqlServer.Plugin.Tests.dll"
-      WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\"
-           OutputXmlFile="$(TestResultsPath)\NunitResults.xml"
-           ToolPath="$(NUnitPath)"/>
+  <Target Name="Dist" DependsOnTargets="Build; RunTests; Package;">
   </Target>
 
   <Target Name="CreateOutputDir">
@@ -64,10 +49,22 @@
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="CreateOutputDir">
-    <MSBuild Projects="%(BuildProjects.Identity)"
+    <Target Name="UpdateVersion">
+    <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+
+  <Target Name="Build" DependsOnTargets="CreateOutputDir; UpdateVersion;">
+    <MSBuild Projects="$(ProjectRoot)\NewRelic.Microsoft.SqlServer.Plugin.sln"
              Targets="Build"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"/>
+  </Target>
+
+  <Target Name="RunTests" Condition="'$(Configuration)' == 'Debug'">
+    <NUnit Assemblies="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\NewRelic.Microsoft.SqlServer.Plugin.Tests.dll"
+      WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\"
+           OutputXmlFile="$(TestResultsPath)\NunitResults.xml"
+           ToolPath="$(NUnitPath)"/>
   </Target>
   
   <Target Name="Package" DependsOnTargets="Build">
