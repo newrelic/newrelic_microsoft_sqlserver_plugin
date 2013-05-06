@@ -82,8 +82,18 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		private static void ConvertToIntMetric(QueryContext queryContext, string metricName, PropertyInfo propertyInfo, object result)
 		{
-			var value = Convert.ToInt32(propertyInfo.GetValue(result, null));
-			queryContext.AddMetric(metricName, value);
+			// If the query result is a bigint, an exception is thrown when attempting to make it an int.
+			var potentiallyLargeValue = Convert.ToInt64(propertyInfo.GetValue(result, null));
+			if (potentiallyLargeValue >= int.MaxValue)
+			{
+				// Best we can do when the value is > int.MaxValue
+				queryContext.AddMetric(metricName, int.MaxValue);
+			}
+			else
+			{
+				var value = Convert.ToInt32(potentiallyLargeValue);
+				queryContext.AddMetric(metricName, value);
+			}
 		}
 
 		private static void AddDecimalMetric(QueryContext queryContext, string metricName, PropertyInfo propertyInfo, object result)
