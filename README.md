@@ -22,6 +22,10 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
      `Service NewRelicSQLServerPlugin has been successfully installed.`
 6. If you are using `TrustedConnection=True` in your connection string, you may wish to set the user for the Windows service to a user that is permitted to access the SQL Server you are monitoring.
 
+## Logging
+
+By default, the log files are written to `C:\Program Data\New Relic\MicrosoftSQLServerPlugin\`. To change the logging settings, edit the `INSTALLDIR\log4net.config` file.
+
 ## Uninstalling the plugin
 
 1. Open a command prompt running as Administrator to `INSTALLDIR`.
