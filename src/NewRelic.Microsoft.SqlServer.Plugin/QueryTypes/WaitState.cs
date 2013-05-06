@@ -9,7 +9,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public decimal WaitSeconds { get; set; }
 		public decimal ResourceSeconds { get; set; }
 		public decimal SignalSeconds { get; set; }
-		public int WaitCount { get; set; }
+		public long WaitCount { get; set; }
 		public decimal Percentage { get; set; }
 		public decimal AvgWaitSeconds { get; set; }
 		public decimal AvgResourceSeconds { get; set; }
