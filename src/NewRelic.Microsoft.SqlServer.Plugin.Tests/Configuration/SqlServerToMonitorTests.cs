@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 
 using NUnit.Framework;
 
@@ -27,6 +28,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			sqlServerToMonitor = new SqlServerToMonitor("FooServer", ".", true);
 			Assert.That(sqlServerToMonitor.IncludedDatabases.Length, Is.EqualTo(0));
 			Assert.That(sqlServerToMonitor.ExcludedDatabases.Length, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Assert_that_duration_is_reported_correctly()
+		{
+			var sqlServerToMonitor = new SqlServerToMonitor("", "", false);
+			Assert.That(sqlServerToMonitor.Duration, Is.EqualTo(0), "Expected 0 second Duration immediately after .ctor called");
+
+			Thread.Sleep(1000);
+			Assert.That(sqlServerToMonitor.Duration, Is.EqualTo(1), "Expected 1 second Duration after Thread.Sleep(1000)");
 		}
 	}
 }

@@ -43,7 +43,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		public string MetricPattern
 		{
-			get { return _metricPattern ?? string.Format("Custom/{0}", ResultTypeName); }
+			get { return _metricPattern ?? string.Format("Component/{0}", ResultTypeName); }
 			set { _metricPattern = value; }
 		}
 

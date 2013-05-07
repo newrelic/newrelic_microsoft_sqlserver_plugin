@@ -2,7 +2,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[Query("WaitStates.sql", "Custom/WaitState/{WaitType}", QueryName = "Wait States", Enabled = true)]
+	[Query("WaitStates.sql", "Component/WaitState/{WaitType}", QueryName = "Wait States", Enabled = true)]
 	internal class WaitState
 	{
 		public string WaitType { get; set; }

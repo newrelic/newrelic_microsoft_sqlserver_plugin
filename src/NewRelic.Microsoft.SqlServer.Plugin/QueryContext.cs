@@ -15,12 +15,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	{
 		private static readonly ILog _VerboseMetricsLogger = LogManager.GetLogger(Constants.VerboseMetricsLogger);
 
+		private readonly SqlMonitorQuery _query;
+
 		public QueryContext(SqlMonitorQuery query)
 		{
 			_query = query;
 		}
 
-		private readonly SqlMonitorQuery _query;
 		public IEnumerable<object> Results { get; set; }
 		public ComponentData ComponentData { get; set; }
 		public int MetricsRecorded { get; private set; }

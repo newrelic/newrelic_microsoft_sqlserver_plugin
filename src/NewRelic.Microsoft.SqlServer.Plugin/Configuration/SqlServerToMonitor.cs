@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,16 +6,27 @@ using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
-    public interface ISqlServerToMonitor {
-        string Name { get; }
-        string ConnectionString { get; }
-        string[] IncludedDatabases { get; }
-        string[] ExcludedDatabases { get; }
-        string ToString();
-    }
+	public interface ISqlServerToMonitor
+	{
+		string Name { get; }
+		string ConnectionString { get; }
 
-    public class SqlServerToMonitor : ISqlServerToMonitor
-    {
+		/// <summary>
+		/// The number of seconds since the last recorded successful report of metrics.
+		/// </summary>
+		int Duration { get; }
+
+		string[] IncludedDatabases { get; }
+		string[] ExcludedDatabases { get; }
+
+		void MetricReportSuccessful();
+		string ToString();
+	}
+
+	public class SqlServerToMonitor : ISqlServerToMonitor
+	{
+		private DateTime _lastSuccessfulReportTime;
+
 		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases)
 			: this(name, connectionString, includeSystemDatabases, null, null) {}
 
@@ -22,6 +34,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		{
 			Name = name;
 			ConnectionString = connectionString;
+			_lastSuccessfulReportTime = DateTime.Now;
+
 			var includedDbs = new List<string>();
 			var excludedDbs = new List<string>();
 
@@ -47,8 +61,23 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public string Name { get; private set; }
 		public string ConnectionString { get; private set; }
 
+		public int Duration
+		{
+			get { return (int)DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds; }
+		}
+
 		public string[] IncludedDatabases { get; private set; }
 		public string[] ExcludedDatabases { get; private set; }
+
+		public void MetricReportSuccessful()
+		{
+			_lastSuccessfulReportTime = DateTime.Now;
+		}
+
+		public override string ToString()
+		{
+			return FormatProperties(Name, ConnectionString, IncludedDatabases, ExcludedDatabases);
+		}
 
 		/// <summary>
 		///     Used to transform a the database name string from the configuration file into a sql ready database name
@@ -58,11 +87,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		private static string TransformDatabaseName(string name)
 		{
 			return name.Replace('*', '%');
-		}
-
-		public override string ToString()
-		{
-			return FormatProperties(Name, ConnectionString, IncludedDatabases, ExcludedDatabases);
 		}
 
 		public static string FormatProperties(string name, string connectionString, string[] includedDatabases, string[] excludedDatabases)

@@ -40,20 +40,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			try
 			{
+				// Calculate "duration" as the span between "now" and the last recorded report time. This avoids "drop outs" in the charts.
 				var tasks = _settings.SqlServers
 				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server, _log))
-				                                           .Catch(e => _log.Debug(e))
-														   .ContinueWith(t => t.Result.ForEach(ctx => ctx.AddAllMetrics()))
+				                                           .Catch(e => _log.Error(e))
+				                                           .ContinueWith(t => t.Result.ForEach(ctx => ctx.AddAllMetrics()))
 				                                           .Catch(e => _log.Error(e))
 				                                           .ContinueWith(t =>
 				                                                         {
 					                                                         var queryContexts = t.Result.ToArray();
-					                                                         SendComponentDataToCollector(queryContexts);
+					                                                         SendComponentDataToCollector(server, queryContexts);
 					                                                         return queryContexts.Sum(q => q.MetricsRecorded);
 				                                                         }))
 				                     .ToArray();
 
+				// Wait for all of them to complete
 				Task.WaitAll(tasks.ToArray<Task>());
+
+				// Update report time
 
 				_log.InfoFormat("Recorded {0} metrics", tasks.Sum(t => t.Result));
 			}
@@ -84,19 +88,23 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					{
 						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
 						results = query.Query(conn, server).ToArray();
-						foreach (var result in results)
+
+						if (_VerboseSqlOutputLogger.IsInfoEnabled)
 						{
-							// TODO Replace ToString() with something more useful that prints each property in the object
-							_VerboseSqlOutputLogger.Info(result.ToString());
+							foreach (var result in results)
+							{
+								// TODO Replace ToString() with something more useful that prints each property in the object
+								_VerboseSqlOutputLogger.Info(result.ToString());
+							}
+							_VerboseSqlOutputLogger.Info("");
 						}
-						_VerboseSqlOutputLogger.Info("");
 					}
 					catch (Exception e)
 					{
 						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
 						continue;
 					}
-					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(server.Name, Constants.ComponentGuid, 1),};
+					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(server.Name, Constants.ComponentGuid, server.Duration),};
 				}
 			}
 		}
@@ -104,8 +112,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <summary>
 		/// Sends data to New Relic, unless in "collect only" mode.
 		/// </summary>
-		/// <param name="queryContexts">Query data containing <see cref="ComponentData"/> where metrics are recorded</param>
-		internal void SendComponentDataToCollector(QueryContext[] queryContexts)
+		/// <param name="server">SQL Server from which the metrics were harvested.</param>
+		/// <param name="queryContexts">Query data containing <see cref="ComponentData"/> where metrics are recorded.</param>
+		internal void SendComponentDataToCollector(SqlServerToMonitor server, QueryContext[] queryContexts)
 		{
 			// Allows a testing mode that does not send data to New Relic
 			if (_settings.CollectOnly)
@@ -115,9 +124,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			try
 			{
+				_log.DebugFormat("Reporting metrics for {0} with duration {1}s", server.Name, server.Duration);
+
 				var platformData = new PlatformData(_agentData);
 				queryContexts.ForEach(c => platformData.AddComponent(c.ComponentData));
+				// Send the data to New Relic
 				new SqlRequest(_settings.LicenseKey) {Data = platformData}.SendData();
+				// If send is error free, inform the server to allow an accurate duration calculation
+				server.MetricReportSuccessful();
 			}
 			catch (Exception e)
 			{
