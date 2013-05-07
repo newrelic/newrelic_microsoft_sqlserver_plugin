@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	internal abstract class DatabaseMetricBase : IDatabaseMetric

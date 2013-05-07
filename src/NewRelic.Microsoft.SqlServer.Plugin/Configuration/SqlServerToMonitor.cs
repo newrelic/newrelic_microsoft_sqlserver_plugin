@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
     public interface ISqlServerToMonitor {

@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+
 using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NewRelic.Microsoft.SqlServer.Plugin.Communication;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Platform.Binding.DotNET;
 
 using log4net;

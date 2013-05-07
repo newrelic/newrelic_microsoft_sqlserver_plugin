@@ -2,6 +2,7 @@
 using System.Threading;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 using log4net;
 

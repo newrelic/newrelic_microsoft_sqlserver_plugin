@@ -3,6 +3,7 @@ using System.Linq;
 
 using NUnit.Framework;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin

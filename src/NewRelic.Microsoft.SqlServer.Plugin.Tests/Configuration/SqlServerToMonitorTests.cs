@@ -2,6 +2,8 @@
 
 using NUnit.Framework;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
 	[TestFixture]

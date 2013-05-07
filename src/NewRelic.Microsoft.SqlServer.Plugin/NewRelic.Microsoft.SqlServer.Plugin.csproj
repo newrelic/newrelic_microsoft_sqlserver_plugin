@@ -73,7 +73,7 @@
     <Compile Include="Configuration\SqlServerToMonitor.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
     <Compile Include="Configuration\SqlServerElement.cs" />
-    <Compile Include="Constants.cs" />
+    <Compile Include="Properties\Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
     <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
     <Compile Include="Core\Extensions\ExtensionsForEnumerable.cs" />

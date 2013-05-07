@@ -1,14 +1,14 @@
-﻿namespace NewRelic.Microsoft.SqlServer.Plugin
+﻿namespace NewRelic.Microsoft.SqlServer.Plugin.Properties
 {
 	internal static class Constants
 	{
-		public const string ComponentGuid = "64E117A2-43DC-4E71-8BCB-07691F9E421E";
+		public const string ComponentGuid = "com.newrelic.platform.microsoft.sqlserver";
 		public const string SqlMonitorLogger = "SqlMonitor";
 		public const string VerboseSqlLogger = "VerboseSqlOutput";
 		public const string VerboseMetricsLogger = "VerboseMetricOutput";
 
-	    public const string WhereClauseReplaceToken = @"/*{WHERE}*/";
-        public const string WhereClauseAndReplaceToken = @"/*{AND_WHERE}*/";
+		public const string WhereClauseReplaceToken = @"/*{WHERE}*/";
+		public const string WhereClauseAndReplaceToken = @"/*{AND_WHERE}*/";
 
 		public static string[] SystemDatabases
 		{

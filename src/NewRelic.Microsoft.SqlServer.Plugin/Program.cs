@@ -10,6 +10,7 @@ using CommandLine;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 using log4net;
 using log4net.Config;
