@@ -119,6 +119,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         /// </param>
         internal void SendComponentDataToCollector(SqlServerToMonitor server, QueryContext[] queryContexts)
         {
+            var platformData = server.GeneratePlatformData(_agentData);
+
             // Allows a testing mode that does not send data to New Relic
             if (_settings.CollectOnly)
             {
@@ -129,8 +131,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             {
                 _log.DebugFormat("Reporting metrics for {0} with duration {1}s", server.Name, server.Duration);
 
-                var platformData = new PlatformData(_agentData);
-                queryContexts.ForEach(c => platformData.AddComponent(c.ComponentData));
                 // Send the data to New Relic
                 new SqlRequest(_settings.LicenseKey) {Data = platformData}.SendData();
                 // If send is error free, inform the server to allow an accurate duration calculation

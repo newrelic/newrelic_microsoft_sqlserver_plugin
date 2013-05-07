@@ -17,6 +17,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         IEnumerable<object> Results { get; set; }
         ComponentData ComponentData { get; set; }
         int MetricsRecorded { get; }
+        bool DataSent { get; set; }
         string FormatMetricKey(object queryResult, string metricName);
         void AddAllMetrics();
         void AddMetric(string name, int value);
@@ -34,6 +35,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         {
             _query = query;
         }
+
+        public bool DataSent { get; set; }
 
         public string QueryName
         {

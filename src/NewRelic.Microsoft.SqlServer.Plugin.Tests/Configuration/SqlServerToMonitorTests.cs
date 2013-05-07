@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -8,6 +9,7 @@ using NUnit.Framework;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
@@ -102,6 +104,78 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             return actual;
         }
 
+        public class GenerateComponentDataInput
+        {
+            public string QueryName { get; set; }
+            public bool DataSent { get; set; }
+            public Dictionary<string, int> Metrics { get; set; }
+        }
+
+        public IEnumerable<TestCaseData> GenerateComponentDataTestCases
+        {
+            get
+            {
+                return new[]
+                       {
+                           new TestCaseData((object) new[]
+                                                     {
+                                                         new GenerateComponentDataInput()
+                                                         {
+                                                             QueryName = "RegularQuery",
+                                                             DataSent = false,
+                                                             Metrics = new[]
+                                                                       {
+                                                                           new KeyValuePair<string, int>("Component/Metric/Foo", 1),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Bar", 3),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Baz", 45),
+                                                                       }.ToDictionary(k => k.Key, k => k.Value),
+                                                         },
+                                                         new GenerateComponentDataInput()
+                                                         {
+                                                             QueryName = "RegularQuery",
+                                                             DataSent = true,
+                                                             Metrics = new[]
+                                                                       {
+                                                                           new KeyValuePair<string, int>("Component/Metric/Foo", 6),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Bar", 5),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Baz", 89),
+                                                                       }.ToDictionary(k => k.Key, k => k.Value),
+                                                         }
+                                                     }).Returns(new[]
+                                                                {
+                                                                    "Component/Metric/Foo:1",
+                                                                    "Component/Metric/Bar:3",
+                                                                    "Component/Metric/Baz:45",
+                                                                }).SetName("Simple Non-Aggregate Test"),
+                           new TestCaseData((object) new[]
+                                                     {
+                                                         new GenerateComponentDataInput()
+                                                         {
+                                                             QueryName = "RegularQuery",
+                                                             DataSent = false,
+                                                             Metrics = new[]
+                                                                       {
+                                                                           new KeyValuePair<string, int>("Component/Metric/Foo", 1),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Bar", 3),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Baz", 45),
+                                                                       }.ToDictionary(k => k.Key, k => k.Value),
+                                                         },
+                                                         new GenerateComponentDataInput()
+                                                         {
+                                                             QueryName = "WackyQuery",
+                                                             DataSent = true,
+                                                             Metrics = new[]
+                                                                       {
+                                                                           new KeyValuePair<string, int>("Component/Metric/Foo", 6),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Bar", 5),
+                                                                           new KeyValuePair<string, int>("Component/Metric/Baz", 89),
+                                                                       }.ToDictionary(k => k.Key, k => k.Value),
+                                                         }
+                                                     }).Throws(typeof (ArgumentException)).SetName("Assert Different Query Names throws Exception Non-Aggregate Test"),
+                       };
+            }
+        }
+
         [Test]
         public void AssertIncludeExcludeListsBuiltAppropriately()
         {
@@ -120,6 +194,25 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             sqlServerToMonitor = new SqlServerToMonitor("FooServer", ".", true);
             Assert.That(sqlServerToMonitor.IncludedDatabases.Length, Is.EqualTo(0));
             Assert.That(sqlServerToMonitor.ExcludedDatabases.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        [TestCaseSource("GenerateComponentDataTestCases")]
+        public string[] AssertThatComponentDataGeneratedCorrectly(GenerateComponentDataInput[] inputdata)
+        {
+            var queryContextHistory = inputdata.Select(input =>
+                                                       {
+                                                           var queryContext = Substitute.For<IQueryContext>();
+                                                           queryContext.QueryName.Returns(input.QueryName);
+                                                           queryContext.DataSent.Returns(input.DataSent);
+                                                           queryContext.ComponentData = new ComponentData();
+                                                           input.Metrics.ForEach(m => queryContext.ComponentData.AddMetric(m.Key, m.Value));
+                                                           return queryContext;
+                                                       }).ToArray();
+
+            var componentData = SqlServerToMonitor.GetComponentData(queryContextHistory);
+
+            return componentData.Metrics.Select(m => string.Format("{0}:{1}", m.Key, m.Value)).ToArray();
         }
 
         [Test]

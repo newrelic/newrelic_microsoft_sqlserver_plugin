@@ -4,6 +4,7 @@ using System.Linq;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
@@ -77,6 +78,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         public void MetricReportSuccessful()
         {
             _lastSuccessfulReportTime = DateTime.Now;
+            QueryHistory.Values.ForEach(histories => histories.ForEach(qc => qc.DataSent = true));
         }
 
         public override string ToString()
@@ -115,6 +117,38 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
                                       queryHistory.Add(queryContext);
                                   });
+        }
+
+        public PlatformData GeneratePlatformData(AgentData agentData)
+        {
+            var platformData = new PlatformData(agentData);
+
+            var pendingComponentData = QueryHistory.Select(qh => GetComponentData(qh.Value.ToArray()))
+                                                   .Where(c => c != null).ToArray();
+
+            pendingComponentData.ForEach(platformData.AddComponent);
+
+            return platformData;
+        }
+
+        public static ComponentData GetComponentData(IQueryContext[] queryHistory)
+        {
+            if (!queryHistory.Any())
+            {
+                return null;
+            }
+
+            var queryContext = queryHistory.First();
+            var queryName = queryContext.QueryName;
+            if (queryHistory.Any(qh => qh.QueryName != queryName))
+            {
+                throw new ArgumentException("GetComponentData can only process history for one query at a time!");
+            }
+
+            //TODO: Check if the query metric should be a differential and generate ComponentData based on passed in history
+            var unsentQuery = queryHistory.FirstOrDefault(q => !q.DataSent);
+
+            return unsentQuery != null ? unsentQuery.ComponentData : null;
         }
     }
 }
