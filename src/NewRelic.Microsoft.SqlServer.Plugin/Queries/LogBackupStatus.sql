@@ -2,6 +2,7 @@
 -- Returns status of every DB on instance except system dbs.
 -- Assumes one backup an hour is ok
 -- No backup within a day or none ever is an error
+-- Data collection nature: Realtime
 
 SELECT
 	SUBSTRING(s.name, 1, 40)				AS [DatabaseName],

@@ -1,6 +1,7 @@
 -- Memory View
 -- Returns ratio of memory cache hits to non-memory cache hits
 -- Returns memory page life expectancy for entire instance for NUMA and non-NUMA processor/memory configs
+-- Data collection nature: Cumulative. But this might be just fine for trending. Note: Server resets will zero out the page lifes.
 SELECT
 	(
 		SELECT cntr_value

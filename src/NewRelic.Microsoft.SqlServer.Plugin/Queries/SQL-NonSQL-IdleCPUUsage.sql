@@ -1,6 +1,7 @@
 -- Pass start and end times if desired. 
 -- Detail: Returns 1 line for each minute in range. 
 -- Summary: Returns Average of range. 
+-- Data collection nature: Realtime
 
 DECLARE	@StartTime datetime = DATEADD(MINUTE, -2, GETDATE()),
 		@EndTime datetime = GETDATE()

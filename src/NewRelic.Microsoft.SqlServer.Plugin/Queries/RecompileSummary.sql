@@ -1,6 +1,7 @@
 -- Object recompile summary by DB
 -- Returns count of query plans that are used only once and ones that are used more than once before recompile
 -- Returns ratio of the 2
+-- Data collection nature: Cumulative. Though the ratio is usable without delta tracking.
 
 DECLARE @Details TABLE (
 			DatabaseName varchar(200) NULL,

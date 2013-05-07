@@ -1,6 +1,6 @@
 -- Recomplie Detail
 -- Returns use count without a recompile for each object
-
+-- Data collection nature: Cumulative.
 SELECT
 	DB_NAME(st.dbid)	AS DatabaseName,
 	cp.bucketid			AS Bucketid,
