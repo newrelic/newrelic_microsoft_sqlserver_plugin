@@ -11,115 +11,144 @@ using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public class QueryContext
-	{
-		private static readonly ILog _VerboseMetricsLogger = LogManager.GetLogger(Constants.VerboseMetricsLogger);
+    public interface IQueryContext
+    {
+        string QueryName { get; }
+        IEnumerable<object> Results { get; set; }
+        ComponentData ComponentData { get; set; }
+        int MetricsRecorded { get; }
+        string FormatMetricKey(object queryResult, string metricName);
+        void AddAllMetrics();
+        void AddMetric(string name, int value);
+        void AddMetric(string name, decimal value);
+        void AddMetric(string name, MinMaxMetricValue value);
+    }
 
-		private readonly SqlMonitorQuery _query;
+    public class QueryContext : IQueryContext
+    {
+        private static readonly ILog _VerboseMetricsLogger = LogManager.GetLogger(Constants.VerboseMetricsLogger);
 
-		public QueryContext(SqlMonitorQuery query)
-		{
-			_query = query;
-		}
+        private readonly ISqlMonitorQuery _query;
 
-		public IEnumerable<object> Results { get; set; }
-		public ComponentData ComponentData { get; set; }
-		public int MetricsRecorded { get; private set; }
+        public QueryContext(ISqlMonitorQuery query)
+        {
+            _query = query;
+        }
 
-		public string FormatMetricKey(object queryResult, string metricName)
-		{
-			return FormatMetricKey(_query.MetricPattern, queryResult, metricName);
-		}
+        public string QueryName
+        {
+            get { return _query.QueryName; }
+        }
 
-		internal static string FormatMetricKey(string pattern, object queryResult, string metricName)
-		{
-			var result = pattern;
+        public IEnumerable<object> Results { get; set; }
+        public ComponentData ComponentData { get; set; }
+        public int MetricsRecorded { get; private set; }
 
-			if (result.Contains("{DatabaseName}"))
-			{
-				var databaseMetric = queryResult as IDatabaseMetric;
-				var databaseName = databaseMetric != null ? databaseMetric.DatabaseName : "(none)";
-				result = result.Replace("{DatabaseName}", databaseName);
-			}
+        public string FormatMetricKey(object queryResult, string metricName)
+        {
+            return FormatMetricKey(_query.MetricPattern, queryResult, metricName);
+        }
 
-			if (result.Contains("{MetricName}"))
-			{
-				result = result.Replace("{MetricName}", metricName);
-			}
-			else
-			{
-				result = result.EndsWith("/") ? result + metricName : result + "/" + metricName;
-			}
+        public void AddAllMetrics()
+        {
+            _query.AddMetrics(this);
+        }
 
-			var matches = Regex.Matches(result, @"\{(?<property>[^}]+?)\}", RegexOptions.ExplicitCapture);
-			if (matches.Count <= 0) return result;
+        public void AddMetric(string name, int value)
+        {
+            _VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
+            ComponentData.AddMetric(name, value);
+            MetricsRecorded++;
+        }
 
-			// Find placeholders
-			var queryType = queryResult.GetType();
-			foreach (Match match in matches)
-			{
-				// Get the property match
-				var propertyName = match.Groups["property"].Value;
-				// Get the property
-				var propertyInfo = queryType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-				// Expect it to be a public instance property
-				if (propertyInfo == null)
-				{
-					// Look for a similarly named property where maybe the case is mismatched. Performance is unimportant as this is a fatal error.
-					if (queryType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase) != null)
-					{
-						throw new Exception(string.Format("MetricPattern '{0}' contains a placeholder '{1}' for '{2}', however, it seems the placeholder has a case-mismatch." +
-						                                  "The placeholder is case-sensitive.",
-						                                  pattern, propertyName, queryType.Name));
-					}
-					throw new Exception(string.Format("MetricPattern '{0}' contains a placeholder '{1}' which was not found as a property on '{2}'. " +
-					                                  "It must be a public, instance property with a getter.",
-					                                  pattern, propertyName, queryType.Name));
-				}
-				// It must have a public getter
-				if (!propertyInfo.CanRead || propertyInfo.GetGetMethod(false) == null)
-					throw new Exception(string.Format("MetricPattern '{0}' contains a placeholder for the property '{1}' on '{2}', however, it does not have a getter. " +
-					                                  "It must be a public, instance property with a getter.",
-					                                  pattern, propertyName, queryType.Name));
-				// Get the value
-				var propertyValue = propertyInfo.GetValue(queryResult, null);
-				// Try first as a string (most common), then ToString() when not null, else just the word "null"
-				var replacement = propertyValue as string ?? (propertyValue != null ? propertyValue.ToString() : "null");
-				// No leading or trailing whitespace
-				replacement = replacement.Trim();
-				// Replace all non-alphanumerics with underbar
-				var safeReplacement = Regex.Replace(replacement, @"[^\w\d]", "_", RegexOptions.Singleline);
-				// Finally, replace it in the metric pattern
-				result = result.Replace("{" + propertyName + "}", safeReplacement);
-			}
+        public void AddMetric(string name, decimal value)
+        {
+            _VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
+            ComponentData.AddMetric(name, value);
+            MetricsRecorded++;
+        }
 
-			return result;
-		}
+        public void AddMetric(string name, MinMaxMetricValue value)
+        {
+            _VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
+            ComponentData.AddMetric(name, value);
+            MetricsRecorded++;
+        }
 
-		public void AddAllMetrics()
-		{
-			_query.AddMetrics(this);
-		}
+        internal static string FormatMetricKey(string pattern, object queryResult, string metricName)
+        {
+            var result = pattern;
 
-		public void AddMetric(string name, int value)
-		{
-			_VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
-			ComponentData.AddMetric(name, value);
-			MetricsRecorded++;
-		}
+            if (result.Contains("{DatabaseName}"))
+            {
+                var databaseMetric = queryResult as IDatabaseMetric;
+                var databaseName = databaseMetric != null ? databaseMetric.DatabaseName : "(none)";
+                result = result.Replace("{DatabaseName}", databaseName);
+            }
 
-		public void AddMetric(string name, decimal value)
-		{
-			_VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
-			ComponentData.AddMetric(name, value);
-			MetricsRecorded++;
-		}
+            if (result.Contains("{MetricName}"))
+            {
+                result = result.Replace("{MetricName}", metricName);
+            }
+            else
+            {
+                result = result.EndsWith("/") ? result + metricName : result + "/" + metricName;
+            }
 
-		public void AddMetric(string name, MinMaxMetricValue value)
-		{
-			_VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
-			ComponentData.AddMetric(name, value);
-			MetricsRecorded++;
-		}
-	}
+            var matches = Regex.Matches(result, @"\{(?<property>[^}]+?)\}", RegexOptions.ExplicitCapture);
+            if (matches.Count <= 0)
+            {
+                return result;
+            }
+
+            // Find placeholders
+            var queryType = queryResult.GetType();
+            foreach (Match match in matches)
+            {
+                // Get the property match
+                var propertyName = match.Groups["property"].Value;
+                // Get the property
+                var propertyInfo = queryType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+                // Expect it to be a public instance property
+                if (propertyInfo == null)
+                {
+                    // Look for a similarly named property where maybe the case is mismatched. Performance is unimportant as this is a fatal error.
+                    if (queryType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase) != null)
+                    {
+                        throw new Exception(string.Format("MetricPattern '{0}' contains a placeholder '{1}' for '{2}', however, it seems the placeholder has a case-mismatch." +
+                                                          "The placeholder is case-sensitive.",
+                                                          pattern,
+                                                          propertyName,
+                                                          queryType.Name));
+                    }
+                    throw new Exception(string.Format("MetricPattern '{0}' contains a placeholder '{1}' which was not found as a property on '{2}'. " +
+                                                      "It must be a public, instance property with a getter.",
+                                                      pattern,
+                                                      propertyName,
+                                                      queryType.Name));
+                }
+                // It must have a public getter
+                if (!propertyInfo.CanRead || propertyInfo.GetGetMethod(false) == null)
+                {
+                    throw new Exception(string.Format("MetricPattern '{0}' contains a placeholder for the property '{1}' on '{2}', however, it does not have a getter. " +
+                                                      "It must be a public, instance property with a getter.",
+                                                      pattern,
+                                                      propertyName,
+                                                      queryType.Name));
+                }
+                // Get the value
+                var propertyValue = propertyInfo.GetValue(queryResult, null);
+                // Try first as a string (most common), then ToString() when not null, else just the word "null"
+                var replacement = propertyValue as string ?? (propertyValue != null ? propertyValue.ToString() : "null");
+                // No leading or trailing whitespace
+                replacement = replacement.Trim();
+                // Replace all non-alphanumerics with underbar
+                var safeReplacement = Regex.Replace(replacement, @"[^\w\d]", "_", RegexOptions.Singleline);
+                // Finally, replace it in the metric pattern
+                result = result.Replace("{" + propertyName + "}", safeReplacement);
+            }
+
+            return result;
+        }
+    }
 }

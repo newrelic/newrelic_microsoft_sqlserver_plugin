@@ -15,128 +15,131 @@ using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	/// <summary>
-	/// Polls SQL databases and reports the data back to a collector.
-	/// </summary>
-	internal class MetricCollector
-	{
-		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
-		private readonly AgentData _agentData;
-		private readonly ILog _log;
-		private readonly Settings _settings;
+    /// <summary>
+    ///     Polls SQL databases and reports the data back to a collector.
+    /// </summary>
+    internal class MetricCollector
+    {
+        private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
+        private readonly AgentData _agentData;
+        private readonly ILog _log;
+        private readonly Settings _settings;
 
-		public MetricCollector(Settings settings, ILog log)
-		{
-			_settings = settings;
-			_log = log;
-			_agentData = new AgentData {Host = Environment.MachineName, Pid = Process.GetCurrentProcess().Id, Version = _settings.Version,};
-		}
+        public MetricCollector(Settings settings, ILog log)
+        {
+            _settings = settings;
+            _log = log;
+            _agentData = new AgentData {Host = Environment.MachineName, Pid = Process.GetCurrentProcess().Id, Version = _settings.Version,};
+        }
 
-		/// <summary>
-		///     Performs the queries against the database
-		/// </summary>
-		/// <param name="queries"></param>
-		internal void QueryServers(IEnumerable<SqlMonitorQuery> queries)
-		{
-			try
-			{
-				// Calculate "duration" as the span between "now" and the last recorded report time. This avoids "drop outs" in the charts.
-				var tasks = _settings.SqlServers
-				                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server, _log))
-				                                           .Catch(e => _log.Error(e))
-				                                           .ContinueWith(t => t.Result.ForEach(ctx => ctx.AddAllMetrics()))
-				                                           .Catch(e => _log.Error(e))
-				                                           .ContinueWith(t =>
-				                                                         {
-					                                                         var queryContexts = t.Result.ToArray();
-					                                                         SendComponentDataToCollector(server, queryContexts);
-					                                                         return queryContexts.Sum(q => q.MetricsRecorded);
-				                                                         }))
-				                     .ToArray();
+        /// <summary>
+        ///     Performs the queries against the database
+        /// </summary>
+        /// <param name="queries"></param>
+        internal void QueryServers(IEnumerable<ISqlMonitorQuery> queries)
+        {
+            try
+            {
+                // Calculate "duration" as the span between "now" and the last recorded report time. This avoids "drop outs" in the charts.
+                var tasks = _settings.SqlServers
+                                     .Select(server => Task.Factory.StartNew(() => QueryServer(queries, server, _log))
+                                                           .Catch(e => _log.Error(e))
+                                                           .ContinueWith(t => t.Result.ForEach(ctx => ctx.AddAllMetrics()))
+                                                           .Catch(e => _log.Error(e))
+                                                           .ContinueWith(t =>
+                                                                         {
+                                                                             var queryContexts = t.Result.ToArray();
+                                                                             server.UpdateHistory(queryContexts);
+                                                                             SendComponentDataToCollector(server, queryContexts);
+                                                                             return queryContexts.Sum(q => q.MetricsRecorded);
+                                                                         }))
+                                     .ToArray();
 
-				// Wait for all of them to complete
-				Task.WaitAll(tasks.ToArray<Task>());
+                // Wait for all of them to complete
+                Task.WaitAll(tasks.ToArray<Task>());
 
-				// Update report time
+                // Update report time
 
-				_log.InfoFormat("Recorded {0} metrics", tasks.Sum(t => t.Result));
-			}
-			catch (Exception e)
-			{
-				_log.Error(e);
-			}
-		}
+                _log.InfoFormat("Recorded {0} metrics", tasks.Sum(t => t.Result));
+            }
+            catch (Exception e)
+            {
+                _log.Error(e);
+            }
+        }
 
-		internal static IEnumerable<QueryContext> QueryServer(IEnumerable<SqlMonitorQuery> queries, SqlServerToMonitor server, ILog log)
-		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(server.ConnectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
+        internal static IEnumerable<QueryContext> QueryServer(IEnumerable<ISqlMonitorQuery> queries, SqlServerToMonitor server, ILog log)
+        {
+            // Remove password from logging
+            var safeConnectionString = new SqlConnectionStringBuilder(server.ConnectionString);
+            if (!string.IsNullOrEmpty(safeConnectionString.Password))
+            {
+                safeConnectionString.Password = "[redacted]";
+            }
 
-			_VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
-			_VerboseSqlOutputLogger.Info("");
+            _VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
+            _VerboseSqlOutputLogger.Info("");
 
-			using (var conn = new SqlConnection(server.ConnectionString))
-			{
-				foreach (var query in queries)
-				{
-					object[] results;
-					try
-					{
-						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
-						results = query.Query(conn, server).ToArray();
+            using (var conn = new SqlConnection(server.ConnectionString))
+            {
+                foreach (var query in queries)
+                {
+                    object[] results;
+                    try
+                    {
+                        _VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
+                        results = query.Query(conn, server).ToArray();
 
-						if (_VerboseSqlOutputLogger.IsInfoEnabled)
-						{
-							foreach (var result in results)
-							{
-								// TODO Replace ToString() with something more useful that prints each property in the object
-								_VerboseSqlOutputLogger.Info(result.ToString());
-							}
-							_VerboseSqlOutputLogger.Info("");
-						}
-					}
-					catch (Exception e)
-					{
-						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
-						continue;
-					}
-					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(server.Name, Constants.ComponentGuid, server.Duration),};
-				}
-			}
-		}
+                        if (_VerboseSqlOutputLogger.IsInfoEnabled)
+                        {
+                            foreach (var result in results)
+                            {
+                                // TODO Replace ToString() with something more useful that prints each property in the object
+                                _VerboseSqlOutputLogger.Info(result.ToString());
+                            }
+                            _VerboseSqlOutputLogger.Info("");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
+                        continue;
+                    }
+                    yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(server.Name, Constants.ComponentGuid, server.Duration),};
+                }
+            }
+        }
 
-		/// <summary>
-		/// Sends data to New Relic, unless in "collect only" mode.
-		/// </summary>
-		/// <param name="server">SQL Server from which the metrics were harvested.</param>
-		/// <param name="queryContexts">Query data containing <see cref="ComponentData"/> where metrics are recorded.</param>
-		internal void SendComponentDataToCollector(SqlServerToMonitor server, QueryContext[] queryContexts)
-		{
-			// Allows a testing mode that does not send data to New Relic
-			if (_settings.CollectOnly)
-			{
-				return;
-			}
+        /// <summary>
+        ///     Sends data to New Relic, unless in "collect only" mode.
+        /// </summary>
+        /// <param name="server">SQL Server from which the metrics were harvested.</param>
+        /// <param name="queryContexts">
+        ///     Query data containing <see cref="ComponentData" /> where metrics are recorded.
+        /// </param>
+        internal void SendComponentDataToCollector(SqlServerToMonitor server, QueryContext[] queryContexts)
+        {
+            // Allows a testing mode that does not send data to New Relic
+            if (_settings.CollectOnly)
+            {
+                return;
+            }
 
-			try
-			{
-				_log.DebugFormat("Reporting metrics for {0} with duration {1}s", server.Name, server.Duration);
+            try
+            {
+                _log.DebugFormat("Reporting metrics for {0} with duration {1}s", server.Name, server.Duration);
 
-				var platformData = new PlatformData(_agentData);
-				queryContexts.ForEach(c => platformData.AddComponent(c.ComponentData));
-				// Send the data to New Relic
-				new SqlRequest(_settings.LicenseKey) {Data = platformData}.SendData();
-				// If send is error free, inform the server to allow an accurate duration calculation
-				server.MetricReportSuccessful();
-			}
-			catch (Exception e)
-			{
-				_log.Error("Error sending data to connector", e);
-			}
-		}
-	}
+                var platformData = new PlatformData(_agentData);
+                queryContexts.ForEach(c => platformData.AddComponent(c.ComponentData));
+                // Send the data to New Relic
+                new SqlRequest(_settings.LicenseKey) {Data = platformData}.SendData();
+                // If send is error free, inform the server to allow an accurate duration calculation
+                server.MetricReportSuccessful();
+            }
+            catch (Exception e)
+            {
+                _log.Error("Error sending data to connector", e);
+            }
+        }
+    }
 }
