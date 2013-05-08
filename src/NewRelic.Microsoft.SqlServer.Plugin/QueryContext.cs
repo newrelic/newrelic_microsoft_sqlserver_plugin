@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Binding.DotNET;
@@ -18,6 +19,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         ComponentData ComponentData { get; set; }
         int MetricsRecorded { get; }
         bool DataSent { get; set; }
+        MetricTransformEnum MetricTransformEnum { get; }
         string FormatMetricKey(object queryResult, string metricName);
         void AddAllMetrics();
         void AddMetric(string name, int value);
@@ -43,6 +45,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             get { return _query.QueryName; }
         }
 
+        public MetricTransformEnum MetricTransformEnum
+        {
+            get { return _query.MetricTransformEnum; }
+        }
+
         public IEnumerable<object> Results { get; set; }
         public ComponentData ComponentData { get; set; }
         public int MetricsRecorded { get; private set; }
@@ -59,21 +66,21 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
         public void AddMetric(string name, int value)
         {
-            _VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
+            _VerboseMetricsLogger.InfoFormat("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
             ComponentData.AddMetric(name, value);
             MetricsRecorded++;
         }
 
         public void AddMetric(string name, decimal value)
         {
-            _VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
+            _VerboseMetricsLogger.InfoFormat("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
             ComponentData.AddMetric(name, value);
             MetricsRecorded++;
         }
 
         public void AddMetric(string name, MinMaxMetricValue value)
         {
-            _VerboseMetricsLogger.InfoFormat("Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
+            _VerboseMetricsLogger.InfoFormat("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentData.Name, name, value);
             ComponentData.AddMetric(name, value);
             MetricsRecorded++;
         }

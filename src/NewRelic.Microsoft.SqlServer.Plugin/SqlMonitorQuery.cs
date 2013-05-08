@@ -19,6 +19,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         string ResultTypeName { get; }
         string ResourceName { get; }
         string CommandText { get; }
+        MetricTransformEnum MetricTransformEnum { get; }
 
         /// <summary>
         ///     Queries data from the database and returns the results.
@@ -50,6 +51,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             QueryName = attribute.QueryName;
             ResourceName = attribute.ResourceName;
             MetricPattern = attribute.MetricPattern;
+            MetricTransformEnum = attribute.MetricTransformEnum;
 
             // Get the SQL resource from the same assembly as the type, when commandText is not supplied
             CommandText = commandText ?? queryType.Assembly.SearchForStringResource(attribute.ResourceName);
@@ -59,6 +61,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
             _metricMappers = GetMappers(queryType);
         }
+
+        public MetricTransformEnum MetricTransformEnum { get; private set; }
 
         public string QueryName { get; private set; }
 
