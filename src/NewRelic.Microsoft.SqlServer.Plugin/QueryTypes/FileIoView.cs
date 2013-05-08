@@ -7,6 +7,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
     {
         public long BytesRead { get; set; }
         public long BytesWritten { get; set; }
+		public long NumberOfReads { get; set; }
+		public long NumberOfWrites { get; set; }
         public long SizeInBytes { get; set; }
 
         protected override string DbNameForWhereClause
