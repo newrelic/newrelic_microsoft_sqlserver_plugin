@@ -8,7 +8,7 @@ SELECT
 		FROM sys.dm_os_performance_counters
 		WHERE counter_name = 'Buffer cache hit ratio'
 	) / (
-		SELECT cntr_value
+		SELECT cntr_value * 1.00
 		FROM sys.dm_os_performance_counters
 		WHERE counter_name = 'Buffer cache hit ratio base') AS BufferCacheHitRatio,
 	(
