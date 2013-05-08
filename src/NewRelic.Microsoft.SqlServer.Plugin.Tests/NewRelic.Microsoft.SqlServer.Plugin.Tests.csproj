@@ -57,13 +57,14 @@
     <Compile Include="Configuration\Log4NetTests.cs" />
     <Compile Include="Configuration\SqlServerToMonitorTests.cs" />
     <Compile Include="Core\ExtensionsForAssemblyTests.cs" />
-    <Compile Include="FileIoViewTests.cs" />
     <Compile Include="MetricMapperTests.cs" />
     <Compile Include="ParameterizedQueryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\QueryTypeValidationTests.cs" />
     <Compile Include="QueryContextTests.cs" />
     <Compile Include="QueryLocatorTests.cs" />
+    <Compile Include="QueryTypes\FileIoViewTests.cs" />
+    <Compile Include="QueryTypes\MemoryViewTests.cs" />
     <Compile Include="SqlMonitoryQueryTests.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
