@@ -18,7 +18,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         ///     Retrieves or generates the appropriate ComponentData object from the historical and current QueryContexts in
         ///     <param name="queryHistory"></param>
         /// </summary>
-        /// <param name="queryHistory">A sorted array of QueryContexts representing the current and historical query data</param>
+        /// <param name="queryHistory">A FIFO array of QueryContexts representing the current and historical query data, most recent query is last position</param>
         /// <returns></returns>
         public static ComponentData GetData(IQueryContext[] queryHistory)
         {
@@ -27,40 +27,40 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                 return null;
             }
 
-            var queryContext = queryHistory.First();
-            var queryName = queryContext.QueryName;
+            var queryName =  queryHistory.First().QueryName;
             if (queryHistory.Any(qh => qh.QueryName != queryName))
             {
                 throw new ArgumentException("GetData can only process history for one query at a time!");
             }
 
-            var unsentQuery = queryHistory.FirstOrDefault(q => !q.DataSent);
+            var mostRecentUnsentQuery = queryHistory.LastOrDefault(q => !q.DataSent);
 
             //If nothing to send, return null
-            if (unsentQuery == null)
+            if (mostRecentUnsentQuery == null)
             {
                 return null;
             }
 
             //If the query metric should be a Delta (differential, generate ComponentData based on passed in history
-            if (unsentQuery.MetricTransformEnum == MetricTransformEnum.Delta)
+            if (mostRecentUnsentQuery.MetricTransformEnum == MetricTransformEnum.Delta)
             {
                 //For first encounter, send empty metric
                 if (queryHistory.Length == 1)
                 {
-                    _VerboseMetricsLogger.InfoFormat("Not enough historical data to perform delta on data from {0}, generating zeroed out componentdata", unsentQuery.QueryName);
-                    return GetZeroedComponentData(unsentQuery.ComponentData);
+                    _VerboseMetricsLogger.InfoFormat("Not enough historical data to perform delta on data from {0}, generating zeroed out componentdata", mostRecentUnsentQuery.QueryName);
+                    return GetZeroedComponentData(mostRecentUnsentQuery.ComponentData);
                 }
 
-                var previousQueryContext = queryHistory.Skip(1).First();
+				//Get Previous Query
+                var previousQueryContext = queryHistory.Reverse().Skip(1).First();
 
-                _VerboseMetricsLogger.InfoFormat("Generating delta for data from {0}", unsentQuery.QueryName);
+                _VerboseMetricsLogger.InfoFormat("Generating delta for data from {0}", mostRecentUnsentQuery.QueryName);
                 //Return Delta of current and previous data
-                return GetDelta(unsentQuery.ComponentData, previousQueryContext.ComponentData);
+                return GetDelta(mostRecentUnsentQuery.ComponentData, previousQueryContext.ComponentData);
             }
 
             //Otherwise, just return latest unsent
-            return unsentQuery.ComponentData;
+            return mostRecentUnsentQuery.ComponentData;
         }
 
         private static ComponentData GetZeroedComponentData(ComponentData componentData)

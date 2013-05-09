@@ -45,9 +45,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                                .Returns(new[]
                                         {
                                             "QueryOne:2",
-                                            "QueryTwo:3",
-                                            "QueryThree:3",
-                                        }.ToArray()).SetName("Limit to 3 single pass"),
+                                            "QueryTwo:2",
+                                            "QueryThree:2",
+                                        }.ToArray()).SetName("Limit to 2 single pass"),
                            new TestCaseData((object) new[]
                                                      {
                                                          new[]
@@ -73,10 +73,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                                                      })
                                .Returns(new[]
                                         {
-                                            "QueryOne:3",
-                                            "QueryTwo:3",
-                                            "QueryThree:3",
-                                        }.ToArray()).SetName("Limit to 3 multi pass"),
+                                            "QueryOne:2",
+                                            "QueryTwo:2",
+                                            "QueryThree:2",
+                                        }.ToArray()).SetName("Limit to 2 multi pass"),
                        };
             }
         }

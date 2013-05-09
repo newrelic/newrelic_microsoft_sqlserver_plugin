@@ -49,9 +49,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				                                           .Catch(e => _log.Error(e))
 				                                           .ContinueWith(t =>
 				                                                         {
-					                                                         var queryContexts = t.Result.ToArray();
+					                                                         IQueryContext[] queryContexts = t.Result.ToArray();
 					                                                         server.UpdateHistory(queryContexts);
-					                                                         SendComponentDataToCollector(server, queryContexts);
+					                                                         SendComponentDataToCollector(server);
 					                                                         return queryContexts.Sum(q => q.MetricsRecorded);
 				                                                         }))
 				                     .ToArray();
@@ -81,7 +81,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			using (var conn = new SqlConnection(server.ConnectionString))
 			{
-				foreach (var query in queries)
+				foreach (ISqlMonitorQuery query in queries)
 				{
 					object[] results;
 					try
@@ -91,7 +91,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 						if (_VerboseSqlOutputLogger.IsInfoEnabled)
 						{
-							foreach (var result in results)
+							foreach (object result in results)
 							{
 								// TODO Replace ToString() with something more useful that prints each property in the object
 								_VerboseSqlOutputLogger.Info(result.ToString());
@@ -116,9 +116,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <param name="queryContexts">
 		///     Query data containing <see cref="ComponentData" /> where metrics are recorded.
 		/// </param>
-		internal void SendComponentDataToCollector(SqlServerToMonitor server, IQueryContext[] queryContexts)
+		internal void SendComponentDataToCollector(SqlServerToMonitor server)
 		{
-			var platformData = server.GeneratePlatformData(_agentData);
+			PlatformData platformData = server.GeneratePlatformData(_agentData);
 
 			// Allows a testing mode that does not send data to New Relic
 			if (_settings.CollectOnly)
