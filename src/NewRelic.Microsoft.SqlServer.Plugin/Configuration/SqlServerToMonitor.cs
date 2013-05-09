@@ -21,7 +21,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		string[] IncludedDatabases { get; }
 		string[] ExcludedDatabases { get; }
 
-		void MetricReportSuccessful();
+		void MetricReportSuccessful(DateTime? reportDate = null);
 		string ToString();
 	}
 
