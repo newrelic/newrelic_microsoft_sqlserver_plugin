@@ -72,6 +72,7 @@
       <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.dll" />
       <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.exe" />
       <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.config" />
+	  <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.md" />
     </ItemGroup>
     <Zip Files="@(FilesToZip)" ZipFileName="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.$(PackageVersion).zip" ZipLevel="9"
          WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\"/>
