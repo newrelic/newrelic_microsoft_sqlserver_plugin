@@ -49,7 +49,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				                                           .Catch(e => _log.Error(e))
 				                                           .ContinueWith(t =>
 				                                                         {
-					                                                         IQueryContext[] queryContexts = t.Result.ToArray();
+					                                                         var queryContexts = t.Result.ToArray();
 					                                                         server.UpdateHistory(queryContexts);
 					                                                         SendComponentDataToCollector(server);
 					                                                         return queryContexts.Sum(q => q.MetricsRecorded);
@@ -81,7 +81,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			using (var conn = new SqlConnection(server.ConnectionString))
 			{
-				foreach (ISqlMonitorQuery query in queries)
+				foreach (var query in queries)
 				{
 					object[] results;
 					try
@@ -91,7 +91,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 						if (_VerboseSqlOutputLogger.IsInfoEnabled)
 						{
-							foreach (object result in results)
+							foreach (var result in results)
 							{
 								// TODO Replace ToString() with something more useful that prints each property in the object
 								_VerboseSqlOutputLogger.Info(result.ToString());
@@ -118,7 +118,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// </param>
 		internal void SendComponentDataToCollector(SqlServerToMonitor server)
 		{
-			PlatformData platformData = server.GeneratePlatformData(_agentData);
+			var platformData = server.GeneratePlatformData(_agentData);
 
 			// Allows a testing mode that does not send data to New Relic
 			if (_settings.CollectOnly)
