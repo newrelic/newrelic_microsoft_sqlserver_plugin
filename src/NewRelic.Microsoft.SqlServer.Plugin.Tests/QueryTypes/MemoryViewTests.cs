@@ -6,7 +6,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 	public class MemoryViewTests
 	{
 		[Test]
-		public void Assert_buffer_miss_ratio_stays_between_0_and_1()
+		public void Assert_buffer_cache_miss_ratio_stays_between_0_and_1()
 		{
 			var memoryView = new MemoryView {BufferCacheHitRatio = 1.2m};
 			Assert.That(memoryView.BufferCacheMissRatio, Is.EqualTo(0m), "Hit ratio of 1.2");
@@ -16,6 +16,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 			memoryView.BufferCacheHitRatio = -.5m;
 			Assert.That(memoryView.BufferCacheMissRatio, Is.EqualTo(1m), "Hit ratio of -.5m");
+		}
+
+		[Test]
+		public void Assert_buffer_cache_hit_ratio_stays_between_0_and_1()
+		{
+			var memoryView = new MemoryView {BufferCacheHitRatio = 1.2m};
+			Assert.That(memoryView.BufferCacheHitRatio, Is.EqualTo(1m), "Hit ratio of 1.2");
+
+			memoryView.BufferCacheHitRatio = .81m;
+			Assert.That(memoryView.BufferCacheHitRatio, Is.EqualTo(.81m), "Hit ratio of .81");
+
+			memoryView.BufferCacheHitRatio = -.5m;
+			Assert.That(memoryView.BufferCacheHitRatio, Is.EqualTo(0m), "Hit ratio of -.5m");
 		}
 	}
 }
