@@ -21,7 +21,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         string[] IncludedDatabases { get; }
         string[] ExcludedDatabases { get; }
 
-        void MetricReportSuccessful();
+		void MetricReportSuccessful(DateTime? reportDate = null);
         string ToString();
     }
 
@@ -75,9 +75,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         public string[] IncludedDatabases { get; private set; }
         public string[] ExcludedDatabases { get; private set; }
 
-        public void MetricReportSuccessful()
+        public void MetricReportSuccessful(DateTime? reportDate = null)
         {
-            _lastSuccessfulReportTime = DateTime.Now;
+            _lastSuccessfulReportTime = reportDate ?? DateTime.Now;
             QueryHistory.Values.ForEach(histories => histories.ForEach(qc => qc.DataSent = true));
         }
 

@@ -130,10 +130,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			{
 				_log.DebugFormat("Reporting metrics for {0} with duration {1}s", server.Name, server.Duration);
 
+				// Record the report time as now. If SendData takes very long, the duration comes up short and the chart shows a drop out
+				var reportTime = DateTime.Now;
 				// Send the data to New Relic
 				new SqlRequest(_settings.LicenseKey) {Data = platformData}.SendData();
-				// If send is error free, inform the server to allow an accurate duration calculation
-				server.MetricReportSuccessful();
+				// If send is error free, reset the last report date to calculate accurate duration
+				server.MetricReportSuccessful(reportTime);
 			}
 			catch (Exception e)
 			{
