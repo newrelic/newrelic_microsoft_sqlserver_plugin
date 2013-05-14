@@ -40,21 +40,45 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			[Metric(Ignore = true)]
 			public int SimplyIgnored { get; set; }
 
+			[Metric(MetricValueType = MetricValueType.Value)]
+			public long LongValueMetric { get; set; }
+
+			[Metric(MetricValueType = MetricValueType.Value)]
+			public int IntValueMetric { get; set; }
+
+			[Metric(MetricValueType = MetricValueType.Value)]
+			public byte ByteValueMetric { get; set; }
+
+			[Metric(MetricValueType = MetricValueType.Count)]
+			public decimal DecimalCountMetric { get; set; }
+
 			public long ConventionalProperty { get; set; }
+		}
+
+		protected class FakeTypeWithUnits
+		{
+			[Metric(Units = "[bytes/sec]")]
+			public int RateOfSomething { get; set; }
+		}
+
+		private static ComponentData CreateComponentDataForFake(object fake, string propertyName)
+		{
+			var componentData = new ComponentData();
+
+			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var queryContext = new QueryContext(query) {ComponentData = componentData,};
+
+			var metricMapper = new MetricMapper(fake.GetType().GetProperty(propertyName));
+
+			metricMapper.AddMetric(queryContext, fake);
+			return componentData;
 		}
 
 		[Test]
 		public void Assert_decimal_is_mapped()
 		{
 			var fake = new FakeQueryType {Decimal = 12.3m,};
-			var componentData = new ComponentData();
-
-			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
-			var queryContext = new QueryContext(query) {ComponentData = componentData,};
-
-			var metricMapper = new MetricMapper(fake.GetType().GetProperty("Decimal"));
-
-			metricMapper.AddMetric(queryContext, fake);
+			var componentData = CreateComponentDataForFake(fake, "Decimal");
 
 			const string metricKey = "Fake/Decimal";
 			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
@@ -74,6 +98,46 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		[Test]
+		public void Assert_metric_attribute_on_decimal_property_is_mapped_to_int_count()
+		{
+			var fake = new MarkedUpFakeQueryType {DecimalCountMetric = 12.3m,};
+			var componentData = CreateComponentDataForFake(fake, "DecimalCountMetric");
+
+			const string metricKey = "Fake/DecimalCountMetric";
+			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
+			var condition = componentData.Metrics[metricKey];
+			Assert.That(condition, Is.EqualTo(12), "Metric not mapped to int correctly");
+		}
+
+		[Test]
+		[TestCase("Byte")]
+		[TestCase("Short")]
+		[TestCase("Integer")]
+		[TestCase("Long")]
+		public void Assert_metric_attribute_on_integer_properties_is_mapped_to_decimal_value(string propertyName)
+		{
+			var fake = new FakeQueryType();
+			var propertyInfo = fake.GetType().GetProperty(propertyName);
+			propertyInfo.SetValue(fake, (byte) 100, null);
+
+			var componentData = CreateComponentDataForFake(fake, propertyName);
+
+			var metricKey = "Fake/" + propertyName;
+			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
+
+			var condition = componentData.Metrics[metricKey];
+			Assert.That(condition, Is.EqualTo(100m), "Metric not mapped to decimal correctly");
+		}
+
+		[Test]
+		public void Assert_metric_units_are_stored_by_mapper()
+		{
+			var mapper = MetricMapper.TryCreate(typeof(FakeTypeWithUnits).GetProperty("RateOfSomething"));
+			Assert.That(mapper, Is.Not.Null, "Mapping of FakeTypeWithUnits failed");
+			Assert.That(mapper.MetricUnits, Is.EqualTo("[bytes/sec]"), "Units from MetricAttribute not mapped correctly");
+		}
+
+		[Test]
 		[TestCase("Byte", (byte) 27, TestName = "Byte")]
 		[TestCase("Short", (short) 32045, TestName = "Short")]
 		[TestCase("Integer", 42, TestName = "Integer")]
@@ -84,14 +148,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var propertyInfo = fake.GetType().GetProperty(propertyName);
 			propertyInfo.SetValue(fake, value, null);
 
-			var componentData = new ComponentData();
-
-			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
-			var queryContext = new QueryContext(query) {ComponentData = componentData,};
-
-			var metricMapper = new MetricMapper(propertyInfo);
-
-			metricMapper.AddMetric(queryContext, fake);
+			var componentData = CreateComponentDataForFake(fake, propertyName);
 
 			var metricKey = "Fake/" + propertyName;
 			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");
@@ -159,15 +216,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var propertyInfo = fake.GetType().GetProperty(propertyName);
 			propertyInfo.SetValue(fake, value, null);
 
-			var componentData = new ComponentData();
-
-			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
-			var queryContext = new QueryContext(query) {ComponentData = componentData,};
-
-			var mapper = MetricMapper.TryCreate(propertyInfo);
-			Assert.That(mapper, Is.Not.Null, "Mapping {0} failed", propertyInfo.PropertyType.Name);
-
-			mapper.AddMetric(queryContext, fake);
+			var componentData = CreateComponentDataForFake(fake, propertyName);
 
 			var metricKey = "Fake/" + propertyName;
 			Assert.That(componentData.Metrics.ContainsKey(metricKey), "Expected metric with correct name to be added");

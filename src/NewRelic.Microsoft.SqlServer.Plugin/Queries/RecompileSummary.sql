@@ -46,6 +46,6 @@ SELECT
 	SingleUseObjects,
 	MultipleUseObjects,
 	CASE
-		WHEN (SingleUseObjects + MultipleUseObjects) = 0 THEN 0 ELSE CAST(SingleUseObjects AS decimal(18, 2)) / (SingleUseObjects + MultipleUseObjects)
+		WHEN (SingleUseObjects + MultipleUseObjects) = 0 THEN 0 ELSE SingleUseObjects * 100.00 / (SingleUseObjects + MultipleUseObjects)
 	END	AS SingleUsePercent
 FROM SumsByDatabase

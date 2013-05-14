@@ -47,7 +47,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                 //For first encounter, send empty metric
                 if (queryHistory.Length == 1)
                 {
-                    _VerboseMetricsLogger.InfoFormat("Not enough historical data to perform delta on data from {0}, generating zeroed out componentdata", mostRecentUnsentQuery.QueryName);
+                    _VerboseMetricsLogger.InfoFormat("Not enough historical data to perform delta on data from {0}, generating zeroed out ComponentData", mostRecentUnsentQuery.QueryName);
                     return GetZeroedComponentData(mostRecentUnsentQuery.ComponentData);
                 }
 

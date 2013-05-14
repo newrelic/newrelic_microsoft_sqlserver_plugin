@@ -78,6 +78,7 @@
     <Compile Include="Configuration\SqlServerElement.cs" />
     <Compile Include="Core\Extensions\ExtensionsForIDictionary.cs" />
     <Compile Include="Core\MetricTransformEnum.cs" />
+    <Compile Include="Core\MetricValueType.cs" />
     <Compile Include="Properties\Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
     <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />

@@ -43,7 +43,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 					var pollingThreadSettings = new PollingThreadSettings
 					                            {
 						                            Name = "SqlPoller",
-													InitialPollDelaySeconds = _settings.PollIntervalSeconds,
+						                            // Set to immediate when only collecting for instant gratification
+						                            InitialPollDelaySeconds = _settings.CollectOnly ? 0 : _settings.PollIntervalSeconds,
 						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
 						                            PollAction = () => _metricCollector.QueryServers(queries),
 						                            AutoResetEvent = new AutoResetEvent(false),

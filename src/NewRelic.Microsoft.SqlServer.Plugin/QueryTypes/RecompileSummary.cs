@@ -2,11 +2,16 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-    [Query("RecompileSummary.sql", "Component/Recompiles/{DatabaseName}", QueryName = "Recompile Summary", Enabled = true)]
+    [Query("RecompileSummary.sql", "Component/Recompiles/{MetricName}/{DatabaseName}", QueryName = "Recompile Summary", Enabled = true)]
     internal class RecompileSummary : RecompileQueryBase
     {
+		[Metric(MetricValueType = MetricValueType.Count, Units = "[objects]")]
         public int SingleUseObjects { get; set; }
-        public int MultipleUseObjects { get; set; }
-        public decimal SingleUsePercent { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Count, Units = "[objects]")]
+		public int MultipleUseObjects { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_Single_Use]")]
+		public decimal SingleUsePercent { get; set; }
     }
 }

@@ -100,15 +100,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		[Test]
+		public void Assert_metric_pattern_substitution_appends_units_text_to_the_end()
+		{
+			const string metricPattern = "Component/Memory/{MetricName}/Foo";
+
+			var metricName = QueryContext.FormatMetricKey(metricPattern, new object(), "MyMetric", "[bytes/min]");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/MyMetric/Foo[bytes/min]"), "Substitution failed");
+		}
+
+		[Test]
 		public void Assert_metric_pattern_substitution_replaces_database_with_name_from_result()
 		{
-			const string metricPattern = "Component/Memory/{DatabaseName}/{MetricName}/Foo";
+			const string metricPattern = "Component/Memory/{MetricName}/{DatabaseName}/Foo";
 
 			var databaseMetric = Substitute.For<IDatabaseMetric>();
 			databaseMetric.DatabaseName.Returns("ManyTablesDB");
 
 			var metricName = QueryContext.FormatMetricKey(metricPattern, databaseMetric, "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Component/Memory/ManyTablesDB/MyMetric/Foo"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/MyMetric/ManyTablesDB/Foo"), "Substitution failed");
 		}
 
 		[Test]
