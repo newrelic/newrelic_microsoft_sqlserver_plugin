@@ -47,6 +47,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                     ExpectedWhereClause = "AND (DB_NAME(s.dbid) NOT IN ('master')",
                                     TestName = "SqlConnections Exclude Test"
                                 },
+								  new
+                                {
+                                    QueryMetric = new SqlConnectionsSummary() as DatabaseMetricBase,
+                                    Includes = new[] {"master"},
+                                    Excludes = (string[]) null,
+                                    ExpectedWhereClause = "AND (DB_NAME(s.dbid) IN ('master')",
+                                    TestName = "SqlConnectionsSummary Include Test"
+                                },
+                                new
+                                {
+                                    QueryMetric = new SqlConnectionsSummary() as DatabaseMetricBase,
+                                    Includes = (string[]) null,
+                                    Excludes = new[] {"master"},
+                                    ExpectedWhereClause = "AND (DB_NAME(s.dbid) NOT IN ('master')",
+                                    TestName = "SqlConnectionsSummary Exclude Test"
+                                },
                                 new
                                 {
                                     QueryMetric = new FileIoView() as DatabaseMetricBase,

@@ -2,6 +2,7 @@
 using System.Threading;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 using log4net;
 
@@ -42,7 +43,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 					var pollingThreadSettings = new PollingThreadSettings
 					                            {
 						                            Name = "SqlPoller",
-						                            InitialPollDelaySeconds = 0,
+													InitialPollDelaySeconds = _settings.PollIntervalSeconds,
 						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
 						                            PollAction = () => _metricCollector.QueryServers(queries),
 						                            AutoResetEvent = new AutoResetEvent(false),

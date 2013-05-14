@@ -37,51 +37,51 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Assert_custom_placeholders_have_non_alphanumerics_replaced_with_underbar()
 		{
-			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			const string metricPattern = "Component/Memory/{ThePlaceholder}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "I ->have.bad_45+stuff!", TheMetric = 42,};
 			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
 
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/I___have_bad_45_stuff_/TheMetric"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/I___have_bad_45_stuff_/TheMetric"), "Substitution failed");
 		}
 
 		[Test]
 		public void Assert_custom_placeholders_have_whitespace_trimmed()
 		{
-			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			const string metricPattern = "Component/Memory/{ThePlaceholder}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "  space then tab\t", TheMetric = 42,};
 			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
 
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/space_then_tab/TheMetric"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/space_then_tab/TheMetric"), "Substitution failed");
 		}
 
 		[Test]
 		public void Assert_custom_placeholders_in_pattern_are_replaced()
 		{
-			const string metricPattern = "Custom/Memory/{ThePlaceholder}/Machine/{AnotherPlaceholder}/{MetricName}";
+			const string metricPattern = "Component/Memory/{ThePlaceholder}/Machine/{AnotherPlaceholder}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "Tada", AnotherPlaceholder = "Flexible", TheMetric = 42,};
 			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
 
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tada/Machine/Flexible/TheMetric"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/Tada/Machine/Flexible/TheMetric"), "Substitution failed");
 		}
 
 		[Test]
 		public void Assert_custom_placeholders_with_empty_values_are_replaced_with_empty_string()
 		{
-			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			const string metricPattern = "Component/Memory/{ThePlaceholder}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "", TheMetric = 42,};
 			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
 
-			Assert.That(metricName, Is.EqualTo("Custom/Memory//TheMetric"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory//TheMetric"), "Substitution failed");
 		}
 
 		[Test]
 		public void Assert_custom_placeholders_with_null_values_are_replaced_with_null_text()
 		{
-			const string metricPattern = "Custom/Memory/{ThePlaceholder}/{MetricName}";
+			const string metricPattern = "Component/Memory/{ThePlaceholder}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = null, TheMetric = 42,};
 			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric");
 
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/null/TheMetric"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/null/TheMetric"), "Substitution failed");
 		}
 
 		[Test]
@@ -91,39 +91,39 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			databaseMetric.DatabaseName.Returns("Tableriffic");
 
 			// With trailing slash in the pattern
-			var metricName = QueryContext.FormatMetricKey("Custom/Memory/{DatabaseName}/", databaseMetric, "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash present");
+			var metricName = QueryContext.FormatMetricKey("Component/Memory/{DatabaseName}/", databaseMetric, "MyMetric");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash present");
 
 			// Without the trailing slash
-			metricName = QueryContext.FormatMetricKey("Custom/Memory/{DatabaseName}", databaseMetric, "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash is missing");
+			metricName = QueryContext.FormatMetricKey("Component/Memory/{DatabaseName}", databaseMetric, "MyMetric");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/Tableriffic/MyMetric"), "Substitution failed when trailing slash is missing");
 		}
 
 		[Test]
 		public void Assert_metric_pattern_substitution_replaces_database_with_name_from_result()
 		{
-			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}/Foo";
+			const string metricPattern = "Component/Memory/{DatabaseName}/{MetricName}/Foo";
 
 			var databaseMetric = Substitute.For<IDatabaseMetric>();
 			databaseMetric.DatabaseName.Returns("ManyTablesDB");
 
 			var metricName = QueryContext.FormatMetricKey(metricPattern, databaseMetric, "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/ManyTablesDB/MyMetric/Foo"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/ManyTablesDB/MyMetric/Foo"), "Substitution failed");
 		}
 
 		[Test]
 		public void Assert_missing_database_name_replaced_with_none()
 		{
-			const string metricPattern = "Custom/Memory/{DatabaseName}/{MetricName}";
+			const string metricPattern = "Component/Memory/{DatabaseName}/{MetricName}";
 			var queryResult = new object();
 			var metricName = QueryContext.FormatMetricKey(metricPattern, queryResult, "MyMetric");
-			Assert.That(metricName, Is.EqualTo("Custom/Memory/(none)/MyMetric"), "Substitution failed");
+			Assert.That(metricName, Is.EqualTo("Component/Memory/(none)/MyMetric"), "Substitution failed");
 		}
 
 		[Test]
 		public void Should_throw_when_placeholder_case_is_not_exact()
 		{
-			const string metricPattern = "Custom/Memory/{CASEMATTERSPEOPLE}/{MetricName}";
+			const string metricPattern = "Component/Memory/{CASEMATTERSPEOPLE}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {CaseMattersPeople = "Why are you yelling?",};
 			var exception = Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
 			Assert.That(exception.Message.ToLower(), Is.StringMatching("case-sensitive"), "Expected a helpful error message");
@@ -132,7 +132,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Should_throw_with_custom_placeholders_in_pattern_without_getter_property()
 		{
-			const string metricPattern = "Custom/Memory/{PropertyWithoutGetter}/{MetricName}";
+			const string metricPattern = "Component/Memory/{PropertyWithoutGetter}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder();
 
 			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
@@ -141,7 +141,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Should_throw_with_custom_placeholders_in_pattern_without_matching_property()
 		{
-			const string metricPattern = "Custom/Memory/{ThisMatchesNothing}/{MetricName}";
+			const string metricPattern = "Component/Memory/{ThisMatchesNothing}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {ThePlaceholder = "BooHiss"};
 
 			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
@@ -150,7 +150,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Should_throw_with_custom_placeholders_in_pattern_without_public_getter_property()
 		{
-			const string metricPattern = "Custom/Memory/{NotPublicGetterProperty}/{MetricName}";
+			const string metricPattern = "Component/Memory/{NotPublicGetterProperty}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {NotPublicGetterProperty = "BooHiss"};
 
 			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
@@ -159,7 +159,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Should_throw_with_custom_placeholders_in_pattern_without_public_instance_property()
 		{
-			const string metricPattern = "Custom/Memory/{NotInstanceProperty}/{MetricName}";
+			const string metricPattern = "Component/Memory/{NotInstanceProperty}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder();
 
 			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));
@@ -168,7 +168,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Should_throw_with_custom_placeholders_in_pattern_without_public_property()
 		{
-			const string metricPattern = "Custom/Memory/{NotPublicProperty}/{MetricName}";
+			const string metricPattern = "Component/Memory/{NotPublicProperty}/{MetricName}";
 			var queryResult = new FakeQueryWithCustomPlaceHolder {NotPublicProperty = "BooHiss",};
 
 			Assert.Throws<Exception>(() => QueryContext.FormatMetricKey(metricPattern, queryResult, "TheMetric"));

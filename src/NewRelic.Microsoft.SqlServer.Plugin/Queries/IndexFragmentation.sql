@@ -1,6 +1,7 @@
 -- Index Fragmentation 
 -- Returns DB, Related Table, Fragmentation and index name for index objects with fragmentation over @FragPercent
 -- This could take 2 - 15 minutes to run on a server with many large DBs. This returns important information, so an execution strategy is needed.
+-- Data collection nature: Realtime
 
 
 DECLARE @FragPercent int

@@ -1,5 +1,6 @@
 -- File I/O View. This data will reset on SQL Server Restart.
 -- Size in Bytes good for basic pie or stacked bar chart etc.
+-- Data collection nature: Both Cumulative. Needs deltas.
 
 SELECT
 	CAST(DB_NAME(a.database_id) AS varchar(150)) AS DatabaseName,

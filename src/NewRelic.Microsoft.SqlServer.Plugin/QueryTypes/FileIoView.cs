@@ -2,11 +2,13 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-    [Query("FileIOView.sql", "Custom/FileIO/{DatabaseName}", QueryName = "File I/O", Enabled = true)]
+    [Query("FileIOView.sql", "Component/FileIO/{DatabaseName}", QueryName = "File I/O", MetricTransformEnum = MetricTransformEnum.Delta, Enabled = true)]
     internal class FileIoView : DatabaseMetricBase
     {
         public long BytesRead { get; set; }
         public long BytesWritten { get; set; }
+		public long NumberOfReads { get; set; }
+		public long NumberOfWrites { get; set; }
         public long SizeInBytes { get; set; }
 
         protected override string DbNameForWhereClause

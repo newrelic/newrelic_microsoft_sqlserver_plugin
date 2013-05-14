@@ -2,6 +2,8 @@
 -- Identifies bottlenecks within SQL Server
 -- Is reset on SQL Server Reset
 -- Expected wait states are omitted from view
+-- Data collection nature: Cumulative. Though the proportions are usable without delta tracking.
+
 
 
 WITH [TempWaitStates] AS (

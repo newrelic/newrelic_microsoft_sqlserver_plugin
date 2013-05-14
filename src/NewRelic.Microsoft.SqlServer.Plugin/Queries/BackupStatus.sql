@@ -1,3 +1,10 @@
+-- Database Backup Status View
+-- Returns status of every DB on instance except tempdb.
+-- Assumes one backup a day is ok
+-- No backup within a day or none ever is an error
+-- Data collection nature: Realtime
+
+
 SELECT
 	SUBSTRING(s.name, 1, 40)				AS [DatabaseName],
 	CAST(b.backup_start_date AS char(11))	AS [BackupDate],
