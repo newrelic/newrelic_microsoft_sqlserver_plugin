@@ -58,6 +58,7 @@
     <Compile Include="Configuration\Log4NetTests.cs" />
     <Compile Include="Configuration\SqlServerToMonitorTests.cs" />
     <Compile Include="Core\ExtensionsForAssemblyTests.cs" />
+    <Compile Include="MetricCollectorTests.cs" />
     <Compile Include="MetricMapperTests.cs" />
     <Compile Include="ParameterizedQueryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="Configuration\ComponentDataRetriever.cs" />
     <Compile Include="Configuration\ConfigurationParser.cs" />
+    <Compile Include="Configuration\Database.cs" />
     <Compile Include="Configuration\DatabaseCollection.cs" />
     <Compile Include="Configuration\DatabaseElement.cs" />
     <Compile Include="Configuration\ISqlServerToMonitor.cs" />

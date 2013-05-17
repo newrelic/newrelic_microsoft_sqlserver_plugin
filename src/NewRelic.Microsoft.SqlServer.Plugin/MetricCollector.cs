@@ -9,6 +9,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Communication;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Binding.DotNET;
 
 using log4net;
@@ -67,7 +68,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		internal static IEnumerable<IQueryContext> QueryServer(IEnumerable<ISqlMonitorQuery> queries, SqlServerToMonitor server, ILog log)
+		internal static IEnumerable<IQueryContext> QueryServer(IEnumerable<ISqlMonitorQuery> queries, ISqlServerToMonitor server, ILog log)
 		{
 			// Remove password from logging
 			var safeConnectionString = new SqlConnectionStringBuilder(server.ConnectionString);
@@ -88,6 +89,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					{
 						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
 						results = query.Query(conn, server).ToArray();
+						ApplyDatabaseDisplayNames(server.IncludedDatabases, results);
 
 						if (_VerboseSqlOutputLogger.IsInfoEnabled)
 						{
@@ -104,19 +106,41 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
 						continue;
 					}
-					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(server.Name, Constants.ComponentGuid, server.Duration),};
+					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(server.Name, Constants.SqlServerComponentGuid, server.Duration),};
 				}
 			}
 		}
 
 		/// <summary>
-		///     Sends data to New Relic, unless in "collect only" mode.
+		/// Replaces the database name on <see cref="IDatabaseMetric"/> results with the <see cref="Database.DisplayName"/> when possible.
+		/// </summary>
+		/// <param name="includedDatabases"></param>
+		/// <param name="results"></param>
+		internal static void ApplyDatabaseDisplayNames(IEnumerable<Database> includedDatabases, object[] results)
+		{
+			if (includedDatabases == null) return;
+
+			var renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
+			if (!renameMap.Any()) return;
+
+			var databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
+			if (!databaseMetrics.Any()) return;
+
+			foreach (var databaseMetric in databaseMetrics)
+			{
+				string displayName;
+				if (renameMap.TryGetValue(databaseMetric.DatabaseName.ToLower(), out displayName))
+				{
+					databaseMetric.DatabaseName = displayName;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Sends data to New Relic, unless in "collect only" mode.
 		/// </summary>
 		/// <param name="server">SQL Server from which the metrics were harvested.</param>
-		/// <param name="queryContexts">
-		///     Query data containing <see cref="ComponentData" /> where metrics are recorded.
-		/// </param>
-		internal void SendComponentDataToCollector(SqlServerToMonitor server)
+		internal void SendComponentDataToCollector(ISqlServerToMonitor server)
 		{
 			var platformData = server.GeneratePlatformData(_agentData);
 

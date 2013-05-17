@@ -10,7 +10,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 	{
 		private string _version;
 
-		public Settings(SqlServerToMonitor[] sqlServers)
+		public Settings(ISqlServerToMonitor[] sqlServers)
 		{
 			SqlServers = sqlServers;
 			PollIntervalSeconds = 60;
@@ -19,7 +19,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public string LicenseKey { get; set; }
 		public bool UseSsl { get; set; }
 		public int PollIntervalSeconds { get; set; }
-		public SqlServerToMonitor[] SqlServers { get; private set; }
+		public ISqlServerToMonitor[] SqlServers { get; private set; }
 		public bool CollectOnly { get; set; }
 
 		public string Version
@@ -40,7 +40,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			var sqlInstanceToMonitors = section.SqlServers
 			                                   .Select(s =>
 			                                           {
-				                                           var includedDatabaseNames = s.IncludedDatabases.Select(d => d.Name).ToArray();
+				                                           var includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
 				                                           var excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
 				                                           return new SqlServerToMonitor(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
 			                                           })
@@ -72,10 +72,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 				foreach (var database in sqlServer.IncludedDatabases)
 				{
-					log.Debug("\t\t\tIncluding: " + database);
+					log.Debug("\t\t\tIncluding: " + database.Name);
 				}
 
-				foreach (var database in sqlServer.ExcludedDatabases)
+				foreach (var database in sqlServer.ExcludedDatabaseNames)
 				{
 					log.Debug("\t\t\tExcluding: " + database);
 				}

@@ -115,7 +115,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 
 			var metricInstance = (IDatabaseMetric) new T();
-			return metricInstance.ParameterizeQuery(commandText, server.IncludedDatabases, server.ExcludedDatabases);
+			return metricInstance.ParameterizeQuery(commandText, server.IncludedDatabaseNames, server.ExcludedDatabaseNames);
 		}
 
 		/// <summary>

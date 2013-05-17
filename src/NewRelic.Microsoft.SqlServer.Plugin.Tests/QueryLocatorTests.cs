@@ -37,7 +37,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		public class FakeDatabaseMetric : IDatabaseMetric
 		{
-			public string DatabaseName { get; private set; }
+			public string DatabaseName { get; set; }
 
 			public string ParameterizeQuery(string commandText, string[] includeDBs, string[] excludeDBs)
 			{

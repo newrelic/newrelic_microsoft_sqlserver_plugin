@@ -15,13 +15,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases)
 			: this(name, connectionString, includeSystemDatabases, null, null) {}
 
-		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases, IEnumerable<string> includedDatabaseNames, IEnumerable<string> excludedDatabaseNames)
+		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDbs, IEnumerable<string> excludedDatabaseNames)
 		{
 			Name = name;
 			ConnectionString = connectionString;
 			_lastSuccessfulReportTime = DateTime.Now;
 
-			var includedDbs = new List<string>();
 			var excludedDbs = new List<string>();
 
 			if (!includeSystemDatabases)
@@ -29,18 +28,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 				excludedDbs.AddRange(Constants.SystemDatabases);
 			}
 
-			if (includedDatabaseNames != null)
-			{
-				includedDbs.AddRange(includedDatabaseNames.Select(TransformDatabaseName));
-			}
-
 			if (excludedDatabaseNames != null)
 			{
-				excludedDbs.AddRange(excludedDatabaseNames.Select(TransformDatabaseName));
+				excludedDbs.AddRange(excludedDatabaseNames);
 			}
 
-			IncludedDatabases = includedDbs.ToArray();
-			ExcludedDatabases = excludedDbs.ToArray();
+			IncludedDatabases = includedDbs != null ? includedDbs.ToArray() : new Database[0];
+			ExcludedDatabaseNames = excludedDbs.ToArray();
 
 			QueryHistory = new Dictionary<string, Queue<IQueryContext>>();
 		}
@@ -55,8 +49,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			get { return (int) DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds; }
 		}
 
-		public string[] IncludedDatabases { get; private set; }
-		public string[] ExcludedDatabases { get; private set; }
+		public Database[] IncludedDatabases { get; private set; }
+
+		public string[] IncludedDatabaseNames
+		{
+			get { return IncludedDatabases.Select(d => d.Name).ToArray(); }
+		}
+
+		public string[] ExcludedDatabaseNames { get; private set; }
 
 		public void MetricReportSuccessful(DateTime? reportDate = null)
 		{
@@ -66,22 +66,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		public override string ToString()
 		{
-			return FormatProperties(Name, ConnectionString, IncludedDatabases, ExcludedDatabases);
+			return FormatProperties(Name, ConnectionString, IncludedDatabaseNames, ExcludedDatabaseNames);
 		}
 
-		/// <summary>
-		///     Used to transform a the database name string from the configuration file into a sql ready database name
-		/// </summary>
-		/// <param name="name">Database name from the configuration file</param>
-		/// <returns>Formatted and qualified sql ready string representing a database name</returns>
-		private static string TransformDatabaseName(string name)
+		internal static string FormatProperties(string name, string connectionString, string[] includedDatabases, string[] excludedDatabases)
 		{
-			return name.Replace('*', '%');
-		}
-
-		public static string FormatProperties(string name, string connectionString, string[] includedDatabases, string[] excludedDatabases)
-		{
-			return string.Format("Name: {0}, ConnectionString: {1}, IncludedDatabases: {2}, ExcludedDatabases: {3}",
+			return string.Format("Name: {0}, ConnectionString: {1}, IncludedDatabaseNames: {2}, ExcludedDatabaseNames: {3}",
 			                     name,
 			                     connectionString,
 			                     string.Join(", ", includedDatabases),

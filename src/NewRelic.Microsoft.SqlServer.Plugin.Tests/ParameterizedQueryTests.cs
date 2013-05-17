@@ -7,7 +7,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-    [TestFixture]
+	[TestFixture]
     public class ParameterizedQueryTests
     {
         [Test]

@@ -27,8 +27,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 					break;
 				case WhereClauseTokenEnum.Unknown:
 				default:
-					throw new ArgumentException(string.Format("WhereClauseToken '{0}' not recognized. ",
-					                                          WhereClauseToken));
+					throw new ArgumentException(string.Format("WhereClauseToken '{0}' not recognized. ", WhereClauseToken));
 			}
 
 			if (!commandText.Contains(whereToken))
