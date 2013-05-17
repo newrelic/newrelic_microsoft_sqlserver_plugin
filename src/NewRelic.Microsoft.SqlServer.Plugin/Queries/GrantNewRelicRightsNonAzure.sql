@@ -1,0 +1,18 @@
+-- SQL Rights Grant for DMVs (non-Azure)
+
+USE [master];
+GO
+
+CREATE LOGIN NewRelic WITH PASSWORD=N'abcd1234!',
+DEFAULT_DATABASE=[master], CHECK_EXPIRATION=OFF,
+CHECK_POLICY=ON;
+GO
+
+GRANT VIEW SERVER STATE TO NewRelic;
+GO
+
+USE TestData;
+GO
+
+CREATE USER NewRelicUser FOR LOGIN NewRelic;
+GO
