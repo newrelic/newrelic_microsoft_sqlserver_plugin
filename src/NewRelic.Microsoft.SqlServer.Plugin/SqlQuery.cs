@@ -12,46 +12,55 @@ using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public class SqlServerQuery : ISqlQuery
+	public class SqlQuery : ISqlQuery
 	{
 		/// <summary>Stores a pointer to the generic method so this reflection isn't repeated later.</summary>
-		private static readonly MethodInfo _GenericQueryMethod = typeof (SqlServerQuery).GetMethod("Query", BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly MethodInfo _QueryMethod = typeof (SqlQuery).GetMethod("Query", BindingFlags.Instance | BindingFlags.NonPublic);
+
+		private static readonly MethodInfo _DatabaseMetricQueryMethod = typeof (SqlQuery).GetMethod("DatabaseMetricQuery", BindingFlags.Instance | BindingFlags.NonPublic);
 
 		private readonly IDapperWrapper _dapperWrapper;
 		private readonly MethodInfo _genericMethod;
 		private readonly MetricMapper[] _metricMappers;
-		private string _metricPattern;
+		internal QueryAttribute QueryAttribute;
 
-		internal SqlServerQuery(Type queryType, SqlServerQueryAttribute attribute, IDapperWrapper dapperWrapper, string commandText = null)
+		internal SqlQuery(Type queryType, QueryAttribute attribute, IDapperWrapper dapperWrapper, string commandText = null)
 		{
 			_dapperWrapper = dapperWrapper;
 			ResultTypeName = queryType.Name;
-			QueryName = attribute.QueryName;
-			ResourceName = attribute.ResourceName;
-			MetricPattern = attribute.MetricPattern;
-			MetricTransformEnum = attribute.MetricTransformEnum;
+			QueryAttribute = attribute;
+
+			MetricPattern = attribute.MetricPattern ?? string.Format("Component/{0}", ResultTypeName);
 
 			// Get the SQL resource from the same assembly as the type, when commandText is not supplied
 			CommandText = commandText ?? queryType.Assembly.SearchForStringResource(attribute.ResourceName);
 
 			// Get a pointer to the correctly typed Query method below with the QueryType as the generic parameter
-			_genericMethod = _GenericQueryMethod.MakeGenericMethod(queryType);
+			_genericMethod = attribute.ShouldParameterizeDatabaseInQuery && typeof (IDatabaseMetric).IsAssignableFrom(queryType)
+				                 ? _DatabaseMetricQueryMethod.MakeGenericMethod(queryType)
+				                 : _QueryMethod.MakeGenericMethod(queryType);
 
 			_metricMappers = GetMappers(queryType);
 		}
 
-		public MetricTransformEnum MetricTransformEnum { get; private set; }
-
-		public string QueryName { get; private set; }
-
-		public string MetricPattern
+		public MetricTransformEnum MetricTransformEnum
 		{
-			get { return _metricPattern ?? string.Format("Component/{0}", ResultTypeName); }
-			set { _metricPattern = value; }
+			get { return QueryAttribute.MetricTransformEnum; }
 		}
 
+		public string QueryName
+		{
+			get { return QueryAttribute.QueryName; }
+		}
+
+		public string MetricPattern { get; private set; }
 		public string ResultTypeName { get; private set; }
-		public string ResourceName { get; private set; }
+
+		public string ResourceName
+		{
+			get { return QueryAttribute.ResourceName; }
+		}
+
 		public string CommandText { get; private set; }
 
 		/// <summary>
@@ -75,8 +84,18 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <summary>
 		///     Never called directly, rather called via reflection.
 		/// </summary>
-		protected IEnumerable<T> Query<T>(IDbConnection dbConnection, ISqlEndpoint endpoint)
+		internal IEnumerable<T> Query<T>(IDbConnection dbConnection, ISqlEndpoint endpoint)
 			where T : class, new()
+		{
+			// Pass the simple Id=1 anonymous object to support Dapper's hashing and caching of queries
+			return _dapperWrapper.Query<T>(dbConnection, CommandText, new {Id = 1});
+		}
+
+		/// <summary>
+		///     Never called directly, rather called via reflection.
+		/// </summary>
+		internal IEnumerable<T> DatabaseMetricQuery<T>(IDbConnection dbConnection, ISqlEndpoint endpoint)
+			where T : IDatabaseMetric, new()
 		{
 			var commandText = PrepareCommandText<T>(CommandText, endpoint);
 			// Pass the simple Id=1 anonymous object to support Dapper's hashing and caching of queries
@@ -84,14 +103,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		internal static string PrepareCommandText<T>(string commandText, ISqlEndpoint endpoint)
-			where T : class, new()
+			where T : IDatabaseMetric, new()
 		{
-			var typeofT = typeof (T);
-			if (!typeof (IDatabaseMetric).IsAssignableFrom(typeofT))
-			{
-				return commandText;
-			}
-
 			var metricInstance = (IDatabaseMetric) new T();
 			return metricInstance.ParameterizeQuery(commandText, endpoint.IncludedDatabaseNames, endpoint.ExcludedDatabaseNames);
 		}

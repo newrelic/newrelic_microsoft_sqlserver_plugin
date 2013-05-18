@@ -9,7 +9,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	public interface ISqlQuery
 	{
 		string QueryName { get; }
-		string MetricPattern { get; set; }
+		string MetricPattern { get; }
 		string ResultTypeName { get; }
 		string ResourceName { get; }
 		string CommandText { get; }

@@ -11,7 +11,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
     public class ParameterizedQueryTests
     {
         [Test]
-        public void Assert_that_query_appropriately_replaces_where_clause()
+        public void Assert_that_sql_server_query_appropriately_replaces_where_clause()
         {
             var testCases = new[]
                             {
@@ -33,35 +33,35 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                 },
                                 new
                                 {
-                                    QueryMetric = new SqlConnections() as DatabaseMetricBase,
+                                    QueryMetric = new Connections() as DatabaseMetricBase,
                                     Includes = new[] {"master"},
                                     Excludes = (string[]) null,
                                     ExpectedWhereClause = "AND (DB_NAME(s.dbid) IN ('master')",
-                                    TestName = "SqlConnections Include Test"
+                                    TestName = "Connections Include Test"
                                 },
                                 new
                                 {
-                                    QueryMetric = new SqlConnections() as DatabaseMetricBase,
+                                    QueryMetric = new Connections() as DatabaseMetricBase,
                                     Includes = (string[]) null,
                                     Excludes = new[] {"master"},
                                     ExpectedWhereClause = "AND (DB_NAME(s.dbid) NOT IN ('master')",
-                                    TestName = "SqlConnections Exclude Test"
+                                    TestName = "Connections Exclude Test"
                                 },
 								  new
                                 {
-                                    QueryMetric = new SqlConnectionsSummary() as DatabaseMetricBase,
+                                    QueryMetric = new ConnectionsSummary() as DatabaseMetricBase,
                                     Includes = new[] {"master"},
                                     Excludes = (string[]) null,
                                     ExpectedWhereClause = "AND (DB_NAME(s.dbid) IN ('master')",
-                                    TestName = "SqlConnectionsSummary Include Test"
+                                    TestName = "ConnectionsSummary Include Test"
                                 },
                                 new
                                 {
-                                    QueryMetric = new SqlConnectionsSummary() as DatabaseMetricBase,
+                                    QueryMetric = new ConnectionsSummary() as DatabaseMetricBase,
                                     Includes = (string[]) null,
                                     Excludes = new[] {"master"},
                                     ExpectedWhereClause = "AND (DB_NAME(s.dbid) NOT IN ('master')",
-                                    TestName = "SqlConnectionsSummary Exclude Test"
+                                    TestName = "ConnectionsSummary Exclude Test"
                                 },
                                 new
                                 {
@@ -116,7 +116,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             foreach (var testCase in testCases)
             {
                 var queryLocator = new QueryLocator(null);
-                var queries = queryLocator.PrepareQueries(new[] {testCase.QueryMetric.GetType()}, false);
+	            var queries = queryLocator.PrepareQueries(new[] {testCase.QueryMetric.GetType()}, false)
+					.Cast<SqlQuery>()
+					.Where(q => q.QueryAttribute.ShouldParameterizeDatabaseInQuery);
 
                 foreach (var query in queries)
                 {

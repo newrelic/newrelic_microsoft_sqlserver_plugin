@@ -45,7 +45,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		[Test]
 		public void Should_throw_when_replacement_token_is_missing_from_sql()
 		{
-			Assert.Throws<Exception>(() => new FileIoView().ParameterizeQuery("no token here", null, null));
+			Assert.Throws<Exception>(() => new FileIoView().ParameterizeQuery("no token here", new[]{"foo"}, null));
 		}
 	}
 }

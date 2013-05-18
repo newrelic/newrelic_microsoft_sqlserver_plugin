@@ -2,8 +2,9 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlServerQuery("SQLConnectionsSummary.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "SQL Connections Summary", Enabled = true)]
-	internal class SqlConnectionsSummary : DatabaseMetricBase
+	[AzureSqlQueryAttribute("ConnectionsSummary.AzureSql.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "Azure SQL Connections Summary", Enabled = true)]
+	[SqlServerQuery("ConnectionsSummary.SqlServer.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "SQL Server Connections Summary", Enabled = true)]
+	internal class ConnectionsSummary : DatabaseMetricBase
 	{
 		[Metric(MetricValueType = MetricValueType.Count, Units = "[connections]")]
 		public int NumberOfConnections { get; set; }

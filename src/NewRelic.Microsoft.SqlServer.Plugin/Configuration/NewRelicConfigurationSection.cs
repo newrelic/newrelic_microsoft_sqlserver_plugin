@@ -15,5 +15,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		{
 			get { return ((SqlServerCollection) (base["sqlServers"])); }
 		}
+
+		[ConfigurationProperty("azure")]
+		public AzureCollection AzureSqlDatabases
+		{
+			get { return ((AzureCollection)(base["azure"])); }
+		}
 	}
 }

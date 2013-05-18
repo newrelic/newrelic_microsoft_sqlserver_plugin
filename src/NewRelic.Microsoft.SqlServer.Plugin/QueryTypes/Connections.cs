@@ -4,8 +4,8 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[SqlServerQuery("SQLConnections.sql", "Component/SqlConnections/{MetricName}/{DatabaseName}", QueryName = "SQL Connections", Enabled = true)]
-	internal class SqlConnections : DatabaseMetricBase
+	[SqlServerQuery("Connections.SqlServer.sql", "Component/Connections/{MetricName}/{DatabaseName}", QueryName = "SQL Connections", Enabled = true)]
+	internal class Connections : DatabaseMetricBase
 	{
 		public Guid ConnectionId { get; set; }
 		public string ClientNetAddress { get; set; }
