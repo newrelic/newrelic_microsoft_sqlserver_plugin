@@ -9,10 +9,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
     ///     Marks a <em>QueryType</em> with the information required to gather and report a set of metrics.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class QueryAttribute : Attribute
+    public sealed class SqlServerQueryAttribute : Attribute
     {
         [Obsolete("Supply metricPattern", true)]
-        public QueryAttribute(string resourceName)
+        public SqlServerQueryAttribute(string resourceName)
             : this(resourceName, null) {}
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
         /// <param name="metricPattern">
         ///     <see cref="MetricPattern" />
         /// </param>
-        public QueryAttribute(string resourceName, string metricPattern)
+        public SqlServerQueryAttribute(string resourceName, string metricPattern)
         {
             ResourceName = resourceName;
             MetricPattern = metricPattern;

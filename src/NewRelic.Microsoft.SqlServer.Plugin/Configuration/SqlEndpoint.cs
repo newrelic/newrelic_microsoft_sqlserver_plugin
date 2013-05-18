@@ -8,14 +8,14 @@ using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
-	public class SqlServerToMonitor : ISqlServerToMonitor
+	public class SqlEndpoint : ISqlEndpoint
 	{
 		private DateTime _lastSuccessfulReportTime;
 
-		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases)
+		public SqlEndpoint(string name, string connectionString, bool includeSystemDatabases)
 			: this(name, connectionString, includeSystemDatabases, null, null) {}
 
-		public SqlServerToMonitor(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDbs, IEnumerable<string> excludedDatabaseNames)
+		public SqlEndpoint(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDbs, IEnumerable<string> excludedDatabaseNames)
 		{
 			Name = name;
 			ConnectionString = connectionString;

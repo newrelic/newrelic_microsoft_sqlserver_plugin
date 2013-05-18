@@ -27,7 +27,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         [Test]
         public void Assert_only_numerics_are_returned()
         {
-            var metricMappers = SqlMonitorQuery.GetMappers(typeof (FakeQueryType));
+            var metricMappers = SqlServerQuery.GetMappers(typeof (FakeQueryType));
             Assert.That(metricMappers, Is.Not.Null);
 
             // Keep these out of order to ensure we don't depend on it
@@ -53,7 +53,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                             }
                         };
 
-            var sqlMonitorQuery = new SqlMonitorQuery(typeof (FakeQueryType), new QueryAttribute("foo.sql", "Fake/"), Substitute.For<IDapperWrapper>(), "");
+            var sqlMonitorQuery = new SqlServerQuery(typeof (FakeQueryType), new SqlServerQueryAttribute("foo.sql", "Fake/"), Substitute.For<IDapperWrapper>(), "");
 
             var componentData = new ComponentData();
             sqlMonitorQuery.AddMetrics(new QueryContext(sqlMonitorQuery) {ComponentData = componentData, Results = fakes,});

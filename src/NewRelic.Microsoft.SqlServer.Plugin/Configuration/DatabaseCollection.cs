@@ -6,9 +6,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
     [ConfigurationCollection(typeof(SqlServerElement), AddItemName = "database")]
     internal class DatabaseCollection : ConfigurationElementCollection, IEnumerable<DatabaseElement>
     {
-        public SqlServerElement this[int index]
+		public DatabaseElement this[int index]
         {
-            get { return (SqlServerElement)BaseGet(index); }
+			get { return (DatabaseElement)BaseGet(index); }
         }
 
         IEnumerator<DatabaseElement> IEnumerable<DatabaseElement>.GetEnumerator()

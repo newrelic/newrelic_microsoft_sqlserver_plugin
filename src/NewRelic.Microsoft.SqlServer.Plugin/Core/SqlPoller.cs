@@ -46,7 +46,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 						                            // Set to immediate when only collecting for instant gratification
 						                            InitialPollDelaySeconds = _settings.CollectOnly ? 0 : _settings.PollIntervalSeconds,
 						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
-						                            PollAction = () => _metricCollector.QueryServers(queries),
+						                            PollAction = () => _metricCollector.QueryEndpoints(queries),
 						                            AutoResetEvent = new AutoResetEvent(false),
 					                            };
 

@@ -10,16 +10,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 	{
 		private string _version;
 
-		public Settings(ISqlServerToMonitor[] sqlServers)
+		public Settings(ISqlEndpoint[] endpoints)
 		{
-			SqlServers = sqlServers;
+			Endpoints = endpoints;
 			PollIntervalSeconds = 60;
 		}
 
 		public string LicenseKey { get; set; }
-		public bool UseSsl { get; set; }
 		public int PollIntervalSeconds { get; set; }
-		public ISqlServerToMonitor[] SqlServers { get; private set; }
+		public ISqlEndpoint[] Endpoints { get; private set; }
 		public bool CollectOnly { get; set; }
 
 		public string Version
@@ -37,20 +36,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
 		{
-			var sqlInstanceToMonitors = section.SqlServers
+			var sqlServerEndpoints = section.SqlServers
 			                                   .Select(s =>
 			                                           {
 				                                           var includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
 				                                           var excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
-				                                           return new SqlServerToMonitor(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
+				                                           return (ISqlEndpoint)new SqlEndpoint(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
 			                                           })
 			                                   .ToArray();
 			var service = section.Service;
-			return new Settings(sqlInstanceToMonitors)
+			return new Settings(sqlServerEndpoints)
 			       {
 				       LicenseKey = service.LicenseKey,
 				       PollIntervalSeconds = service.PollIntervalSeconds,
-				       UseSsl = service.UseSsl,
 			       };
 		}
 
@@ -59,23 +57,23 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			log.Debug("\tVersion: " + Version);
 			log.Debug("\tPollIntervalSeconds: " + PollIntervalSeconds);
 			log.Debug("\tCollectOnly: " + CollectOnly);
-			log.Debug("\tSqlServers: " + SqlServers.Length);
-			foreach (var sqlServer in SqlServers)
+			log.Debug("\tSqlServers: " + Endpoints.Length);
+			foreach (var endpoint in Endpoints)
 			{
 				// Remove password from logging
-				var safeConnectionString = new SqlConnectionStringBuilder(sqlServer.ConnectionString);
+				var safeConnectionString = new SqlConnectionStringBuilder(endpoint.ConnectionString);
 				if (!string.IsNullOrEmpty(safeConnectionString.Password))
 				{
 					safeConnectionString.Password = "[redacted]";
 				}
-				log.DebugFormat("\t\t{0}: {1}", sqlServer.Name, safeConnectionString);
+				log.DebugFormat("\t\t{0}: {1}", endpoint.Name, safeConnectionString);
 
-				foreach (var database in sqlServer.IncludedDatabases)
+				foreach (var database in endpoint.IncludedDatabases)
 				{
 					log.Debug("\t\t\tIncluding: " + database.Name);
 				}
 
-				foreach (var database in sqlServer.ExcludedDatabaseNames)
+				foreach (var database in endpoint.ExcludedDatabaseNames)
 				{
 					log.Debug("\t\t\tExcluding: " + database);
 				}

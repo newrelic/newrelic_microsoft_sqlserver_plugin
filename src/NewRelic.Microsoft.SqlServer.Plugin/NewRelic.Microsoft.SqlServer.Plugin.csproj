@@ -70,16 +70,17 @@
     <Compile Include="Configuration\Database.cs" />
     <Compile Include="Configuration\DatabaseCollection.cs" />
     <Compile Include="Configuration\DatabaseElement.cs" />
-    <Compile Include="Configuration\ISqlServerToMonitor.cs" />
+    <Compile Include="Configuration\ISqlEndpoint.cs" />
     <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
-    <Compile Include="Configuration\SqlServerToMonitor.cs" />
+    <Compile Include="Configuration\SqlEndpoint.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
     <Compile Include="Configuration\SqlServerElement.cs" />
     <Compile Include="Core\Extensions\ExtensionsForIDictionary.cs" />
     <Compile Include="Core\MetricTransformEnum.cs" />
     <Compile Include="Core\MetricValueType.cs" />
+    <Compile Include="ISqlQuery.cs" />
     <Compile Include="Properties\Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
     <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
@@ -89,7 +90,7 @@
     <Compile Include="Core\MetricAttribute.cs" />
     <Compile Include="Core\PollingThread.cs" />
     <Compile Include="Core\PollingThreadSettings.cs" />
-    <Compile Include="Core\QueryAttribute.cs" />
+    <Compile Include="Core\SqlServerQueryAttribute.cs" />
     <Compile Include="Core\Dapper.cs" />
     <Compile Include="Core\InstallController.cs" />
     <Compile Include="MetricMapper.cs" />
@@ -124,7 +125,7 @@
     </Compile>
     <Compile Include="Communication\SqlRequest.cs" />
     <Compile Include="QueryTypes\WhereClauseTokenEnum.cs" />
-    <Compile Include="SqlMonitorQuery.cs" />
+    <Compile Include="SqlServerQuery.cs" />
     <Compile Include="Core\SqlPoller.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +134,7 @@
     </None>
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
     <None Include="..\..\README.md">

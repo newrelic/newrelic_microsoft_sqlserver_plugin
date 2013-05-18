@@ -15,24 +15,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	[TestFixture]
 	public class QueryLocatorTests
 	{
-		[Query("NewRelic.Microsoft.SqlServer.Plugin.Core.ExampleEmbeddedFile.sql", "")]
+		[SqlServerQuery("NewRelic.Microsoft.SqlServer.Plugin.Core.ExampleEmbeddedFile.sql", "")]
 		private class QueryTypeWithExactResourceName {}
 
-		[Query("Queries.ExampleEmbeddedFile.sql", "")]
+		[SqlServerQuery("Queries.ExampleEmbeddedFile.sql", "")]
 		private class QueryTypeWithPartialResourceName {}
 
-		[Query("AnotherQuery.sql", "")]
+		[SqlServerQuery("AnotherQuery.sql", "")]
 		private class QueryTypeWithJustFileName {}
 
-		[Query("AnotherQuery.sql", "")]
-		[Query("Queries.ExampleEmbeddedFile.sql", "")]
+		[SqlServerQuery("AnotherQuery.sql", "")]
+		[SqlServerQuery("Queries.ExampleEmbeddedFile.sql", "")]
 		private class QueryTypeWithTwoQueries {}
 
-		[Query("Foo.sql", "", Enabled = false)]
+		[SqlServerQuery("Foo.sql", "", Enabled = false)]
 		private class QueryTypeDisabled {}
 
-		[Query("Foo.sql", "", Enabled = false)]
-		[Query("AnotherQuery.sql", "", QueryName = "This is enabled")]
+		[SqlServerQuery("Foo.sql", "", Enabled = false)]
+		[SqlServerQuery("AnotherQuery.sql", "", QueryName = "This is enabled")]
 		private class QueryTypeSomeEnabled {}
 
 		public class FakeDatabaseMetric : IDatabaseMetric
@@ -48,7 +48,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Assert_command_text_is_parameterized()
 		{
-			var actual = SqlMonitorQuery.PrepareCommandText<FakeDatabaseMetric>("I have the power!", new SqlServerToMonitor("Local", ".", false));
+			var actual = SqlServerQuery.PrepareCommandText<FakeDatabaseMetric>("I have the power!", new SqlEndpoint("Local", ".", false));
 			Assert.That(actual, Is.EqualTo("zoinks"), "Parameterization failed");
 		}
 
@@ -60,7 +60,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var queries = new QueryLocator(dapperWrapper).PrepareQueries();
 			foreach (var query in queries)
 			{
-				var results = query.Query(null, Substitute.For<ISqlServerToMonitor>());
+				var results = query.Query(null, Substitute.For<ISqlEndpoint>());
 				Assert.That(results, Is.EqualTo(new object[0]));
 			}
 		}
@@ -122,8 +122,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var types = assembly.GetTypes();
 			Assume.That(types, Is.Not.Empty, "Expected at least one type in the test assembly");
 
-			var typesWithAttribute = types.Where(t => t.GetCustomAttributes<QueryAttribute>().Any());
-			Assert.That(typesWithAttribute, Is.Not.Empty, "Expected at least one QueryType using the " + typeof (QueryAttribute).Name);
+			var typesWithAttribute = types.Where(t => t.GetCustomAttributes<SqlServerQueryAttribute>().Any());
+			Assert.That(typesWithAttribute, Is.Not.Empty, "Expected at least one QueryType using the " + typeof (SqlServerQueryAttribute).Name);
 		}
 
 		[Test]

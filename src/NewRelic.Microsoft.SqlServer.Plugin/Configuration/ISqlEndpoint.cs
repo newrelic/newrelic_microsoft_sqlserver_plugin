@@ -4,7 +4,7 @@ using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
-	public interface ISqlServerToMonitor
+	public interface ISqlEndpoint
 	{
 		string Name { get; }
 		string ConnectionString { get; }

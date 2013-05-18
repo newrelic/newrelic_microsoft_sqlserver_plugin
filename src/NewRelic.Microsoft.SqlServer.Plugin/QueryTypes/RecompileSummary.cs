@@ -2,7 +2,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-    [Query("RecompileSummary.sql", "Component/Recompiles/{MetricName}/{DatabaseName}", QueryName = "Recompile Summary", Enabled = true)]
+    [SqlServerQuery("RecompileSummary.sql", "Component/Recompiles/{MetricName}/{DatabaseName}", QueryName = "Recompile Summary", Enabled = true)]
     internal class RecompileSummary : RecompileQueryBase
     {
 		[Metric(MetricValueType = MetricValueType.Count, Units = "[objects]")]

@@ -237,7 +237,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[TestCaseSource("QueryHistoryTestData")]
 		public string[] Assert_that_query_history_updated_appropriately(string[][] queryNames)
 		{
-			var sqlServerToMonitor = new SqlServerToMonitor("Best_DB_Ever", "", false);
+			var sqlServerToMonitor = new SqlEndpoint("Best_DB_Ever", "", false);
 
 			Assert.That(sqlServerToMonitor.QueryHistory.Count, Is.EqualTo(0), "History Should start off empty");
 
@@ -261,7 +261,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public void AssertIncludeExcludeListsBuiltAppropriately()
 		{
 			var includedDbs = new[] {"FooDb", "BarDb"}.Select(x => new Database {Name = x,});
-			var sqlServerToMonitor = new SqlServerToMonitor("FooServer", ".", false, includedDbs, new[] {"Baz"});
+			var sqlServerToMonitor = new SqlEndpoint("FooServer", ".", false, includedDbs, new[] {"Baz"});
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames, Is.EquivalentTo(new[] {"FooDb", "BarDb"}));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames, Is.EquivalentTo(Constants.SystemDatabases.Concat(new[] {"Baz"})));
 		}
@@ -269,11 +269,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[Test]
 		public void AssertIncludeSystemDatabasesWorks()
 		{
-			var sqlServerToMonitor = new SqlServerToMonitor("FooServer", ".", false);
+			var sqlServerToMonitor = new SqlEndpoint("FooServer", ".", false);
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames.Length, Is.EqualTo(0));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames, Is.EquivalentTo(Constants.SystemDatabases));
 
-			sqlServerToMonitor = new SqlServerToMonitor("FooServer", ".", true);
+			sqlServerToMonitor = new SqlEndpoint("FooServer", ".", true);
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames.Length, Is.EqualTo(0));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames.Length, Is.EqualTo(0));
 		}
@@ -281,7 +281,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[Test]
 		public void Assert_that_duration_is_reported_correctly()
 		{
-			var sqlServerToMonitor = new SqlServerToMonitor("", "", false);
+			var sqlServerToMonitor = new SqlEndpoint("", "", false);
 			Assert.That(sqlServerToMonitor.Duration, Is.EqualTo(0), "Expected 0 second Duration immediately after .ctor called");
 
 			Thread.Sleep(1000);

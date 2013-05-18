@@ -2,7 +2,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[Query("SQLConnectionsSummary.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "SQL Connections Summary", Enabled = true)]
+	[SqlServerQuery("SQLConnectionsSummary.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "SQL Connections Summary", Enabled = true)]
 	internal class SqlConnectionsSummary : DatabaseMetricBase
 	{
 		[Metric(MetricValueType = MetricValueType.Count, Units = "[connections]")]

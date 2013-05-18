@@ -23,7 +23,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             _assembly = assembly ?? Assembly.GetExecutingAssembly();
         }
 
-        public IEnumerable<ISqlMonitorQuery> PrepareQueries()
+        public IEnumerable<ISqlQuery> PrepareQueries()
         {
             // Look for all query types
             var types = _assembly.GetTypes();
@@ -31,13 +31,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             return PrepareQueries(types);
         }
 
-        internal IEnumerable<ISqlMonitorQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
+        internal IEnumerable<ISqlQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
         {
-            // Search for types with at least one attribute that have a QueryAttribute
+            // Search for types with at least one attribute that have a SqlServerQueryAttribute
             return types.Where(t => !_ignoreTypes.Contains(t))
-                        .SelectMany(t => t.GetCustomAttributes<QueryAttribute>()
-                                          .Where(a => onlyEnabledQueries ? a.Enabled : true)
-                                          .Select(a => new SqlMonitorQuery(t, a, _dapper))).ToArray();
+                        .SelectMany(t => t.GetCustomAttributes<SqlServerQueryAttribute>()
+                                          .Where(a => !onlyEnabledQueries || a.Enabled)
+                                          .Select(a => new SqlServerQuery(t, a, _dapper))).ToArray();
         }
     }
 }
