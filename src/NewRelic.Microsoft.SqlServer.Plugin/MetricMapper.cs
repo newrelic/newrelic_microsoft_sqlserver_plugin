@@ -9,7 +9,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	public class MetricMapper
 	{
-		private static readonly Type[] _NumericMappingTypes = new[] {typeof (long), typeof (byte), typeof (short), typeof (decimal),};
+		private static readonly Type[] _NumericMappingTypes = new[] {typeof (long), typeof (byte), typeof (short), typeof (decimal), typeof(int)};
 		private static readonly Type[] _NumericMetricTypes = new[] {typeof (decimal), typeof (int)};
 		private readonly MapAction _metricSetter;
 		private readonly PropertyInfo _propertyInfo;
@@ -87,6 +87,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					{
 						return ConvertToValueMetric;
 					}
+					
 					return null;
 
 				default:
