@@ -1,5 +1,12 @@
 -- Blocking Queries for Azure and SQL
 
+--Transactions request locks on resources like rows, pages, or tables, on which the transaction is dependent and then free the locks when they no longer have a dependency on the locked resources. Due to these locks, some transactions might block resources required by system sessions. If a transaction locks a resource required by an underlying system operation for more than 20 seconds, it is terminated. In addition, any transaction that runs for more than 24 hours is terminated.
+--Error returned
+--      40549 : Session is terminated because you have a long-running transaction. Try shortening your transaction.
+--              Limit
+-- 20 seconds when holding a lock required by system operation
+-- 24 hours in general
+
 SELECT
 	der.session_id,
 	der.plan_handle,
