@@ -12,130 +12,137 @@ using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public abstract class SqlEndpoint : ISqlEndpoint
-	{
-		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
+    public abstract class SqlEndpoint : ISqlEndpoint
+    {
+        private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
 
-		private DateTime _lastSuccessfulReportTime;
-		private SqlQuery[] _queries;
+        private DateTime _lastSuccessfulReportTime;
+        private SqlQuery[] _queries;
 
-		protected SqlEndpoint(string name, string connectionString)
-		{
-			Name = name;
-			ConnectionString = connectionString;
-			_lastSuccessfulReportTime = DateTime.Now;
+        protected SqlEndpoint(string name, string connectionString)
+        {
+            Name = name;
+            ConnectionString = connectionString;
+            _lastSuccessfulReportTime = DateTime.Now;
 
-			QueryHistory = new Dictionary<string, Queue<IQueryContext>>();
-		}
+            QueryHistory = new Dictionary<string, Queue<IQueryContext>>();
+        }
 
-		public IDictionary<string, Queue<IQueryContext>> QueryHistory { get; private set; }
+        protected abstract string ComponentGuid { get; }
 
-		public string Name { get; private set; }
-		public string ConnectionString { get; private set; }
+        public IDictionary<string, Queue<IQueryContext>> QueryHistory { get; private set; }
 
-		public int Duration
-		{
-			get { return (int) DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds; }
-		}
+        public string Name { get; private set; }
+        public string ConnectionString { get; private set; }
 
-		public void SetQueries(IEnumerable<SqlQuery> queries)
-		{
-			_queries = FilterQueries(queries).ToArray();
-		}
+        public int Duration
+        {
+            get { return (int) DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds; }
+        }
 
-		public IEnumerable<IQueryContext> ExecuteQueries(ILog log)
-		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
+        public void SetQueries(IEnumerable<SqlQuery> queries)
+        {
+            _queries = FilterQueries(queries).ToArray();
+        }
 
-			_VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
-			_VerboseSqlOutputLogger.Info("");
+        public IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+        {
+            // Remove password from logging
+            var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
+            if (!string.IsNullOrEmpty(safeConnectionString.Password))
+            {
+                safeConnectionString.Password = "[redacted]";
+            }
 
-			using (var conn = new SqlConnection(ConnectionString))
-			{
-				foreach (var query in _queries)
-				{
-					object[] results;
-					try
-					{
-						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
-						results = query.Query(conn, this).ToArray();
-						OnQueryExecuted(results);
+            _VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
+            _VerboseSqlOutputLogger.Info("");
 
-						if (_VerboseSqlOutputLogger.IsInfoEnabled)
-						{
-							foreach (var result in results)
-							{
-								// TODO Replace ToString() with something more useful that prints each property in the object
-								_VerboseSqlOutputLogger.Info(result.ToString());
-							}
-							_VerboseSqlOutputLogger.Info("");
-						}
-					}
-					catch (Exception e)
-					{
-						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
-						continue;
-					}
-					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(Name, Constants.SqlServerComponentGuid, Duration),};
-				}
-			}
-		}
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                foreach (var query in _queries)
+                {
+                    object[] results;
+                    try
+                    {
+                        _VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
+                        results = query.Query(conn, this).ToArray();
+                        OnQueryExecuted(results);
 
-		public void MetricReportSuccessful(DateTime? reportDate = null)
-		{
-			_lastSuccessfulReportTime = reportDate ?? DateTime.Now;
-			QueryHistory.Values.ForEach(histories => histories.ForEach(qc => qc.DataSent = true));
-		}
+                        if (_VerboseSqlOutputLogger.IsInfoEnabled)
+                        {
+                            foreach (var result in results)
+                            {
+                                // TODO Replace ToString() with something more useful that prints each property in the object
+                                _VerboseSqlOutputLogger.Info(result.ToString());
+                            }
+                            _VerboseSqlOutputLogger.Info("");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
+                        continue;
+                    }
+                    yield return CreateQueryContext(query, results);
+                }
+            }
+        }
 
-		public void UpdateHistory(IQueryContext[] queryContexts)
-		{
-			queryContexts.ForEach(queryContext =>
-			                      {
-				                      var queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
-				                      if (queryHistory.Count >= 2) //Only track up to last run of this query
-				                      {
-					                      queryHistory.Dequeue();
-				                      }
-				                      queryHistory.Enqueue(queryContext);
-			                      });
-		}
+        public void MetricReportSuccessful(DateTime? reportDate = null)
+        {
+            _lastSuccessfulReportTime = reportDate ?? DateTime.Now;
+            QueryHistory.Values.ForEach(histories => histories.ForEach(qc => qc.DataSent = true));
+        }
 
-		public PlatformData GeneratePlatformData(AgentData agentData)
-		{
-			var platformData = new PlatformData(agentData);
+        public void UpdateHistory(IQueryContext[] queryContexts)
+        {
+            queryContexts.ForEach(queryContext =>
+                                  {
+                                      var queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
+                                      if (queryHistory.Count >= 2) //Only track up to last run of this query
+                                      {
+                                          queryHistory.Dequeue();
+                                      }
+                                      queryHistory.Enqueue(queryContext);
+                                  });
+        }
 
-			var pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
-			                                       .Where(c => c != null).ToArray();
+        public PlatformData GeneratePlatformData(AgentData agentData)
+        {
+            var platformData = new PlatformData(agentData);
 
-			pendingComponentData.ForEach(platformData.AddComponent);
+            var pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
+                                                   .Where(c => c != null).ToArray();
 
-			return platformData;
-		}
+            pendingComponentData.ForEach(platformData.AddComponent);
 
-		public virtual void Trace(ILog log)
-		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
+            return platformData;
+        }
 
-			log.DebugFormat("\t\t{0}: {1}", Name, safeConnectionString);
-		}
+        public virtual void Trace(ILog log)
+        {
+            // Remove password from logging
+            var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
+            if (!string.IsNullOrEmpty(safeConnectionString.Password))
+            {
+                safeConnectionString.Password = "[redacted]";
+            }
 
-		protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
+            log.DebugFormat("\t\t{0}: {1}", Name, safeConnectionString);
+        }
 
-		protected virtual void OnQueryExecuted(object[] results) {}
+        internal QueryContext CreateQueryContext(ISqlQuery query, IEnumerable<object> results)
+        {
+            return new QueryContext(query) {Results = results, ComponentData = new ComponentData(Name, ComponentGuid, Duration)};
+        }
 
-		public override string ToString()
-		{
-			return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
-		}
-	}
+        protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
+
+        protected virtual void OnQueryExecuted(object[] results) {}
+
+        public override string ToString()
+        {
+            return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
+        }
+    }
 }
