@@ -5,14 +5,13 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 
-using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public class SqlQuery : ISqlQuery
+	public class SqlQuery
 	{
 		/// <summary>Stores a pointer to the generic method so this reflection isn't repeated later.</summary>
 		private static readonly MethodInfo _QueryMethod = typeof (SqlQuery).GetMethod("Query", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -106,7 +105,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			where T : IDatabaseMetric, new()
 		{
 			var metricInstance = (IDatabaseMetric) new T();
-			return metricInstance.ParameterizeQuery(commandText, endpoint.IncludedDatabaseNames, endpoint.ExcludedDatabaseNames);
+			return metricInstance.ParameterizeQuery(commandText, endpoint);
 		}
 
 		/// <summary>

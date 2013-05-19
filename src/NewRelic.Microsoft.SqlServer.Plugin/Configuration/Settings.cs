@@ -1,4 +1,3 @@
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 
@@ -36,16 +35,17 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
 		{
-			var sqlServerEndpoints = section.SqlServers
-			                                   .Select(s =>
-			                                           {
-				                                           var includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
-				                                           var excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
-				                                           return (ISqlEndpoint)new SqlEndpoint(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
-			                                           })
-			                                   .ToArray();
+			var sqlEndpoints = section.SqlServers
+			                          .Select(s =>
+			                                  {
+				                                  var includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
+				                                  var excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
+				                                  return (ISqlEndpoint) new SqlServer(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
+			                                  })
+									  .Union(section.AzureSqlDatabases.Select(s => (ISqlEndpoint)new AzureSqlDatabase(s.Name, s.ConnectionString)));
+
 			var service = section.Service;
-			return new Settings(sqlServerEndpoints)
+			return new Settings(sqlEndpoints.ToArray())
 			       {
 				       LicenseKey = service.LicenseKey,
 				       PollIntervalSeconds = service.PollIntervalSeconds,
@@ -57,26 +57,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			log.Debug("\tVersion: " + Version);
 			log.Debug("\tPollIntervalSeconds: " + PollIntervalSeconds);
 			log.Debug("\tCollectOnly: " + CollectOnly);
-			log.Debug("\tSqlServers: " + Endpoints.Length);
+			log.Debug("\tSqlEndpoints: " + Endpoints.Length);
+
 			foreach (var endpoint in Endpoints)
 			{
-				// Remove password from logging
-				var safeConnectionString = new SqlConnectionStringBuilder(endpoint.ConnectionString);
-				if (!string.IsNullOrEmpty(safeConnectionString.Password))
-				{
-					safeConnectionString.Password = "[redacted]";
-				}
-				log.DebugFormat("\t\t{0}: {1}", endpoint.Name, safeConnectionString);
-
-				foreach (var database in endpoint.IncludedDatabases)
-				{
-					log.Debug("\t\t\tIncluding: " + database.Name);
-				}
-
-				foreach (var database in endpoint.ExcludedDatabaseNames)
-				{
-					log.Debug("\t\t\tExcluding: " + database);
-				}
+				endpoint.Trace(log);
 			}
 		}
 

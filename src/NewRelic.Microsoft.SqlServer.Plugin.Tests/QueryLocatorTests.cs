@@ -38,8 +38,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public class FakeDatabaseMetric : IDatabaseMetric
 		{
 			public string DatabaseName { get; set; }
-
-			public string ParameterizeQuery(string commandText, string[] includeDBs, string[] excludeDBs)
+			public string ParameterizeQuery(string commandText, ISqlEndpoint endpoint)
 			{
 				return "zoinks";
 			}
@@ -48,7 +47,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Assert_command_text_is_parameterized()
 		{
-			var actual = SqlQuery.PrepareCommandText<FakeDatabaseMetric>("I have the power!", new SqlEndpoint("Local", ".", false));
+			var actual = SqlQuery.PrepareCommandText<FakeDatabaseMetric>("I have the power!", new SqlServer("Local", ".", false));
 			Assert.That(actual, Is.EqualTo("zoinks"), "Parameterization failed");
 		}
 

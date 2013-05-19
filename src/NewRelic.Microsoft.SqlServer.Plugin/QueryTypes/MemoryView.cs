@@ -5,7 +5,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	[SqlServerQuery("MemoryView.sql", "Component/Memory", QueryName = "Memory View", Enabled = true)]
-	internal class MemoryView
+	public class MemoryView
 	{
 		private decimal _bufferCacheHitRatio;
 

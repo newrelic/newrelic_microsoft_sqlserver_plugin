@@ -23,7 +23,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			_assembly = assembly ?? Assembly.GetExecutingAssembly();
 		}
 
-		public IEnumerable<ISqlQuery> PrepareQueries()
+		public IEnumerable<SqlQuery> PrepareQueries()
 		{
 			// Look for all query types
 			var types = _assembly.GetTypes();
@@ -31,7 +31,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return PrepareQueries(types);
 		}
 
-		internal IEnumerable<ISqlQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
+		internal IEnumerable<SqlQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
 		{
 			// Search for types with at least one attribute that have a QueryAttribute
 			return types.Where(t => !_ignoreTypes.Contains(t))

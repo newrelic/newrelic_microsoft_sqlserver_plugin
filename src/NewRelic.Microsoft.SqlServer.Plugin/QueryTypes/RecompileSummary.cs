@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
     [SqlServerQuery("RecompileSummary.sql", "Component/Recompiles/{MetricName}/{DatabaseName}", QueryName = "Recompile Summary", Enabled = true)]
-    internal class RecompileSummary : RecompileQueryBase
+	public class RecompileSummary : RecompileQueryBase
     {
 		[Metric(MetricValueType = MetricValueType.Count, Units = "[objects]")]
         public int SingleUseObjects { get; set; }

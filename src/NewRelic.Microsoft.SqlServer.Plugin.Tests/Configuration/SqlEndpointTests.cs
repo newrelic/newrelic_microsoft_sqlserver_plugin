@@ -2,13 +2,12 @@ using NSubstitute;
 
 using NUnit.Framework;
 
-using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin
+namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
 	[TestFixture]
-	public class MetricCollectorTests
+	public class SqlEndpointTests
 	{
 		[Test]
 		public void Assert_database_names_are_replaced_when_included_databases_with_display_names_are_configured()
@@ -42,7 +41,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				              databaseMetric4,
 			              };
 
-			MetricCollector.ApplyDatabaseDisplayNames(includedDatabases, results);
+			SqlServer.ApplyDatabaseDisplayNames(includedDatabases, results);
 
 			Assert.That(databaseMetric1.DatabaseName, Is.EqualTo("Fantastic"));
 			Assert.That(databaseMetric2.DatabaseName, Is.EqualTo("Assassins"));

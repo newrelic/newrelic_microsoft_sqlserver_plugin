@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,8 +7,6 @@ using System.Threading.Tasks;
 using NewRelic.Microsoft.SqlServer.Plugin.Communication;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
-using NewRelic.Microsoft.SqlServer.Plugin.Properties;
-using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Binding.DotNET;
 
 using log4net;
@@ -21,7 +18,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	/// </summary>
 	internal class MetricCollector
 	{
-		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
 		private readonly AgentData _agentData;
 		private readonly ILog _log;
 		private readonly Settings _settings;
@@ -37,24 +33,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		///     Performs the queries against the databases.
 		/// </summary>
 		/// <param name="queries"></param>
-		internal void QueryEndpoints(IEnumerable<ISqlQuery> queries)
+		internal void QueryEndpoints(IEnumerable<SqlQuery> queries)
 		{
 			try
 			{
 				// Calculate "duration" as the span between "now" and the last recorded report time. This avoids "drop outs" in the charts.
 				var tasks = _settings.Endpoints
 				                     .Select(endpoint => Task.Factory
-				                                           .StartNew(() => QueryEndpoint(queries, endpoint, _log))
-				                                           .Catch(e => _log.Error(e))
-				                                           .ContinueWith(t => t.Result.ForEach(ctx => ctx.AddAllMetrics()))
-				                                           .Catch(e => _log.Error(e))
-				                                           .ContinueWith(t =>
-				                                                         {
-					                                                         var queryContexts = t.Result.ToArray();
-					                                                         endpoint.UpdateHistory(queryContexts);
-					                                                         SendComponentDataToCollector(endpoint);
-					                                                         return queryContexts.Sum(q => q.MetricsRecorded);
-				                                                         }))
+				                                             .StartNew(() => endpoint.ExecuteQueries(_log))
+				                                             .Catch(e => _log.Error(e))
+				                                             .ContinueWith(t => t.Result.ForEach(ctx => ctx.AddAllMetrics()))
+				                                             .Catch(e => _log.Error(e))
+				                                             .ContinueWith(t =>
+				                                                           {
+					                                                           var queryContexts = t.Result.ToArray();
+					                                                           endpoint.UpdateHistory(queryContexts);
+					                                                           SendComponentDataToCollector(endpoint);
+					                                                           return queryContexts.Sum(q => q.MetricsRecorded);
+				                                                           }))
 				                     .ToArray();
 
 				// Wait for all of them to complete
@@ -65,74 +61,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			catch (Exception e)
 			{
 				_log.Error(e);
-			}
-		}
-
-		internal static IEnumerable<IQueryContext> QueryEndpoint(IEnumerable<ISqlQuery> queries, ISqlEndpoint endpoint, ILog log)
-		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(endpoint.ConnectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
-
-			_VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
-			_VerboseSqlOutputLogger.Info("");
-
-			using (var conn = new SqlConnection(endpoint.ConnectionString))
-			{
-				foreach (var query in queries)
-				{
-					object[] results;
-					try
-					{
-						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
-						results = query.Query(conn, endpoint).ToArray();
-						ApplyDatabaseDisplayNames(endpoint.IncludedDatabases, results);
-
-						if (_VerboseSqlOutputLogger.IsInfoEnabled)
-						{
-							foreach (var result in results)
-							{
-								// TODO Replace ToString() with something more useful that prints each property in the object
-								_VerboseSqlOutputLogger.Info(result.ToString());
-							}
-							_VerboseSqlOutputLogger.Info("");
-						}
-					}
-					catch (Exception e)
-					{
-						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
-						continue;
-					}
-					yield return new QueryContext(query) {Results = results, ComponentData = new ComponentData(endpoint.Name, Constants.SqlServerComponentGuid, endpoint.Duration),};
-				}
-			}
-		}
-
-		/// <summary>
-		/// Replaces the database name on <see cref="IDatabaseMetric"/> results with the <see cref="Database.DisplayName"/> when possible.
-		/// </summary>
-		/// <param name="includedDatabases"></param>
-		/// <param name="results"></param>
-		internal static void ApplyDatabaseDisplayNames(IEnumerable<Database> includedDatabases, object[] results)
-		{
-			if (includedDatabases == null) return;
-
-			var renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
-			if (!renameMap.Any()) return;
-
-			var databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
-			if (!databaseMetrics.Any()) return;
-
-			foreach (var databaseMetric in databaseMetrics)
-			{
-				string displayName;
-				if (renameMap.TryGetValue(databaseMetric.DatabaseName.ToLower(), out displayName))
-				{
-					databaseMetric.DatabaseName = displayName;
-				}
 			}
 		}
 

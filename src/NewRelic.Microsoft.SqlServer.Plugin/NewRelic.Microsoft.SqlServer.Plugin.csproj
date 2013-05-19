@@ -65,6 +65,7 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AzureSqlDatabase.cs" />
     <Compile Include="Configuration\AzureCollection.cs" />
     <Compile Include="Configuration\AzureSqlDatabaseElement.cs" />
     <Compile Include="Configuration\ComponentDataRetriever.cs" />
@@ -72,11 +73,13 @@
     <Compile Include="Configuration\Database.cs" />
     <Compile Include="Configuration\DatabaseCollection.cs" />
     <Compile Include="Configuration\DatabaseElement.cs" />
-    <Compile Include="Configuration\ISqlEndpoint.cs" />
+    <Compile Include="ISqlEndpoint.cs" />
     <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
-    <Compile Include="Configuration\SqlEndpoint.cs" />
+    <Compile Include="QueryTypes\AzureSqlConnections.cs" />
+    <Compile Include="SqlEndpoint.cs" />
+    <Compile Include="SqlServer.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
     <Compile Include="Configuration\SqlServerElement.cs" />
     <Compile Include="Core\AzureSqlQueryAttribute.cs" />
@@ -84,7 +87,6 @@
     <Compile Include="Core\MetricTransformEnum.cs" />
     <Compile Include="Core\MetricValueType.cs" />
     <Compile Include="Core\QueryAttribute.cs" />
-    <Compile Include="ISqlQuery.cs" />
     <Compile Include="Properties\Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
     <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
@@ -111,8 +113,7 @@
     <Compile Include="QueryTypes\RecompileDetail.cs" />
     <Compile Include="QueryTypes\RecompileQueryBase.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
-    <Compile Include="QueryTypes\Connections.cs" />
-    <Compile Include="QueryTypes\ConnectionsSummary.cs" />
+    <Compile Include="QueryTypes\SqlServerConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />
     <Compile Include="QueryTypes\Top25CostlyQueries.cs" />
     <Compile Include="Properties\ServiceConstants.cs" />
@@ -171,10 +172,7 @@
     <EmbeddedResource Include="Queries\MemoryView.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Queries\ConnectionsSummary.SqlServer.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Queries\ConnectionsSummary.AzureSql.sql" />
+    <EmbeddedResource Include="Queries\Connections.AzureSql.sql" />
   </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

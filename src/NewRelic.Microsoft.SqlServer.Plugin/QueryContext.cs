@@ -32,9 +32,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		private static readonly ILog _VerboseMetricsLogger = LogManager.GetLogger(Constants.VerboseMetricsLogger);
 
 		private readonly DateTime _creationTime;
-		private readonly ISqlQuery _query;
+		private readonly SqlQuery _query;
 
-		public QueryContext(ISqlQuery query)
+		public QueryContext(SqlQuery query)
 		{
 			_query = query;
 			_creationTime = DateTime.Now;

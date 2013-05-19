@@ -4,7 +4,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
     [SqlServerQuery("BackupStatus.sql", "Component/BackupStatus/{DatabaseName}", QueryName = "Backup Status", Enabled = false)]
     [SqlServerQuery("LogBackupStatus.sql", "Component/LogBackupStatus/{DatabaseName}", QueryName = "Log Backup Status", Enabled = false)]
-    internal class BackupStatus : DatabaseMetricBase
+	public class BackupStatus : DatabaseMetricBase
     {
         public string BackupDate { get; set; }
         public string Comment { get; set; }

@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
     [SqlServerQuery("RecompileDetail.sql", "Component/RecompileDetail/{MetricName}/{DatabaseName}", QueryName = "Recompile Detail", Enabled = false)]
-    internal class RecompileDetail : RecompileQueryBase
+	public class RecompileDetail : RecompileQueryBase
     {
         public int BucketID { get; set; }
         public int UseCounts { get; set; }

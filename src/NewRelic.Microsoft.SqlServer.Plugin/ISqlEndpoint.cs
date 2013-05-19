@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 
 using NewRelic.Platform.Binding.DotNET;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
+using log4net;
+
+namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	public interface ISqlEndpoint
 	{
@@ -14,9 +17,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		/// </summary>
 		int Duration { get; }
 
-		Database[] IncludedDatabases { get; }
-		string[] IncludedDatabaseNames { get; }
-		string[] ExcludedDatabaseNames { get; }
+		void SetQueries(IEnumerable<SqlQuery> queries);
+
+		IEnumerable<IQueryContext> ExecuteQueries(ILog log);
 
 		/// <summary>
 		/// Inform the server context that a report was sent on its behalf. Used to determine the <see cref="Duration"/>
@@ -26,5 +29,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		void UpdateHistory(IQueryContext[] queryContexts);
 		PlatformData GeneratePlatformData(AgentData agentData);
+
+		void Trace(ILog log);
 	}
 }

@@ -53,10 +53,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                             }
                         };
 
-            var sqlMonitorQuery = new SqlQuery(typeof (FakeQueryType), new SqlServerQueryAttribute("foo.sql", "Fake/"), Substitute.For<IDapperWrapper>(), "");
+            var sqlQuery = new SqlQuery(typeof (FakeQueryType), new SqlServerQueryAttribute("foo.sql", "Fake/"), Substitute.For<IDapperWrapper>(), "");
 
             var componentData = new ComponentData();
-            sqlMonitorQuery.AddMetrics(new QueryContext(sqlMonitorQuery) {ComponentData = componentData, Results = fakes,});
+            sqlQuery.AddMetrics(new QueryContext(sqlQuery) {ComponentData = componentData, Results = fakes,});
 
             var expected = new[] {"Fake/Long", "Fake/Integer", "Fake/Short", "Fake/Decimal", "Fake/Byte"};
             var actual = componentData.Metrics.Keys.ToArray();

@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	[SqlServerQuery("FileIOView.sql", "Component/FileIO/{MetricName}/{DatabaseName}", QueryName = "File I/O", MetricTransformEnum = MetricTransformEnum.Delta, Enabled = true)]
-	internal class FileIoView : DatabaseMetricBase
+	public class FileIoView : DatabaseMetricBase
 	{
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[bytes]")]
 		public long BytesRead { get; set; }

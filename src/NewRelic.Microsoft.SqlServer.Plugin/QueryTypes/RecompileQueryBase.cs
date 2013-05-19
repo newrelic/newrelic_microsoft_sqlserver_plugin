@@ -1,6 +1,6 @@
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-    internal abstract class RecompileQueryBase : DatabaseMetricBase
+	public abstract class RecompileQueryBase : DatabaseMetricBase
     {
         protected override string DbNameForWhereClause
         {

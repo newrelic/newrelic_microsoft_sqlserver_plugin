@@ -1,9 +1,9 @@
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	internal interface IDatabaseMetric
+	public interface IDatabaseMetric
 	{
 		string DatabaseName { get; set; }
 
-		string ParameterizeQuery(string commandText, string[] includeDBs, string[] excludeDBs);
+		string ParameterizeQuery(string commandText, ISqlEndpoint endpoint);
 	}
 }

@@ -2,12 +2,17 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-	[AzureSqlQueryAttribute("ConnectionsSummary.AzureSql.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "Azure SQL Connections Summary", Enabled = true)]
-	[SqlServerQuery("ConnectionsSummary.SqlServer.sql", "Component/SqlConnectionCount/{MetricName}/{DatabaseName}", QueryName = "SQL Server Connections Summary", Enabled = true)]
-	internal class ConnectionsSummary : DatabaseMetricBase
+	[SqlServerQuery("Connections.SqlServer.sql", "Component/Connections/{MetricName}/{DatabaseName}", QueryName = "SQL Connections", Enabled = true)]
+	public class SqlServerConnections : DatabaseMetricBase
 	{
 		[Metric(MetricValueType = MetricValueType.Count, Units = "[connections]")]
 		public int NumberOfConnections { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[reads]")]
+		public int NumberOfReads { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[writes]")]
+		public int NumberOfWrites { get; set; }
 
 		protected override WhereClauseTokenEnum WhereClauseToken
 		{
