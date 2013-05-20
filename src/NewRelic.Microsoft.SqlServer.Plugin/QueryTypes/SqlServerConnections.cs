@@ -21,7 +21,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		protected override string DbNameForWhereClause
 		{
-			get { return "DB_NAME(s.dbid)"; }
+			get { return "d.Name"; }
 		}
 	}
 }

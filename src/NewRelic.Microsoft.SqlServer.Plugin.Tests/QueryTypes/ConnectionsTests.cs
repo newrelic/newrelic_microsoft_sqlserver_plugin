@@ -19,7 +19,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 			foreach (var query in queries)
 			{
 				var actual = queryType.ParameterizeQuery(query.CommandText, sqlServer);
-				Assert.That(actual, Is.StringContaining("AND (DB_NAME(s.dbid) NOT IN ('blah')"));
+				Assert.That(actual, Is.StringContaining("AND (d.Name NOT IN ('blah')"));
 			}
 		}
 
@@ -35,7 +35,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 			foreach (var query in queries)
 			{
 				var actual = queryType.ParameterizeQuery(query.CommandText, sqlServer);
-				Assert.That(actual, Is.StringContaining("AND (DB_NAME(s.dbid) IN ('bar')"));
+				Assert.That(actual, Is.StringContaining("AND (d.Name IN ('bar')"));
 			}
 		}
 	}
