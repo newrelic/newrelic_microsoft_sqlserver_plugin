@@ -77,7 +77,7 @@
     <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
-    <Compile Include="QueryTypes\AzureSqlConnections.cs" />
+    <Compile Include="QueryTypes\AzureSqlDatabaseSummary.cs" />
     <Compile Include="SqlEndpoint.cs" />
     <Compile Include="SqlServer.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
@@ -172,7 +172,7 @@
     <EmbeddedResource Include="Queries\MemoryView.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Queries\Connections.AzureSql.sql" />
+    <EmbeddedResource Include="Queries\Summary.AzureSql.sql" />
   </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
