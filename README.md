@@ -24,7 +24,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 
 ## Logging
 
-By default, the log files are written to `C:\Program Data\New Relic\MicrosoftSQLServerPlugin\`. To change the logging settings, edit the `INSTALLDIR\log4net.config` file.
+By default, the log files are written to `C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\`. To change the logging settings, edit the `INSTALLDIR\log4net.config` file.
 
 ## Uninstalling the plugin
 

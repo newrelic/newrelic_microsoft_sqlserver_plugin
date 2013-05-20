@@ -1,12 +1,11 @@
--- SQL Connections
--- Returns all external user connections to the server by DB
--- Data collection nature: Both Cumulative and Realtime. Count of connections is RT. Number of reads and writes is cumulative for the one connection.
-
 WITH Databases AS (
 		SELECT
 			d.database_id	AS dbid,
 			d.name
-		FROM sys.databases d)
+		FROM sys.databases d
+		WHERE 1 = 1 --Always true simply to enable optional where to be consistent with below
+		/*{AND_WHERE}*/
+		)
 SELECT
 	d.Name							AS DatabaseName,
 	COUNT(c.connection_id)			AS NumberOfConnections,
