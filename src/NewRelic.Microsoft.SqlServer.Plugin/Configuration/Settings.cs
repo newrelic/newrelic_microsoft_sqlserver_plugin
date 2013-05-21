@@ -58,7 +58,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 				PollIntervalSeconds = service.PollIntervalSeconds,
 			};
 
-			if (!string.IsNullOrEmpty(service.ServiceName) && Regex.IsMatch(service.ServiceName, "^[a-zA-Z]{6,32}$"))
+			if (!string.IsNullOrEmpty(service.ServiceName) && Regex.IsMatch(service.ServiceName, "^[a-zA-Z_0-9-]{6,32}$"))
 			{
 				settings.ServiceName = service.ServiceName;
 			}

@@ -111,7 +111,6 @@
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
     <Compile Include="QueryTypes\MemoryView.cs" />
     <Compile Include="QueryTypes\RecompileDetail.cs" />
-    <Compile Include="QueryTypes\RecompileQueryBase.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlServerConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />

@@ -3,14 +3,14 @@
 -- Data collection nature: Both Cumulative. Needs deltas.
 
 SELECT
-	CAST(DB_NAME(a.database_id) AS varchar(150)) AS DatabaseName,
-	SUM(a.num_of_bytes_read) AS BytesRead,
-	SUM(a.num_of_bytes_written) AS BytesWritten,
-	SUM(a.size_on_disk_bytes) AS SizeInBytes,
-	SUM(a.num_of_reads) AS NumberOfReads,
-	SUM(a.num_of_writes) AS NumberOfWrites
-
-FROM sys.dm_io_virtual_file_stats(NULL, NULL) a
+	d.name						AS DatabaseName,
+	SUM(a.num_of_bytes_read)	AS BytesRead,
+	SUM(a.num_of_bytes_written)	AS BytesWritten,
+	SUM(a.size_on_disk_bytes)	AS SizeInBytes,
+	SUM(a.num_of_reads)			AS NumberOfReads,
+	SUM(a.num_of_writes)		AS NumberOfWrites
+FROM sys.databases d
+LEFT JOIN sys.dm_io_virtual_file_stats(NULL, NULL) a ON d.database_id = a.database_id
 /*{WHERE}*/
-GROUP BY CAST(DB_NAME(a.database_id) AS varchar(150))
-ORDER BY CAST(DB_NAME(a.database_id) AS varchar(150))
+GROUP BY d.name
+ORDER BY d.name
