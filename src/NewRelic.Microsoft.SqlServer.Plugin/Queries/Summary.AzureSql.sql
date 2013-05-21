@@ -25,6 +25,28 @@ WITH Connections AS (SELECT
 			MAX(s.memory_usage) * 8	AS MaxSessionMemoryUsageInKB,
 			AVG(s.memory_usage) * 8	AS AvgSessionMemoryUsageInKB
 		FROM sys.dm_exec_sessions s)
+,
+	-- Object recompile summary by DB
+	-- Returns count of query plans that are used only once and ones that are used more than once before recompile
+	-- Returns ratio of the 2
+	-- Data collection nature: Cumulative. Though the ratio is usable without delta tracking.
+	RecompileDetails AS (SELECT
+			cp.UseCounts
+		FROM sys.dm_exec_cached_plans cp
+		WHERE cp.cacheobjtype = 'Compiled Plan')
+,
+	RecompileSums AS (SELECT
+			(SELECT
+					COUNT(*)
+				FROM RecompileDetails
+				WHERE UseCounts = 1)
+			AS SingleUseObjects,
+			(SELECT
+					COUNT(*)
+				FROM RecompileDetails
+				WHERE UseCounts > 1)
+			AS MultipleUseObjects)
+
 SELECT --
 	-- SQL Azure Database Storage Use
 	-- Must be connected to Database you are reporting on
@@ -52,6 +74,12 @@ SELECT --
 		FROM sys.dm_exec_requests)
 	AS TotalCurrentRequests,
 	c.*,
-	mu.*
+	mu.*,
+	rs.SingleUseObjects,
+	rs.MultipleUseObjects,
+	CASE
+		WHEN (rs.SingleUseObjects + rs.MultipleUseObjects) = 0 THEN 0 ELSE rs.SingleUseObjects * 100.00 / (rs.SingleUseObjects + rs.MultipleUseObjects)
+	END	AS SingleUsePercent
 FROM MemoryUsage mu
-JOIN Connections c ON 1=1
+JOIN Connections c ON 1 = 1
+JOIN RecompileSums rs ON 1 = 1

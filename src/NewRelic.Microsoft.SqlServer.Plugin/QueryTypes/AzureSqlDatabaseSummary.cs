@@ -8,19 +8,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[MB]")]
 		public long DbSizeInMB { get; set; }
 
-		[Metric(MetricValueType = MetricValueType.Count, Units = "[connections]")]
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[connections]")]
 		public int NumberOfConnections { get; set; }
 
-		[Metric(MetricValueType = MetricValueType.Count, Units = "[reads]")]
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[reads]")]
 		public int NumberOfReads { get; set; }
 
-		[Metric(MetricValueType = MetricValueType.Count, Units = "[writes]")]
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[writes]")]
 		public int NumberOfWrites { get; set; }
 
-		[Metric(MetricValueType = MetricValueType.Count, Units = "[sessions]")]
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[sessions]")]
 		public int NumberOfSessions { get; set; }
 
-		[Metric(MetricValueType = MetricValueType.Count, Units = "[requests]")]
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[requests]")]
 		public int TotalCurrentRequests { get; set; }
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[KB]")]
@@ -34,5 +34,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[KB]")]
 		public int AvgSessionMemoryUsageInKB { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[objects]")]
+		public int SingleUseObjects { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[objects]")]
+		public int MultipleUseObjects { get; set; }
+
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_Single_Use]")]
+		public decimal SingleUsePercent { get; set; }
 	}
 }

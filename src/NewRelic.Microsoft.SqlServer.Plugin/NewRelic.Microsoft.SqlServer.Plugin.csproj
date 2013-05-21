@@ -163,7 +163,7 @@
     <EmbeddedResource Include="Queries\RecompileDetail.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Queries\WaitStates.sql" />
+    <EmbeddedResource Include="Queries\WaitStates.SqlServer.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\IndexFragmentation.sql" />
@@ -173,6 +173,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\Summary.AzureSql.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\WaitStates.AzureSql.sql" />
   </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
