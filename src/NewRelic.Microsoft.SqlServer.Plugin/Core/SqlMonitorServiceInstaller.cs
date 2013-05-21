@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ServiceProcess;
+
+using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
@@ -11,8 +13,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		{
 			Description = ServiceConstants.Description;
 			DisplayName = ServiceConstants.DisplayName;
-			ServiceName = ServiceConstants.ServiceName;
 			StartType = ServiceConstants.StartType;
+
+			var serviceName = Settings.Default != null ? Settings.Default.ServiceName : ServiceConstants.ServiceName;
+			ServiceName = serviceName;
 		}
 	}
 }

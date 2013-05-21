@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
@@ -22,6 +23,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			HelpText = "If the service was not previously installed it installs it, but does not start it. Alternatively if the service is already installed it simply starts the service",
 			MutuallyExclusiveSet = "mode")]
 		public bool InstallOrStart { get; set; }
+
+		[Option("service-name", HelpText = "Optional. Overrides the default service name when installing or uninstalling")]
+		public string ServiceName { get; set; }
 
 		[Option("collect-only", DefaultValue = false, HelpText = "Collect metrics, but do not send them to New Relic")]
 		public bool CollectOnly { get; set; }

@@ -1,6 +1,6 @@
 ﻿using System.ServiceProcess;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
-using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
@@ -15,7 +15,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		public SqlMonitorService(Settings settings)
 		{
 			_settings = settings;
-			ServiceName = ServiceConstants.ServiceName;
+			ServiceName = settings.ServiceName;
 		}
 
 		protected override void OnStart(string[] args)

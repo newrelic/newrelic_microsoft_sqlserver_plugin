@@ -27,6 +27,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
             Assert.That(settings.LicenseKey, Is.EqualTo("FooGuid"), "LicenseKey not mapped correctly");
             Assert.That(settings.PollIntervalSeconds, Is.EqualTo(45), "PollIntervalSeconds not mapped correctly");
+			Assert.That(settings.ServiceName, Is.EqualTo("NewRelicSqlPlugin"), "ServiceName not mapped correctly");
 
             var expectedSqlInstances = new[]
                 {

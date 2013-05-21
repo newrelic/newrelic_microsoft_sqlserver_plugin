@@ -10,14 +10,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
 	internal class InstallController
 	{
-	    private readonly ILog _log;
+		private readonly string _serviceName;
+		private readonly ILog _log;
 
-	    public InstallController(ILog log)
-        {
-            _log = log;
-        }
+	    public InstallController(string serviceName, ILog log)
+	    {
+		    _serviceName = serviceName;
+		    _log = log;
+	    }
 
-	    public void Install()
+		public void Install()
 		{
 			Install(false);
 		}
@@ -116,8 +118,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 
 		private ServiceController GetServiceController()
 		{
-            _log.InfoFormat("Checking if service {0} exists", ServiceConstants.ServiceName);
-			return ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == ServiceConstants.ServiceName);
+			_log.InfoFormat("Checking if service {0} exists", _serviceName);
+			return ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == _serviceName);
 		}
 
 		public void InstallOrStart()
