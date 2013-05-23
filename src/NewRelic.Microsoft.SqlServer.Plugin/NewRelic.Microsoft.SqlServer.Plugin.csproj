@@ -77,7 +77,8 @@
     <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
-    <Compile Include="QueryTypes\AzureSqlConnections.cs" />
+    <Compile Include="QueryTypes\AzureSqlDatabaseSummary.cs" />
+    <Compile Include="QueryTypes\MemoryViewNuma.cs" />
     <Compile Include="SqlEndpoint.cs" />
     <Compile Include="SqlServer.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
@@ -111,7 +112,6 @@
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
     <Compile Include="QueryTypes\MemoryView.cs" />
     <Compile Include="QueryTypes\RecompileDetail.cs" />
-    <Compile Include="QueryTypes\RecompileQueryBase.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlServerConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />
@@ -163,7 +163,7 @@
     <EmbeddedResource Include="Queries\RecompileDetail.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Queries\WaitStates.sql" />
+    <EmbeddedResource Include="Queries\WaitStates.SqlServer.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\IndexFragmentation.sql" />
@@ -172,7 +172,13 @@
     <EmbeddedResource Include="Queries\MemoryView.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Queries\Connections.AzureSql.sql" />
+    <EmbeddedResource Include="Queries\Summary.AzureSql.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\WaitStates.AzureSql.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\MemoryView.Numa.sql" />
   </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

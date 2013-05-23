@@ -7,12 +7,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 	{
 		protected override string IncludedDatabaseExpectedSql
 		{
-			get { return "WHERE (DB_NAME(a.database_id) IN ('include')"; }
+			get { return "WHERE (d.name IN ('include')"; }
 		}
 
 		protected override string ExcludedDatabaseExpectedSql
 		{
-			get { return "WHERE (DB_NAME(a.database_id) NOT IN ('exclude')"; }
+			get { return "WHERE (d.name NOT IN ('exclude')"; }
 		}
 	}
 }

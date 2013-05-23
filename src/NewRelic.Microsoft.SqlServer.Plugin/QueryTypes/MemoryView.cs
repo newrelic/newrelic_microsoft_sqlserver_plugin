@@ -22,10 +22,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		}
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[sec]")]
-		public long PageLifeExpectancyInSeconds { get; set; }
-
-		[Metric(MetricValueType = MetricValueType.Value, Units = "[sec]")]
-		public long PageLifeExpectancyInSecondsNuma { get; set; }
+		public long PageLife { get; set; }
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_miss]")]
 		public decimal BufferCacheMissRatio

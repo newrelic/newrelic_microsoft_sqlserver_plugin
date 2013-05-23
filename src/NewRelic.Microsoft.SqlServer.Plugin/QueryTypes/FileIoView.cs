@@ -22,7 +22,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		protected override string DbNameForWhereClause
 		{
-			get { return "DB_NAME(a.database_id)"; }
+			get { return "d.name"; }
 		}
 
 		protected override WhereClauseTokenEnum WhereClauseToken

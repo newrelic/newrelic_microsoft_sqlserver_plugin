@@ -3,44 +3,27 @@
 -- Returns ratio of the 2
 -- Data collection nature: Cumulative. Though the ratio is usable without delta tracking.
 
-DECLARE @Details TABLE (
-			DatabaseName varchar(200) NULL,
-			BucketID bigint NULL,
-			UseCounts bigint NULL,
-			SizeInBytes bigint NULL,
-			Text varchar(MAX) NULL
-		)
-
-INSERT INTO @Details
-	SELECT
-		DB_NAME(st.dbid)	AS DatabaseName,
-		cp.BucketID			AS BucketID,
-		cp.UseCounts		AS UseCounts,
-		cp.size_in_bytes	AS SizeInBytes,
-		st.Text				AS Text
-	FROM sys.dm_exec_cached_plans cp
-	CROSS APPLY sys.dm_exec_sql_text(cp.plan_handle) st
-	WHERE cp.cacheobjtype = 'Compiled Plan'
-	/*{AND_WHERE}*/
-	;
-
-WITH SumsByDatabase AS (
-		SELECT
-			d.DatabaseName,
-			(
-				SELECT
+WITH RecompileDetails AS (SELECT
+			st.dbid	AS DatabaseID,
+			cp.UseCounts
+		FROM sys.dm_exec_cached_plans cp
+		CROSS APPLY sys.dm_exec_sql_text(cp.plan_handle) st
+		WHERE cp.cacheobjtype = 'Compiled Plan')
+,
+	RecompileSums AS (SELECT
+			d.Name	AS DatabaseName,
+			(SELECT
 					COUNT(*)
-				FROM @Details d2
-				WHERE d2.UseCounts = 1 AND d2.DatabaseName = d.DatabaseName)
+				FROM RecompileDetails rd2
+				WHERE UseCounts = 1 AND rd2.DatabaseID = d.database_id)
 			AS SingleUseObjects,
-			(
-				SELECT
+			(SELECT
 					COUNT(*)
-				FROM @Details d2
-				WHERE d2.UseCounts > 1 AND d2.DatabaseName = d.DatabaseName)
+				FROM RecompileDetails rd2
+				WHERE UseCounts > 1 AND rd2.DatabaseID = d.database_id)
 			AS MultipleUseObjects
-		FROM @Details d
-		GROUP BY d.DatabaseName)
+		FROM sys.databases d 
+		/*{WHERE}*/)
 SELECT
 	DatabaseName,
 	SingleUseObjects,
@@ -48,4 +31,4 @@ SELECT
 	CASE
 		WHEN (SingleUseObjects + MultipleUseObjects) = 0 THEN 0 ELSE SingleUseObjects * 100.00 / (SingleUseObjects + MultipleUseObjects)
 	END	AS SingleUsePercent
-FROM SumsByDatabase
+FROM RecompileSums

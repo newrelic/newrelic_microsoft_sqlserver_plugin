@@ -30,7 +30,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 // If bad args were passed, will exit and print usage
                 Parser.Default.ParseArgumentsStrict(args, options);
 
-                var installController = new InstallController(log);
+				var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
+				Settings.Default = settings;
+
+                var installController = new InstallController(settings.ServiceName, log);
                 if (options.Uninstall)
                 {
                     installController.Uninstall();
@@ -55,7 +58,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 {
                     Thread.CurrentThread.Name = "Main";
 
-                    var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
                     settings.CollectOnly = options.CollectOnly;
                     
                     log.Debug("Loaded Settings:");
