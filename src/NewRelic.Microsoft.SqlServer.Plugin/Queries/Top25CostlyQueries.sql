@@ -1,4 +1,5 @@
 -- Top queries by cost
+-- Tested to work in Azure SQL Database also
 
 SELECT TOP 25
 

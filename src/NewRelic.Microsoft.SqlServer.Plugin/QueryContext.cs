@@ -20,7 +20,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		int MetricsRecorded { get; }
 		bool DataSent { get; set; }
 		MetricTransformEnum MetricTransformEnum { get; }
-		string FormatMetricKey(object queryResult, string metricName);
+		string FormatMetricKey(object queryResult, string metricName, string metricUnits);
 		void AddAllMetrics();
 		void AddMetric(string name, int value);
 		void AddMetric(string name, decimal value);
@@ -61,9 +61,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public ComponentData ComponentData { get; set; }
 		public int MetricsRecorded { get; private set; }
 
-		public string FormatMetricKey(object queryResult, string metricName)
+		public string FormatMetricKey(object queryResult, string metricName, string metricUnits)
 		{
-			return FormatMetricKey(_query.MetricPattern, queryResult, metricName);
+			return FormatMetricKey(_query.MetricPattern, queryResult, metricName, metricUnits);
 		}
 
 		public void AddAllMetrics()
@@ -92,14 +92,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			MetricsRecorded++;
 		}
 
-		internal static string FormatMetricKey(string pattern, object queryResult, string metricName)
+		internal static string FormatMetricKey(string pattern, object queryResult, string metricName, string units = null)
 		{
-			string result = pattern;
+			var result = pattern;
 
 			if (result.Contains("{DatabaseName}"))
 			{
 				var databaseMetric = queryResult as IDatabaseMetric;
-				string databaseName = databaseMetric != null ? databaseMetric.DatabaseName : "(none)";
+				var databaseName = databaseMetric != null ? databaseMetric.DatabaseName : "(none)";
 				result = result.Replace("{DatabaseName}", databaseName);
 			}
 
@@ -112,20 +112,25 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				result = result.EndsWith("/") ? result + metricName : result + "/" + metricName;
 			}
 
-			MatchCollection matches = Regex.Matches(result, @"\{(?<property>[^}]+?)\}", RegexOptions.ExplicitCapture);
+			if (!string.IsNullOrEmpty(units))
+			{
+				result += units;
+			}
+
+			var matches = Regex.Matches(result, @"\{(?<property>[^}]+?)\}", RegexOptions.ExplicitCapture);
 			if (matches.Count <= 0)
 			{
 				return result;
 			}
 
 			// Find placeholders
-			Type queryType = queryResult.GetType();
+			var queryType = queryResult.GetType();
 			foreach (Match match in matches)
 			{
 				// Get the property match
-				string propertyName = match.Groups["property"].Value;
+				var propertyName = match.Groups["property"].Value;
 				// Get the property
-				PropertyInfo propertyInfo = queryType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+				var propertyInfo = queryType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
 				// Expect it to be a public instance property
 				if (propertyInfo == null)
 				{
@@ -154,13 +159,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					                                  queryType.Name));
 				}
 				// Get the value
-				object propertyValue = propertyInfo.GetValue(queryResult, null);
+				var propertyValue = propertyInfo.GetValue(queryResult, null);
 				// Try first as a string (most common), then ToString() when not null, else just the word "null"
-				string replacement = propertyValue as string ?? (propertyValue != null ? propertyValue.ToString() : "null");
+				var replacement = propertyValue as string ?? (propertyValue != null ? propertyValue.ToString() : "null");
 				// No leading or trailing whitespace
 				replacement = replacement.Trim();
 				// Replace all non-alphanumerics with underbar
-				string safeReplacement = Regex.Replace(replacement, @"[^\w\d]", "_", RegexOptions.Singleline);
+				var safeReplacement = Regex.Replace(replacement, @"[^\w\d]", "_", RegexOptions.Singleline);
 				// Finally, replace it in the metric pattern
 				result = result.Replace("{" + propertyName + "}", safeReplacement);
 			}

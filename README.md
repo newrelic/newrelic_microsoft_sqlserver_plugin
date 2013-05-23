@@ -4,7 +4,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 
 ## Installation instructions
 
-1. [Download the files](http://dabblerist.com/NewRelic.Microsoft.SqlServer.Plugin.0.1.0+alpha.zip)
+1. [Download the files](https://s3.amazonaws.com/new_relic_platform_plugin_binary_hosting/ms_sql_plugin/NewRelic.Microsoft.SqlServer.Plugin.zip)
 2. Unpack them to something like `C:\Program Files\New Relic\MicrosoftSQLServerPlugin\`. We'll call this `INSTALLDIR`.
 3. Configure the plugin.
   1. Open the file `INSTALLDIR\NewRelic.Microsoft.SqlServer.Plugin.exe.config` in a text editor (running as Administrator).

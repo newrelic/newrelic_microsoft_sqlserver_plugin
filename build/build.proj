@@ -32,6 +32,10 @@
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
+      <Find>AssemblyFileVersion\("[^"]+"\)</Find>
+      <ReplaceWith>AssemblyFileVersion("$(AssemblyVersion)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
       <Find>AssemblyInformationalVersion\("[^"]+"\)</Find>
       <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
     </RegexTransform>

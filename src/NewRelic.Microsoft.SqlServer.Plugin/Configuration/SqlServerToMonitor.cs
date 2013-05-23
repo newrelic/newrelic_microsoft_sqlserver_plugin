@@ -8,23 +8,6 @@ using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
-	public interface ISqlServerToMonitor
-	{
-		string Name { get; }
-		string ConnectionString { get; }
-
-		/// <summary>
-		///     The number of seconds since the last recorded successful report of metrics.
-		/// </summary>
-		int Duration { get; }
-
-		string[] IncludedDatabases { get; }
-		string[] ExcludedDatabases { get; }
-
-		void MetricReportSuccessful(DateTime? reportDate = null);
-		string ToString();
-	}
-
 	public class SqlServerToMonitor : ISqlServerToMonitor
 	{
 		private DateTime _lastSuccessfulReportTime;
@@ -75,9 +58,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public string[] IncludedDatabases { get; private set; }
 		public string[] ExcludedDatabases { get; private set; }
 
-        public void MetricReportSuccessful(DateTime? reportDate = null)
+		public void MetricReportSuccessful(DateTime? reportDate = null)
 		{
-            _lastSuccessfulReportTime = reportDate ?? DateTime.Now;
+			_lastSuccessfulReportTime = reportDate ?? DateTime.Now;
 			QueryHistory.Values.ForEach(histories => histories.ForEach(qc => qc.DataSent = true));
 		}
 
@@ -109,7 +92,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		{
 			queryContexts.ForEach(queryContext =>
 			                      {
-				                      Queue<IQueryContext> queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
+				                      var queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
 				                      if (queryHistory.Count >= 2) //Only track up to last run of this query
 				                      {
 					                      queryHistory.Dequeue();
@@ -122,8 +105,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		{
 			var platformData = new PlatformData(agentData);
 
-			ComponentData[] pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
-			                                                   .Where(c => c != null).ToArray();
+			var pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
+			                                       .Where(c => c != null).ToArray();
 
 			pendingComponentData.ForEach(platformData.AddComponent);
 

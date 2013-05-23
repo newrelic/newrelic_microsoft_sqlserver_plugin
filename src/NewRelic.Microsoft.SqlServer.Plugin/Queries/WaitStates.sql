@@ -46,21 +46,21 @@ WITH [TempWaitStates] AS (
 		'XE_TIMER_EVENT'
 		))
 SELECT
-	[TWS1].[wait_type]														AS [WaitType],
-	CAST([TWS1].[WaitSeconds] AS decimal(14, 2))							AS [WaitSeconds],
-	CAST([TWS1].[ResourceSeconds] AS decimal(14, 2))						AS [ResourceSeconds],
-	CAST([TWS1].[SignalSeconds] AS decimal(14, 2))							AS [SignalSeconds],
-	[TWS1].[WaitCount]														AS [WaitCount],
-	CAST(CAST([TWS1].[Percentage] AS decimal(4, 2)) / 100 AS decimal(4, 4))	AS [Percentage],
+	[TWS1].[wait_type]									AS [WaitType],
+	CAST([TWS1].[WaitSeconds] AS decimal(14, 2))		AS [WaitSeconds],
+	CAST([TWS1].[ResourceSeconds] AS decimal(14, 2))	AS [ResourceSeconds],
+	CAST([TWS1].[SignalSeconds] AS decimal(14, 2))		AS [SignalSeconds],
+	[TWS1].[WaitCount]									AS [WaitCount],
+	[TWS1].[Percentage]									AS [Percentage],
 	CASE
 		WHEN ISNULL([TWS1].[WaitCount], 0) = 0 THEN 0 ELSE CAST(([TWS1].[WaitSeconds] / [TWS1].[WaitCount]) AS decimal(14, 4))
-	END																		AS [AvgWaitSeconds],
+	END													AS [AvgWaitSeconds],
 	CASE
 		WHEN ISNULL([TWS1].[WaitCount], 0) = 0 THEN 0 ELSE CAST(([TWS1].[ResourceSeconds] / [TWS1].[WaitCount]) AS decimal(14, 4))
-	END																		AS [AvgResourceSeconds],
+	END													AS [AvgResourceSeconds],
 	CASE
 		WHEN ISNULL([TWS1].[WaitCount], 0) = 0 THEN 0 ELSE CAST(([TWS1].[SignalSeconds] / [TWS1].[WaitCount]) AS decimal(14, 4))
-	END																		AS [AvgSignalSeconds]
+	END													AS [AvgSignalSeconds]
 FROM [TempWaitStates] AS [TWS1]
 JOIN [TempWaitStates] AS [TWS2] ON [TWS2].[RowNum] <= [TWS1].[RowNum]
 WHERE [TWS1].[Percentage] >= 0.1
