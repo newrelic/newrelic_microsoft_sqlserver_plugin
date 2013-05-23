@@ -6,6 +6,8 @@ using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 using log4net;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
+
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
 	public class SqlPoller
@@ -39,14 +41,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 					_log.Info("Service Starting");
 
 					var queries = new QueryLocator(new DapperWrapper()).PrepareQueries();
+					_settings.Endpoints.ForEach(e => e.SetQueries(queries));
 
 					var pollingThreadSettings = new PollingThreadSettings
 					                            {
 						                            Name = "SqlPoller",
-						                            // Set to immediate when only collecting for instant gratification
+													// Set to immediate when CollectOnly for instant gratification
 						                            InitialPollDelaySeconds = _settings.CollectOnly ? 0 : _settings.PollIntervalSeconds,
 						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
-						                            PollAction = () => _metricCollector.QueryServers(queries),
+						                            PollAction = () => _metricCollector.QueryEndpoints(queries),
 						                            AutoResetEvent = new AutoResetEvent(false),
 					                            };
 

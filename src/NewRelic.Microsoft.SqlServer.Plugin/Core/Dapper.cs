@@ -21,7 +21,7 @@ using System.Text;
 using System.Threading;
 using System.Text.RegularExpressions;
 
-namespace NewRelic.Microsoft.SqlServer.Plugin
+namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
 	/// <summary>
 	/// Dapper, a light weight object mapper for ADO.NET

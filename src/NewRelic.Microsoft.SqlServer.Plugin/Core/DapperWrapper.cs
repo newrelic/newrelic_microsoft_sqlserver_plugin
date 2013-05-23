@@ -3,12 +3,12 @@ using System.Data;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
-	internal interface IDapperWrapper
+	public interface IDapperWrapper
 	{
 		IEnumerable<T> Query<T>(IDbConnection connection, string sql, object param);
 	}
 
-	internal class DapperWrapper : IDapperWrapper
+    public class DapperWrapper : IDapperWrapper
 	{
 		public IEnumerable<T> Query<T>(IDbConnection connection, string sql, object param)
 		{

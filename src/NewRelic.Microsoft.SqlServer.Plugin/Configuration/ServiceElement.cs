@@ -17,12 +17,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			get { return (int?)(base["pollIntervalSeconds"]) ?? 60; }
 			set { base["pollIntervalSeconds"] = value; }
 		}
-
-		[ConfigurationProperty("useSsl", DefaultValue = false, IsKey = false, IsRequired = false)]
-		public bool UseSsl
-		{
-			get { return (bool?)(base["useSsl"]) ?? false; }
-			set { base["useSsl"] = value; }
-		}
 	}
 }

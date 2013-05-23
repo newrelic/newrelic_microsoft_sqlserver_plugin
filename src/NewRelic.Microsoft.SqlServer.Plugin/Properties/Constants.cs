@@ -2,7 +2,8 @@
 {
 	internal static class Constants
 	{
-		public const string ComponentGuid = "com.newrelic.platform.microsoft.sqlserver";
+		public const string SqlServerComponentGuid = "com.newrelic.platform.microsoft.sqlserver";
+		public const string SqlAzureComponentGuid = "com.newrelic.platform.microsoft.azuresql";
 		public const string SqlMonitorLogger = "SqlMonitor";
 		public const string VerboseSqlLogger = "VerboseSqlOutput";
 		public const string VerboseMetricsLogger = "VerboseMetricOutput";

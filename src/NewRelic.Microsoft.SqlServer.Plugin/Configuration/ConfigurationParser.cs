@@ -33,9 +33,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                 throw new FileNotFoundException("Unable to locate config file", configFilePath);
             }
 
-            var configSettings = LoadConfigurationFromFile(configFilePath, log);
-
-            return configSettings;
+	        return LoadConfigurationFromFile(configFilePath, log);
         }
 
         /// <summary>

@@ -194,29 +194,29 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[TestCaseSource("GetComponentDataTestCases")]
 		public string[] AssertThatComponentDataGeneratedCorrectly(GenerateComponentDataInput[] inputdata)
 		{
-			IQueryContext[] queryContextHistory = inputdata.Select(input =>
-			                                                       {
-				                                                       var queryContext = Substitute.For<IQueryContext>();
-				                                                       queryContext.QueryName.Returns(input.QueryName);
-				                                                       queryContext.DataSent.Returns(input.DataSent);
-				                                                       queryContext.MetricTransformEnum.Returns(input.MetricTransformEnum);
-				                                                       queryContext.ComponentData = new ComponentData();
-				                                                       input.Metrics.ForEach(m =>
-				                                                                             {
-					                                                                             if (m.Value is decimal)
-					                                                                             {
-						                                                                             queryContext.ComponentData.AddMetric(m.Key, (decimal) m.Value);
-					                                                                             }
+			var queryContextHistory = inputdata.Select(input =>
+			                                           {
+				                                           var queryContext = Substitute.For<IQueryContext>();
+				                                           queryContext.QueryName.Returns(input.QueryName);
+				                                           queryContext.DataSent.Returns(input.DataSent);
+				                                           queryContext.MetricTransformEnum.Returns(input.MetricTransformEnum);
+				                                           queryContext.ComponentData = new ComponentData();
+				                                           input.Metrics.ForEach(m =>
+				                                                                 {
+					                                                                 if (m.Value is decimal)
+					                                                                 {
+						                                                                 queryContext.ComponentData.AddMetric(m.Key, (decimal) m.Value);
+					                                                                 }
 
-					                                                                             if (m.Value is int)
-					                                                                             {
-						                                                                             queryContext.ComponentData.AddMetric(m.Key, (int) m.Value);
-					                                                                             }
-				                                                                             });
-				                                                       return queryContext;
-			                                                       }).ToArray();
+					                                                                 if (m.Value is int)
+					                                                                 {
+						                                                                 queryContext.ComponentData.AddMetric(m.Key, (int) m.Value);
+					                                                                 }
+				                                                                 });
+				                                           return queryContext;
+			                                           }).ToArray();
 
-			ComponentData componentData = ComponentDataRetriever.GetData(queryContextHistory);
+			var componentData = ComponentDataRetriever.GetData(queryContextHistory);
 
 			return componentData.Metrics.Select(m => String.Format("{0}:{1}", m.Key, m.Value)).ToArray();
 		}

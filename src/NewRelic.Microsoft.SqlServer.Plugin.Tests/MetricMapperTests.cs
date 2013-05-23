@@ -65,7 +65,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			var componentData = new ComponentData();
 
-			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var query = new SqlQuery(fake.GetType(), new SqlServerQueryAttribute(null, "Fake"), null, "");
 			var queryContext = new QueryContext(query) {ComponentData = componentData,};
 
 			var metricMapper = new MetricMapper(fake.GetType().GetProperty(propertyName));
@@ -190,7 +190,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			var componentData = new ComponentData();
 
-			var query = new SqlMonitorQuery(fake.GetType(), new QueryAttribute(null, "Fake"), null, "");
+			var query = new SqlQuery(fake.GetType(), new SqlServerQueryAttribute(null, "Fake"), null, "");
 			var queryContext = new QueryContext(query) {ComponentData = componentData,};
 
 			var mapper = MetricMapper.TryCreate(fake.GetType().GetProperty("Decimal"));

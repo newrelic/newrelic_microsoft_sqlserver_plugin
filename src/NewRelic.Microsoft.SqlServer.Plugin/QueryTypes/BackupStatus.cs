@@ -2,9 +2,9 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
-    [Query("BackupStatus.sql", "Component/BackupStatus/{DatabaseName}", QueryName = "Backup Status", Enabled = false)]
-    [Query("LogBackupStatus.sql", "Component/LogBackupStatus/{DatabaseName}", QueryName = "Log Backup Status", Enabled = false)]
-    internal class BackupStatus : DatabaseMetricBase
+    [SqlServerQuery("BackupStatus.sql", "Component/BackupStatus/{DatabaseName}", QueryName = "Backup Status", Enabled = false)]
+    [SqlServerQuery("LogBackupStatus.sql", "Component/LogBackupStatus/{DatabaseName}", QueryName = "Log Backup Status", Enabled = false)]
+	public class BackupStatus : DatabaseMetricBase
     {
         public string BackupDate { get; set; }
         public string Comment { get; set; }

@@ -27,8 +27,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
             Assert.That(settings.LicenseKey, Is.EqualTo("FooGuid"), "LicenseKey not mapped correctly");
             Assert.That(settings.PollIntervalSeconds, Is.EqualTo(45), "PollIntervalSeconds not mapped correctly");
-            Assert.That(settings.UseSsl, Is.EqualTo(true), "UseSsl not mapped correctly");
-
 
             var expectedSqlInstances = new[]
                 {
@@ -46,11 +44,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                             IncludedDatabases = new string[0],
                             ExcludedDatabases = Constants.SystemDatabases.Concat(new[]{"foo", "bar"}).ToArray(),
                         },
-                }.Select(i => SqlServerToMonitor.FormatProperties(i.Name, i.ConnectionString, i.IncludedDatabases, i.ExcludedDatabases)).ToArray();
+                }.Select(i => SqlServer.FormatProperties(i.Name, i.ConnectionString, i.IncludedDatabases, i.ExcludedDatabases)).ToArray();
 
-            var actualInstances = settings.SqlServers.Select(s => s.ToString()).ToArray();
+	        var sqlServers = settings.Endpoints.OfType<SqlServer>().ToArray();
 
-            Assert.That(actualInstances, Is.EquivalentTo(expectedSqlInstances), "SqlServers Found different from expected");
+			var actualInstances = sqlServers.Select(s => s.ToString()).ToArray();
+            Assert.That(actualInstances, Is.EquivalentTo(expectedSqlInstances), "Endpoints Found different from expected");
+
+			var databaseWithDisplayName = sqlServers.Single(e => e.Name == "Local").IncludedDatabases.Single(d => d.Name == "Northwind");
+	        Assert.That(databaseWithDisplayName.DisplayName, Is.EqualTo("Southbreeze"), "Display name cannot be configured");
+
+	        var azureSqlDatabases = settings.Endpoints.OfType<AzureSqlDatabase>().Select(a => a.ToString()).ToArray();
+			var expectedAzureDatabases = new[] { "Name: CloudFtw, ConnectionString: Server=zzz,1433;Database=CloudFtw;User ID=NewRelic;Password=aaa;Trusted_Connection=false;Encrypt=true;Connection Timeout=30;" };
+			Assert.That(azureSqlDatabases, Is.EqualTo(expectedAzureDatabases));
         }
     }
 }
