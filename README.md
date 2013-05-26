@@ -2,6 +2,12 @@
 
 A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 
+## System Requirements
+
+1. .NET 3.5 or later
+2. Windows 7/Server 2008 or later
+3. SQL Server 2005 or later
+
 ## Installation instructions
 
 1. [Download the files](https://s3.amazonaws.com/new_relic_platform_plugin_binary_hosting/ms_sql_plugin/NewRelic.Microsoft.SqlServer.Plugin.zip)
