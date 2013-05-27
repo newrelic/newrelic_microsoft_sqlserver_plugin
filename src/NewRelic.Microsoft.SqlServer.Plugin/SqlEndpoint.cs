@@ -6,6 +6,7 @@ using System.Linq;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Binding.DotNET;
 
 using log4net;
@@ -26,11 +27,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			_lastSuccessfulReportTime = DateTime.Now;
 
 			QueryHistory = new Dictionary<string, Queue<IQueryContext>>();
+			SqlDmlActivityHistory = new Dictionary<string, SqlDmlActivity>();
 		}
 
 		protected abstract string ComponentGuid { get; }
 
 		public IDictionary<string, Queue<IQueryContext>> QueryHistory { get; private set; }
+		protected Dictionary<string, SqlDmlActivity> SqlDmlActivityHistory { get; set; }
 
 		public string Name { get; private set; }
 		public string ConnectionString { get; private set; }
@@ -77,7 +80,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 							_VerboseSqlOutputLogger.Info("");
 						}
 
-						results = OnQueryExecuted(query, results);
+						results = OnQueryExecuted(query, results, log);
 
 						if (_VerboseSqlOutputLogger.IsInfoEnabled)
 						{
@@ -90,7 +93,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 							}
 							_VerboseSqlOutputLogger.Info("");
 						}
-
 					}
 					catch (Exception e)
 					{
@@ -152,14 +154,74 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
 
-		internal virtual object[] OnQueryExecuted(ISqlQuery query, object[] results)
+		internal virtual object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
 		{
-			return results;
+			return query.QueryType == typeof (SqlDmlActivity) ? CalculateSqlDmlActivityIncrease(results, log) : results;
 		}
 
 		public override string ToString()
 		{
 			return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
+		}
+
+		private object[] CalculateSqlDmlActivityIncrease(object[] inputResults, ILog log)
+		{
+			if (inputResults == null || inputResults.Length == 0)
+			{
+				log.Error("No values passed to CalculateSqlDmlActivityIncrease");
+				return inputResults;
+			}
+
+			SqlDmlActivity[] sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
+
+			if (!sqlDmlActivities.Any())
+			{
+				log.Error("In trying to Process results for SqlDmlActivity, results were NULL or not of the appropriate type");
+				return inputResults;
+			}
+
+			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities.ToDictionary(a => BitConverter.ToString(a.SqlHandle) + ":" + BitConverter.ToString(a.QueryHash));
+
+			int reads = 0;
+			int writes = 0;
+			currentValues.ForEach(a =>
+			                      {
+				                      if (SqlDmlActivityHistory.ContainsKey(a.Key))
+				                      {
+					                      SqlDmlActivity previous = SqlDmlActivityHistory[a.Key];
+					                      int currentExecutionCount = a.Value.ExecutionCount;
+					                      int previousExecutionCount = previous.ExecutionCount;
+
+					                      if (currentExecutionCount > previousExecutionCount && a.Value.QueryType == previous.QueryType)
+					                      {
+						                      int increase = currentExecutionCount - previousExecutionCount;
+
+						                      switch (a.Value.QueryType)
+						                      {
+							                      case "Writes":
+								                      writes += increase;
+								                      break;
+							                      case "Reads":
+								                      reads += increase;
+								                      break;
+						                      }
+					                      }
+				                      }
+			                      });
+
+			//Current Becomes the new history
+			SqlDmlActivityHistory = currentValues;
+
+			//return the sum of all increases for reads and writes
+			//if there is was no history (first time for this db) then reads and writes will be 0
+			return new object[]
+			       {
+				       new SqlDmlActivity
+				       {
+					       Reads = reads,
+					       Writes = writes,
+				       },
+			       };
 		}
 	}
 }

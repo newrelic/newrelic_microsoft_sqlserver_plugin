@@ -28,11 +28,31 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			}
 		}
 
-		[Test]
-		public void AssertAzureAppropriatelyMassagesData()
+		public IEnumerable<TestCaseData> EndpointMassagesDmlActivityDataTest
 		{
-			var azureSqlDatabase = new AzureSqlDatabase("FooServer", ".", Substitute.For<ILog>());
+			get
+			{
+				return new[]
+				       {
+					       new TestCaseData(new SqlServer("FooServer", ".", false)).SetName("Assert SqlServer Endpoint Massages data appropriately"),
+					       new TestCaseData(new AzureSqlDatabase("FooServer", ".", Substitute.For<ILog>())).SetName("Assert AzureEndpoint Massages data appropriately")
+				       };
+			}
+		}
 
+		[Test]
+		[TestCaseSource("ComponentGuidTestCases")]
+		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpoint endpoint)
+		{
+			QueryContext queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
+
+			return queryContext.ComponentData.Guid;
+		}
+
+		[Test]
+		[TestCaseSource("EndpointMassagesDmlActivityDataTest")]
+		public void AssertEndpointAppropriatelyMassagesData(SqlEndpoint endpoint)
+		{
 			SqlDmlActivity[] resultSet1 = new[]
 			                              {
 				                              new SqlDmlActivity
@@ -75,7 +95,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			var sqlQuery = Substitute.For<ISqlQuery>();
 			sqlQuery.QueryType.Returns(typeof (SqlDmlActivity));
 
-			IEnumerable<SqlDmlActivity> outputResults1 = azureSqlDatabase.OnQueryExecuted(sqlQuery, resultSet1).OfType<SqlDmlActivity>();
+			IEnumerable<SqlDmlActivity> outputResults1 = endpoint.OnQueryExecuted(sqlQuery, resultSet1, Substitute.For<ILog>()).OfType<SqlDmlActivity>();
 
 			Assert.That(outputResults1, Is.Not.Null);
 			Assert.That(outputResults1.Count(), Is.EqualTo(1));
@@ -122,22 +142,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 				                              },
 			                              }.ToArray();
 
-			IEnumerable<SqlDmlActivity> outputResults2 = azureSqlDatabase.OnQueryExecuted(sqlQuery, resultSet2).OfType<SqlDmlActivity>();
+			IEnumerable<SqlDmlActivity> outputResults2 = endpoint.OnQueryExecuted(sqlQuery, resultSet2, Substitute.For<ILog>()).OfType<SqlDmlActivity>();
 			Assert.That(outputResults2, Is.Not.Null);
 			Assert.That(outputResults2.Count(), Is.EqualTo(1));
 
 			sqlDmlActivity = outputResults2.First();
 
 			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EquivalentTo("Writes:14 Reads:75"));
-		}
-
-		[Test]
-		[TestCaseSource("ComponentGuidTestCases")]
-		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpoint endpoint)
-		{
-			QueryContext queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
-
-			return queryContext.ComponentData.Guid;
 		}
 
 		[Test]
