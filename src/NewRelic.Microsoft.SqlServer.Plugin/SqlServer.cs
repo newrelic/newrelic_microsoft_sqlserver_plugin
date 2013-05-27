@@ -117,9 +117,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             }
         }
 
-        protected override void OnQueryExecuted(object[] results)
+		internal override object[] OnQueryExecuted(ISqlQuery query, object[] results)
         {
             ApplyDatabaseDisplayNames(IncludedDatabases, results);
+			return results;
         }
     }
 }

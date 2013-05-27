@@ -78,6 +78,7 @@
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="QueryTypes\AzureSqlDatabaseSummary.cs" />
+    <Compile Include="QueryTypes\SqlDmlActivity.cs" />
     <Compile Include="QueryTypes\MemoryViewNuma.cs" />
     <Compile Include="SqlEndpoint.cs" />
     <Compile Include="SqlServer.cs" />
@@ -179,6 +180,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\MemoryView.Numa.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\SqlDMLActivity.SqlServerAndAzureSQL.sql" />
   </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
