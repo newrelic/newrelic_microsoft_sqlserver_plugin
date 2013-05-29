@@ -57,36 +57,36 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			                              {
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("AA11"),
-					                              QueryHash = Encoding.UTF8.GetBytes("ABCD"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                              SQlStatement = "INSERT INTO FOO",
 					                              ExecutionCount = 10,
 					                              QueryType = "Writes",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("AA11"),
-					                              QueryHash = Encoding.UTF8.GetBytes("ABCE"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                              SQlStatement = "INSERT INTO BAR",
 					                              ExecutionCount = 8,
 					                              QueryType = "Writes",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("BB12"),
-					                              QueryHash = Encoding.UTF8.GetBytes("FGHI"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("BB12"),
+					                              SQlStatement = "SELECT * FROM FOO",
 					                              ExecutionCount = 500,
 					                              QueryType = "Reads",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("CC12"),
-					                              QueryHash = Encoding.UTF8.GetBytes("FGHI"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("CC12"),
+					                              SQlStatement = "SELECT * FROM FOO",
 					                              ExecutionCount = 600,
 					                              QueryType = "Reads",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("EE12"),
-					                              QueryHash = Encoding.UTF8.GetBytes("FGHI"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("EE12"),
+					                              SQlStatement = "SELECT * FROM BAR",
 					                              ExecutionCount = 100,
 					                              QueryType = "Reads",
 				                              },
@@ -107,36 +107,36 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			                              {
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("AA11"),
-					                              QueryHash = Encoding.UTF8.GetBytes("ABCD"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                              SQlStatement = "INSERT INTO FOO",
 					                              ExecutionCount = 14,
 					                              QueryType = "Writes",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("AA11"),
-					                              QueryHash = Encoding.UTF8.GetBytes("ABCE"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                             SQlStatement = "INSERT INTO BAR",
 					                              ExecutionCount = 18,
 					                              QueryType = "Writes",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("BB12"),
-					                              QueryHash = Encoding.UTF8.GetBytes("FGHI"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("BB12"),
+					                              SQlStatement = "SELECT * FROM FOO",
 					                              ExecutionCount = 550,
 					                              QueryType = "Reads",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("CC12"),
-					                              QueryHash = Encoding.UTF8.GetBytes("FGHI"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("CC12"),
+					                               SQlStatement = "SELECT * FROM FOO",
 					                              ExecutionCount = 625,
 					                              QueryType = "Reads",
 				                              },
 				                              new SqlDmlActivity
 				                              {
-					                              SqlHandle = Encoding.UTF8.GetBytes("DD12"),
-					                              QueryHash = Encoding.UTF8.GetBytes("FGHI"),
+					                              PlanHandle = Encoding.UTF8.GetBytes("DD12"),
+					                              SQlStatement = "SELECT * FROM BAR",
 					                              ExecutionCount = 125,
 					                              QueryType = "Reads",
 				                              },

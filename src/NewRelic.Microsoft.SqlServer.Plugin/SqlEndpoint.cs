@@ -180,7 +180,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities.ToDictionary(a => BitConverter.ToString(a.SqlHandle) + ":" + BitConverter.ToString(a.QueryHash));
+			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities.ToDictionary(a => string.Format("{0}:{1}:{2}",BitConverter.ToString(a.PlanHandle), a.SQlStatement, a.CreationTime));
 
 			int reads = 0;
 			int writes = 0;

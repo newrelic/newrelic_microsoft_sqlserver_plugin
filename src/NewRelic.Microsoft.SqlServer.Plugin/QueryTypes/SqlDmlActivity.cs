@@ -9,10 +9,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 	public class SqlDmlActivity
 	{
 		[Metric(Ignore = true)]
-		public Byte[] SqlHandle { get; set; }
-
-		[Metric(Ignore = true)]
-		public Byte[] QueryHash { get; set; }
+		public Byte[] PlanHandle { get; set; }
 
 		[Metric(Ignore = true)]
 		public int ExecutionCount { get; set; }
@@ -20,21 +17,27 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		[Metric(Ignore = true)]
 		public string QueryType { get; set; }
 
+		[Metric(Ignore = true)]
+		public string SQlStatement { get; set; }
+
+		[Metric(Ignore = true)]
+		public DateTime CreationTime { get; set; }
+
 		public int Writes { get; set; }
 
 		public int Reads { get; set; }
 
 		public override string ToString()
 		{
-			return string.Format(("SqlHandle: {0},\t" +
-			                      "QueryHash: {1},\t" +
-			                      "ExecutionCount: {2}\t" +
+			return string.Format(("PlanHandle: {0},\t" +
+								  "ExecutionCount: {1}\t" +
+								  "CreationTime: {2}\t" +
 			                      "QueryType: {3},\t" +
 			                      "Writes: {4},\t" +
 			                      "Reads: {5}"),
-			                     SqlHandle != null ? BitConverter.ToString(SqlHandle) : string.Empty,
-			                     QueryHash != null ? BitConverter.ToString(QueryHash) : string.Empty,
+			                     PlanHandle != null ? BitConverter.ToString(PlanHandle) : string.Empty,
 			                     ExecutionCount,
+								 CreationTime,
 			                     QueryType,
 			                     Writes,
 			                     Reads

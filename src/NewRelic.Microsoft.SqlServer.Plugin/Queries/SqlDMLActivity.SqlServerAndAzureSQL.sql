@@ -57,7 +57,7 @@ GROUP BY queryData.plan_handle, queryData.SQLStatement, queryData.creation_time
 ORDER BY queryData.plan_handle, queryData.SQLStatement, queryData.creation_time
 
 SELECT 
-	plan_handle AS plan_handle,
+	plan_handle AS PlanHandle,
 	SqlStatement,
 	creation_time AS CreationTime,
 	execution_count AS ExecutionCount,
