@@ -65,13 +65,16 @@ SELECT
 	--total_logical_reads,
 	--total_physical_reads,
 	case 
-		when 
+		WHEN
+			( 
 			SqlStatement like '%INSERT %' 
 			or SqlStatement like '%UPDATE %'
 			or SqlStatement like '%INTO %'
 			or SqlStatement like '%DELETE %'
 			or SqlStatement like '%MERGE %'
 			or SqlStatement like '%WRITE %'
+			)
+			AND SqlStatement NOT LIKE '%Exclude this query%' --Exclude this query from writes
 		then 'Writes'
 		when 
 			SqlStatement like '%SELECT %'
