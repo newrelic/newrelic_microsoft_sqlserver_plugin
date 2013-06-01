@@ -56,7 +56,6 @@
     <Compile Include="Configuration\ComponentDataRetrieverTests.cs" />
     <Compile Include="Configuration\ConfigurationParserTests.cs" />
     <Compile Include="Configuration\Log4NetTests.cs" />
-    <Compile Include="Configuration\SqlEndpointTests.cs" />
     <Compile Include="Configuration\SqlServerTests.cs" />
     <Compile Include="Core\ExtensionsForAssemblyTests.cs" />
     <Compile Include="MetricMapperTests.cs" />
@@ -70,6 +69,7 @@
     <Compile Include="QueryTypes\FileIoViewTests.cs" />
     <Compile Include="QueryTypes\MemoryViewTests.cs" />
     <Compile Include="QueryTypes\RecompileSummaryTests.cs" />
+    <Compile Include="SqlEndpointTests.cs" />
     <Compile Include="SqlMonitoryQueryTests.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>

@@ -62,7 +62,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			using (var conn = new SqlConnection(ConnectionString))
 			{
-				foreach (SqlQuery query in _queries)
+				foreach (var query in _queries)
 				{
 					object[] results;
 					try
@@ -72,7 +72,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 						if (_VerboseSqlOutputLogger.IsInfoEnabled)
 						{
-							foreach (object result in results)
+							foreach (var result in results)
 							{
 								// TODO Replace ToString() with something more useful that prints each property in the object
 								_VerboseSqlOutputLogger.Info(result.ToString());
@@ -86,7 +86,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 						{
 							_VerboseSqlOutputLogger.Info("After Results Messaged");
 
-							foreach (object result in results)
+							foreach (var result in results)
 							{
 								// TODO Replace ToString() with something more useful that prints each property in the object
 								_VerboseSqlOutputLogger.Info(result.ToString());
@@ -114,7 +114,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			queryContexts.ForEach(queryContext =>
 			                      {
-				                      Queue<IQueryContext> queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
+				                      var queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
 				                      if (queryHistory.Count >= 2) //Only track up to last run of this query
 				                      {
 					                      queryHistory.Dequeue();
@@ -127,8 +127,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			var platformData = new PlatformData(agentData);
 
-			ComponentData[] pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
-			                                                   .Where(c => c != null).ToArray();
+			var pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
+			                                       .Where(c => c != null).ToArray();
 
 			pendingComponentData.ForEach(platformData.AddComponent);
 
@@ -154,7 +154,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
 
-		internal virtual object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
+		protected virtual object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
 		{
 			return query.QueryType == typeof (SqlDmlActivity) ? CalculateSqlDmlActivityIncrease(results, log) : results;
 		}
@@ -164,7 +164,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
 		}
 
-		private object[] CalculateSqlDmlActivityIncrease(object[] inputResults, ILog log)
+		internal object[] CalculateSqlDmlActivityIncrease(object[] inputResults, ILog log)
 		{
 			if (inputResults == null || inputResults.Length == 0)
 			{
@@ -172,7 +172,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			SqlDmlActivity[] sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
+			var sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
 
 			if (!sqlDmlActivities.Any())
 			{
@@ -180,34 +180,53 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities.ToDictionary(a => string.Format("{0}:{1}:{2}",BitConverter.ToString(a.PlanHandle), a.SQlStatement, a.CreationTime));
+			var currentValues = sqlDmlActivities.ToDictionary(a => string.Format("{0}:{1}:{2}", BitConverter.ToString(a.PlanHandle), a.SQlStatement, a.CreationTime));
 
-			int reads = 0;
-			int writes = 0;
-			currentValues.ForEach(a =>
-			                      {
-				                      if (SqlDmlActivityHistory.ContainsKey(a.Key))
-				                      {
-					                      SqlDmlActivity previous = SqlDmlActivityHistory[a.Key];
-					                      int currentExecutionCount = a.Value.ExecutionCount;
-					                      int previousExecutionCount = previous.ExecutionCount;
+			var reads = 0;
+			var writes = 0;
 
-					                      if (currentExecutionCount > previousExecutionCount && a.Value.QueryType == previous.QueryType)
-					                      {
-						                      int increase = currentExecutionCount - previousExecutionCount;
+			// If this is the first time through, reads and writes are definitely 0
+			if (SqlDmlActivityHistory.Count > 0)
+			{
+				currentValues
+					.ForEach(a =>
+					         {
+						         int increase;
 
-						                      switch (a.Value.QueryType)
-						                      {
-							                      case "Writes":
-								                      writes += increase;
-								                      break;
-							                      case "Reads":
-								                      reads += increase;
-								                      break;
-						                      }
-					                      }
-				                      }
-			                      });
+						         // Find a matching previous value for a delta
+						         SqlDmlActivity previous;
+						         if (!SqlDmlActivityHistory.TryGetValue(a.Key, out previous))
+						         {
+							      // Nothing previous, the delta is the absolute value here
+									 increase = a.Value.ExecutionCount;
+						         }
+								 else if (a.Value.QueryType == previous.QueryType)
+								 {
+									 // Skip this previous value if they are both not reads or writes
+									 if (a.Value.QueryType != previous.QueryType) return;
+
+									 increase = a.Value.ExecutionCount - previous.ExecutionCount;
+
+									 // Only record positive deltas, though theoretically impossible here
+									 if (increase <= 0) return;
+
+								 }
+								 else
+								 {
+									 return;
+								 }
+
+						         switch (a.Value.QueryType)
+						         {
+							         case "Writes":
+								         writes += increase;
+								         break;
+							         case "Reads":
+								         reads += increase;
+								         break;
+						         }
+					         });
+			}
 
 			//Current Becomes the new history
 			SqlDmlActivityHistory = currentValues;

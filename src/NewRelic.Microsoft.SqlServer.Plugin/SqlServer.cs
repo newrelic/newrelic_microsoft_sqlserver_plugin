@@ -117,7 +117,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		internal override object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
+		protected override object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
 		{
 			results = base.OnQueryExecuted(query, results, log);
 
