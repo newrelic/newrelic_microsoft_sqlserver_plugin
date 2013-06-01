@@ -13,10 +13,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		public string ParameterizeQuery(string commandText, ISqlEndpoint endpoint)
 		{
-			var sqlServer = endpoint as SqlServer;
-			if (sqlServer == null) return commandText;
-
-			return ParameterizeQuery(commandText, WhereClauseToken, DbNameForWhereClause, sqlServer.IncludedDatabaseNames, sqlServer.ExcludedDatabaseNames);
+			return ParameterizeQuery(commandText, WhereClauseToken, DbNameForWhereClause, endpoint.IncludedDatabaseNames, endpoint.ExcludedDatabaseNames);
 		}
 
 		internal static string ParameterizeQuery(string commandText, WhereClauseTokenEnum whereClauseToken, string dbNameForWhereClause, string[] includeDBs, string[] excludeDBs)

@@ -35,15 +35,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			ExcludedDatabaseNames = excludedDbs.ToArray();
 		}
 
-		public Database[] IncludedDatabases { get; private set; }
-
-		public string[] IncludedDatabaseNames
-		{
-			get { return IncludedDatabases.Select(d => d.Name).ToArray(); }
-		}
-
-		public string[] ExcludedDatabaseNames { get; private set; }
-
 		protected override string ComponentGuid
 		{
 			get { return Constants.SqlServerComponentGuid; }
@@ -59,8 +50,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return String.Format("Name: {0}, ConnectionString: {1}, IncludedDatabaseNames: {2}, ExcludedDatabaseNames: {3}",
 			                     name,
 			                     connectionString,
-			                     String.Join(", ", includedDatabases),
-			                     String.Join(", ", excludedDatabases));
+			                     string.Join(", ", includedDatabases),
+			                     string.Join(", ", excludedDatabases));
 		}
 
 		/// <summary>
@@ -75,19 +66,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return;
 			}
 
-			Dictionary<string, string> renameMap = includedDatabases.Where(d => !String.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
+			var renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
 			if (!renameMap.Any())
 			{
 				return;
 			}
 
-			IDatabaseMetric[] databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !String.IsNullOrEmpty(d.DatabaseName)).ToArray();
+			var databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
 			if (!databaseMetrics.Any())
 			{
 				return;
 			}
 
-			foreach (IDatabaseMetric databaseMetric in databaseMetrics)
+			foreach (var databaseMetric in databaseMetrics)
 			{
 				string displayName;
 				if (renameMap.TryGetValue(databaseMetric.DatabaseName.ToLower(), out displayName))
@@ -106,12 +97,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			base.Trace(log);
 
-			foreach (Database database in IncludedDatabases)
+			foreach (var database in IncludedDatabases)
 			{
 				log.Debug("\t\t\tIncluding: " + database.Name);
 			}
 
-			foreach (string database in ExcludedDatabaseNames)
+			foreach (var database in ExcludedDatabaseNames)
 			{
 				log.Debug("\t\t\tExcluding: " + database);
 			}

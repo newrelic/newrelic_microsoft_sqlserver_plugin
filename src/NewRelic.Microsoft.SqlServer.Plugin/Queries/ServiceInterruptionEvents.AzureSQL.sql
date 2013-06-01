@@ -3,76 +3,76 @@
 -- SQL Azure Only
 -- Returns Certain Events that will interrupt service (including Throttling)
 
-declare @Types as Table(
-event_type varchar(150),
-event_subtype varchar(150),
-UI_Text varchar(150)
-)
+DECLARE @Types AS TABLE (
+			EventType varchar(150),
+			EventSubType varchar(150),
+			Description varchar(150)
+		)
 
-declare @DBAndTypes as Table(
-Database_Name varchar(150),
-event_type varchar(150),
-event_subtype varchar(150),
-UI_Text varchar(150)
-)
+DECLARE @DBAndTypes AS TABLE (
+			DatabaseName varchar(150),
+			EventType varchar(150),
+			EventSubType varchar(150),
+			Description varchar(150)
+		)
 
-Insert into @Types
-values('Connectivity', 'idle_connection_timeout', 'Idle Connection Timeout')
-Insert into @Types
-values('Connectivity', 'failed_to_open_db', 'Failed To Open DB')
-Insert into @Types
-values('Connectivity', 'blocked_by_firewall', 'Blocked By Firewall')
-Insert into @Types
-values('Connectivity', 'login_failed_for_user', 'Login Failed')
-Insert into @Types
-values('Throttling', 'long_transaction', 'Long Transaction')
-Insert into @Types
-values('Throttling', 'excessive_lock_usage', 'Excessive Lock Usage')
-Insert into @Types
-values('Throttling', 'excessive_tempdb_usage', 'Excessive TempDB Usage')
-Insert into @Types
-values('Throttling', 'excessive_log_space_usage', 'Excessive Log Space Usage')
-Insert into @Types
-values('Throttling', 'excessive_memory_usage', 'Excessive Memory Usage')
-Insert into @Types
-values('Engine', 'deadlock', 'Deadlock')
-Insert into @Types
-values('Throttling', 'reason_code', 'Other Throttling Code')
+INSERT INTO @Types
+	VALUES ('Connectivity', 'idle_connection_timeout', 'Idle Connection Timeout')
+INSERT INTO @Types
+	VALUES ('Connectivity', 'failed_to_open_db', 'Failed To Open DB')
+INSERT INTO @Types
+	VALUES ('Connectivity', 'blocked_by_firewall', 'Blocked By Firewall')
+INSERT INTO @Types
+	VALUES ('Connectivity', 'login_failed_for_user', 'Login Failed')
+INSERT INTO @Types
+	VALUES ('Throttling', 'long_transaction', 'Long Transaction')
+INSERT INTO @Types
+	VALUES ('Throttling', 'excessive_lock_usage', 'Excessive Lock Usage')
+INSERT INTO @Types
+	VALUES ('Throttling', 'excessive_tempdb_usage', 'Excessive TempDB Usage')
+INSERT INTO @Types
+	VALUES ('Throttling', 'excessive_log_space_usage', 'Excessive Log Space Usage')
+INSERT INTO @Types
+	VALUES ('Throttling', 'excessive_memory_usage', 'Excessive Memory Usage')
+INSERT INTO @Types
+	VALUES ('Engine', 'deadlock', 'Deadlock')
+INSERT INTO @Types
+	VALUES ('Throttling', 'reason_code', 'Other Throttling Code')
 
-insert into @DBAndTypes
-select 
-name as DatabaseName, 
-event_type,
-event_subtype,
-UI_Text
-from 
-	(
-		select name from sys.databases
-		union
-		select '' 
-	) as DBs
-, @Types
+INSERT INTO @DBAndTypes
+	SELECT
+		name	AS DatabaseName,
+		EventType,
+		EventSubType,
+		Description
+	FROM	(SELECT
+					name
+				FROM sys.databases
+				UNION
+				SELECT
+					'')
+			AS DBs,
+			@Types
 
+-- Since the log updates about 2-4 minutes after the end time,
+-- exclude items more than 9 minutes old
+DECLARE @latestEventWindow datetime = (SELECT
+			MAX(e.end_time)
+		FROM sys.event_log e
+		WHERE DATEADD(MINUTE, 9, e.end_time) >= GETDATE())
 
-SELECT 
-case 
-	when t.Database_Name = '' then 'N/A'
-	else t.Database_Name
-end as Database_Name,
-t.event_type,
-t.UI_Text,
-sum(isnull(event_count,0)) as  event_count
+SELECT
+	CASE
+		WHEN t.DatabaseName = '' THEN 'N/A' ELSE t.DatabaseName
+	END						AS DatabaseName,
+	t.EventType,
+	t.Description,
+	ISNULL(event_count, 0)	AS EventCount
 FROM @DBAndTypes t
-	left join sys.event_log e
-		on t.Database_Name = e.database_name
-		and t.event_subtype = e.event_subtype_desc
-group by 
-t.Database_Name,
-t.event_type,
-t.UI_Text
-order by 
-t.Database_Name,
-t.event_type,
-t.UI_Text
-
-
+LEFT JOIN sys.event_log e ON t.DatabaseName = e.database_name
+	AND t.EventSubType = e.event_subtype_desc
+	AND @latestEventWindow = e.end_time
+/*{WHERE}*/
+ORDER BY t.DatabaseName,
+	t.EventType,
+	t.Description

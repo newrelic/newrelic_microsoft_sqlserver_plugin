@@ -73,7 +73,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		///     </para>
 		/// </summary>
 		public string MetricPattern { get; private set; }
-
-		internal abstract bool ShouldParameterizeDatabaseInQuery { get; }
 	}
 }

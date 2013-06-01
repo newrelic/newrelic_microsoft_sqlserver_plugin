@@ -29,5 +29,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			get { return WhereClauseTokenEnum.Where; }
 		}
+
+		public override string ToString()
+		{
+			return string.Format("DatabaseName: {0},\t" +
+			                     "BytesRead: {1},\t" +
+			                     "BytesWritten: {2},\t" +
+			                     "NumberOfReads: {3},\t" +
+			                     "NumberOfWrites: {4},\t" +
+			                     "SizeInBytes: {5}",
+			                     DatabaseName, BytesRead, BytesWritten, NumberOfReads, NumberOfWrites, SizeInBytes);
+		}
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
@@ -28,12 +29,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			QueryHistory = new Dictionary<string, Queue<IQueryContext>>();
 			SqlDmlActivityHistory = new Dictionary<string, SqlDmlActivity>();
+
+			IncludedDatabases = new Database[0];
+			ExcludedDatabaseNames = new string[0];
 		}
 
 		protected abstract string ComponentGuid { get; }
 
 		public IDictionary<string, Queue<IQueryContext>> QueryHistory { get; private set; }
 		protected Dictionary<string, SqlDmlActivity> SqlDmlActivityHistory { get; set; }
+
+		public Database[] IncludedDatabases { get; protected set; }
+
+		public string[] IncludedDatabaseNames
+		{
+			get { return IncludedDatabases.Select(d => d.Name).ToArray(); }
+		}
+
+		public string[] ExcludedDatabaseNames { get; protected set; }
 
 		public string Name { get; private set; }
 		public string ConnectionString { get; private set; }
@@ -48,60 +61,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			_queries = FilterQueries(queries).ToArray();
 		}
 
-		public IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+		public virtual IEnumerable<IQueryContext> ExecuteQueries(ILog log)
 		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
-
-			_VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
-			_VerboseSqlOutputLogger.Info("");
-
-			using (var conn = new SqlConnection(ConnectionString))
-			{
-				foreach (var query in _queries)
-				{
-					object[] results;
-					try
-					{
-						_VerboseSqlOutputLogger.InfoFormat("Executing {0}", query.ResourceName);
-						results = query.Query(conn, this).ToArray();
-
-						if (_VerboseSqlOutputLogger.IsInfoEnabled)
-						{
-							foreach (var result in results)
-							{
-								// TODO Replace ToString() with something more useful that prints each property in the object
-								_VerboseSqlOutputLogger.Info(result.ToString());
-							}
-							_VerboseSqlOutputLogger.Info("");
-						}
-
-						results = OnQueryExecuted(query, results, log);
-
-						if (_VerboseSqlOutputLogger.IsInfoEnabled)
-						{
-							_VerboseSqlOutputLogger.Info("After Results Messaged");
-
-							foreach (var result in results)
-							{
-								// TODO Replace ToString() with something more useful that prints each property in the object
-								_VerboseSqlOutputLogger.Info(result.ToString());
-							}
-							_VerboseSqlOutputLogger.Info("");
-						}
-					}
-					catch (Exception e)
-					{
-						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
-						continue;
-					}
-					yield return CreateQueryContext(query, results);
-				}
-			}
+			return ExecuteQueries(_queries, ConnectionString, log);
 		}
 
 		public void MetricReportSuccessful(DateTime? reportDate = null)
@@ -145,6 +107,52 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 
 			log.DebugFormat("\t\t{0}: {1}", Name, safeConnectionString);
+		}
+
+		protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)
+		{
+			// Remove password from logging
+			var safeConnectionString = new SqlConnectionStringBuilder(connectionString);
+			if (!string.IsNullOrEmpty(safeConnectionString.Password))
+			{
+				safeConnectionString.Password = "[redacted]";
+			}
+
+			_VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
+
+			using (var conn = new SqlConnection(connectionString))
+			{
+				foreach (var query in queries)
+				{
+					object[] results;
+					try
+					{
+						results = query.Query(conn, this).ToArray();
+
+						// This could be slow, so only proceed if it actually gets logged
+						if (_VerboseSqlOutputLogger.IsInfoEnabled)
+						{
+							var verboseLogging = new StringBuilder();
+							verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
+
+							foreach (var result in results)
+							{
+								verboseLogging.AppendLine(result.ToString());
+							}
+
+							_VerboseSqlOutputLogger.Info(verboseLogging.ToString());
+						}
+
+						results = OnQueryExecuted(query, results, log);
+					}
+					catch (Exception e)
+					{
+						log.Error(string.Format("Error with query '{0}'", query.QueryName), e);
+						continue;
+					}
+					yield return CreateQueryContext(query, results);
+				}
+			}
 		}
 
 		internal QueryContext CreateQueryContext(ISqlQuery query, IEnumerable<object> results)
@@ -197,24 +205,21 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 						         SqlDmlActivity previous;
 						         if (!SqlDmlActivityHistory.TryGetValue(a.Key, out previous))
 						         {
-							      // Nothing previous, the delta is the absolute value here
-									 increase = a.Value.ExecutionCount;
+							         // Nothing previous, the delta is the absolute value here
+							         increase = a.Value.ExecutionCount;
 						         }
-								 else if (a.Value.QueryType == previous.QueryType)
-								 {
-									 // Skip this previous value if they are both not reads or writes
-									 if (a.Value.QueryType != previous.QueryType) return;
+						         else if (a.Value.QueryType == previous.QueryType)
+						         {
+									 // Calculate the delta
+							         increase = a.Value.ExecutionCount - previous.ExecutionCount;
 
-									 increase = a.Value.ExecutionCount - previous.ExecutionCount;
-
-									 // Only record positive deltas, though theoretically impossible here
-									 if (increase <= 0) return;
-
-								 }
-								 else
-								 {
-									 return;
-								 }
+							         // Only record positive deltas, though theoretically impossible here
+							         if (increase <= 0) return;
+						         }
+						         else
+						         {
+							         return;
+						         }
 
 						         switch (a.Value.QueryType)
 						         {
@@ -230,6 +235,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			//Current Becomes the new history
 			SqlDmlActivityHistory = currentValues;
+
+			if (_VerboseSqlOutputLogger.IsInfoEnabled)
+			{
+				_VerboseSqlOutputLogger.InfoFormat("SQL DML Activity: Reads={0} Writes={1}", reads, writes);
+				_VerboseSqlOutputLogger.Info("");
+			}
 
 			//return the sum of all increases for reads and writes
 			//if there is was no history (first time for this db) then reads and writes will be 0

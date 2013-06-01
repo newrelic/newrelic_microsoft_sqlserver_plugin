@@ -20,5 +20,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		[Metric(MetricName = "OtherProcess", MetricValueType = MetricValueType.Value, Units = "[%_CPU]")]
 		public byte OtherProcessUtilization { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("RecordID: {0},\t" +
+			                     "EventTime: {1},\t" +
+			                     "SQLProcessUtilization: {2},\t" +
+			                     "SystemIdle: {3},\t" +
+			                     "OtherProcessUtilization: {4}",
+			                     RecordID, EventTime, SQLProcessUtilization, SystemIdle, OtherProcessUtilization);
+		}
 	}
 }

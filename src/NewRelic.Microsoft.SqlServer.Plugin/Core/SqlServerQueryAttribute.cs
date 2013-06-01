@@ -19,10 +19,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		{
 			Enabled = true;
 		}
-
-		internal override bool ShouldParameterizeDatabaseInQuery
-		{
-			get { return true; }
-		}
 	}
 }

@@ -6,6 +6,7 @@ using NSubstitute;
 
 using NUnit.Framework;
 
+using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 
@@ -23,7 +24,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return new[]
 				       {
 					       new TestCaseData(new SqlServer("FooServer", ".", false)).Returns(Constants.SqlServerComponentGuid).SetName("SqlServer Sets Appropriate Guid"),
-					       new TestCaseData(new AzureSqlDatabase("FooServer", ".", Substitute.For<ILog>())).Returns(Constants.SqlAzureComponentGuid).SetName("AzureSqlDatabase Sets Appropriate Guid")
+					       new TestCaseData(new AzureSqlDatabase("FooServer", ".")).Returns(Constants.SqlAzureComponentGuid).SetName("AzureSqlDatabase Sets Appropriate Guid")
 				       };
 			}
 		}

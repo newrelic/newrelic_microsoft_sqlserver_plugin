@@ -58,7 +58,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			CommandText = commandText ?? queryType.Assembly.SearchForStringResource(attribute.ResourceName);
 
 			// Get a pointer to the correctly typed Query method below with the QueryType as the generic parameter
-			_genericMethod = attribute.ShouldParameterizeDatabaseInQuery && typeof (IDatabaseMetric).IsAssignableFrom(queryType)
+			_genericMethod = typeof (IDatabaseMetric).IsAssignableFrom(queryType)
 				                 ? _DatabaseMetricQueryMethod.MakeGenericMethod(queryType)
 				                 : _QueryMethod.MakeGenericMethod(queryType);
 

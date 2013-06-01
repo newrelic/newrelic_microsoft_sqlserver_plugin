@@ -31,7 +31,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return PrepareQueries(types);
 		}
 
-		internal IEnumerable<SqlQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
+		public IEnumerable<SqlQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
 		{
 			// Search for types with at least one attribute that have a QueryAttribute
 			return types.Where(t => !_ignoreTypes.Contains(t))

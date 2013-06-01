@@ -23,5 +23,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			get { return WhereClauseTokenEnum.Where; }
 		}
+
+		public override string ToString()
+		{
+			return string.Format("DatabaseName: {0},\t" +
+			                     "SingleUseObjects: {1},\t" +
+			                     "MultipleUseObjects: {2},\t" +
+			                     "SingleUsePercent: {3}",
+			                     DatabaseName, SingleUseObjects, MultipleUseObjects, SingleUsePercent);
+		}
 	}
 }

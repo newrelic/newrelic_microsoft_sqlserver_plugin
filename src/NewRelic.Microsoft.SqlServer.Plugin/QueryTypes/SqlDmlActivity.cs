@@ -29,18 +29,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		public override string ToString()
 		{
-			return string.Format(("PlanHandle: {0},\t" +
+			return string.Format("PlanHandle: {0},\t" +
 								  "ExecutionCount: {1}\t" +
 								  "CreationTime: {2}\t" +
-			                      "QueryType: {3},\t" +
-			                      "Writes: {4},\t" +
-			                      "Reads: {5}"),
+								  "QueryType: {3}",
 			                     PlanHandle != null ? BitConverter.ToString(PlanHandle) : string.Empty,
 			                     ExecutionCount,
 								 CreationTime,
-			                     QueryType,
-			                     Writes,
-			                     Reads
+			                     QueryType
 				);
 		}
 	}
