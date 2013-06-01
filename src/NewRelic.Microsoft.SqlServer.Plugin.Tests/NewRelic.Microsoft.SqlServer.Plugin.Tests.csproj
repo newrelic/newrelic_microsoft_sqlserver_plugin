@@ -64,13 +64,11 @@
     <Compile Include="Queries\QueryTypeValidationTests.cs" />
     <Compile Include="QueryContextTests.cs" />
     <Compile Include="QueryLocatorTests.cs" />
-    <Compile Include="QueryTypes\BackupStatusTests.cs" />
     <Compile Include="QueryTypes\ConnectionsTests.cs" />
     <Compile Include="QueryTypes\DatabaseMetricBaseTests.cs" />
     <Compile Include="QueryTypes\DatabaseMetricQueryTestFixtureBase.cs" />
     <Compile Include="QueryTypes\FileIoViewTests.cs" />
     <Compile Include="QueryTypes\MemoryViewTests.cs" />
-    <Compile Include="QueryTypes\RecompileDetailTests.cs" />
     <Compile Include="QueryTypes\RecompileSummaryTests.cs" />
     <Compile Include="SqlMonitoryQueryTests.cs" />
     <Compile Include="TestHelper.cs" />

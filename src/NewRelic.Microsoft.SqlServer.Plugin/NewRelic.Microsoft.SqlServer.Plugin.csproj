@@ -107,16 +107,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryContext.cs" />
     <Compile Include="QueryLocator.cs" />
-    <Compile Include="QueryTypes\BackupStatus.cs" />
     <Compile Include="QueryTypes\DatabaseMetricBase.cs" />
     <Compile Include="QueryTypes\FileIoView.cs" />
     <Compile Include="QueryTypes\IDatabaseMetric.cs" />
     <Compile Include="QueryTypes\MemoryView.cs" />
-    <Compile Include="QueryTypes\RecompileDetail.cs" />
     <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlServerConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />
-    <Compile Include="QueryTypes\Top25CostlyQueries.cs" />
     <Compile Include="Properties\ServiceConstants.cs" />
     <Compile Include="Core\ServiceProcessInstaller.cs">
       <SubType>Component</SubType>
@@ -150,24 +147,13 @@
   <ItemGroup>
     <EmbeddedResource Include="Queries\FileIOView.sql" />
     <EmbeddedResource Include="Queries\Connections.SqlServer.sql" />
-    <EmbeddedResource Include="Queries\Top25CostlyQueries.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Queries\BackupStatus.sql" />
-    <EmbeddedResource Include="Queries\LogBackupStatus.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\RecompileSummary.sql" />
     <EmbeddedResource Include="Queries\SQL-NonSQL-IdleCPUUsage.sql" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Queries\RecompileDetail.sql" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Queries\WaitStates.SqlServer.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Queries\IndexFragmentation.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\MemoryView.sql" />
