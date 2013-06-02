@@ -56,10 +56,14 @@ INSERT INTO @DBAndTypes
 
 -- Since the log updates about 2-4 minutes after the end time,
 -- exclude items more than 9 minutes old
+-- Join to @Types to limit scope of max end_time to reduce noise from non aggregated items
 DECLARE @latestEventWindow datetime = (SELECT
 			MAX(e.end_time)
 		FROM sys.event_log e
-		WHERE DATEADD(MINUTE, 9, e.end_time) >= GETDATE())
+			JOIN @Types t
+				ON e.event_subtype_desc = t.EventSubType
+		WHERE DATEADD(MINUTE, 9, e.end_time) >= GETUTCDATE())
+
 
 SELECT
 	CASE
@@ -73,6 +77,7 @@ LEFT JOIN sys.event_log e ON t.DatabaseName = e.database_name
 	AND t.EventSubType = e.event_subtype_desc
 	AND @latestEventWindow = e.end_time
 /*{WHERE}*/
+-- Beware of including items from sys.event_log in the WHERE. It will cause the LEFT JOIN to act like a JOIN.
 ORDER BY t.DatabaseName,
 	t.EventType,
 	t.Description
