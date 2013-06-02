@@ -21,11 +21,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			get
 			{
-				return new[]
-				       {
-					       new TestCaseData(new SqlServer("FooServer", ".", false)).Returns(Constants.SqlServerComponentGuid).SetName("SqlServer Sets Appropriate Guid"),
-					       new TestCaseData(new AzureSqlDatabase("FooServer", ".")).Returns(Constants.SqlAzureComponentGuid).SetName("AzureSqlDatabase Sets Appropriate Guid")
-				       };
+				yield return new TestCaseData(new SqlServer("FooServer", ".", false)).Returns(Constants.SqlServerComponentGuid).SetName("SqlServer Sets Appropriate Guid");
+				yield return new TestCaseData(new AzureSqlDatabase("FooServer", "")).Returns(Constants.SqlAzureComponentGuid).SetName("AzureSqlDatabase Sets Appropriate Guid");
 			}
 		}
 
@@ -34,7 +31,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpoint endpoint)
 		{
 			var queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
-
 			return queryContext.ComponentData.Guid;
 		}
 

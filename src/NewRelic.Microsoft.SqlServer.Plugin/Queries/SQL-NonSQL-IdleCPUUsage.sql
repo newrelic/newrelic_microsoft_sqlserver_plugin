@@ -3,8 +3,13 @@
 -- Summary: Returns Average of range. 
 -- Data collection nature: Realtime
 
-DECLARE	@StartTime datetime = DATEADD(MINUTE, -2, GETDATE()),
-		@EndTime datetime = GETDATE()
+-- DECLARE then SET to support SQL 2005
+DECLARE @StartTime datetime
+SET @StartTime = DATEADD(MINUTE, -2, GETDATE())
+
+-- DECLARE then SET to support SQL 2005
+DECLARE @EndTime datetime
+SET @EndTime = GETDATE()
 
 
 DECLARE @ts_now bigint
@@ -13,12 +18,12 @@ SELECT
 FROM sys.dm_os_sys_info;
 
 DECLARE @Results TABLE (
-	RecordID bigint NOT NULL,
-	EventTime datetime NOT NULL,
-	SQLProcessUtilization tinyint NOT NULL,
-	SystemIdle tinyint NOT NULL,
-	OtherProcessUtilization tinyint NOT NULL
-)
+			RecordID bigint NOT NULL,
+			EventTime datetime NOT NULL,
+			SQLProcessUtilization tinyint NOT NULL,
+			SystemIdle tinyint NOT NULL,
+			OtherProcessUtilization tinyint NOT NULL
+		)
 
 INSERT INTO @Results (RecordID
 , EventTime
@@ -27,25 +32,25 @@ INSERT INTO @Results (RecordID
 , OtherProcessUtilization)
 	SELECT
 		RecordID,
-		DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) AS EventTime,
+		DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())	AS EventTime,
 		SQLProcessUtilization,
 		SystemIdle,
-		100 - SystemIdle - SQLProcessUtilization AS OtherProcessUtilization
+		100 - SystemIdle - SQLProcessUtilization				AS OtherProcessUtilization
 	FROM (SELECT
-		record.value('(./Record/@id)[1]', 'int') AS RecordID,
-		record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]',
-		'int') AS SystemIdle,
-		record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]',
-		'int') AS SQLProcessUtilization,
-		TIMESTAMP
-	FROM (SELECT
-		TIMESTAMP,
-		CONVERT(xml, record) AS record
-	FROM sys.dm_os_ring_buffers
-	WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
-	AND record LIKE '% %'
-	AND DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) BETWEEN @StartTime AND @EndTime)
-	AS x)
+			record.value('(./Record/@id)[1]', 'int')	AS RecordID,
+			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]',
+			'int')										AS SystemIdle,
+			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]',
+			'int')										AS SQLProcessUtilization,
+			TIMESTAMP
+		FROM (SELECT
+				TIMESTAMP,
+				CONVERT(xml, record)	AS record
+			FROM sys.dm_os_ring_buffers
+			WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
+			AND record LIKE '% %'
+			AND DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) BETWEEN @StartTime AND @EndTime)
+		AS x)
 	AS y
 
 
@@ -57,15 +62,3 @@ SELECT TOP 1
 	SystemIdle,
 	OtherProcessUtilization
 FROM @Results
-
-
---Return average
-/*
-SELECT
-	AVG(SQLProcessUtilization) AS AverageSQLCPUUsage,
-	AVG(SystemIdle) AS AverageIdle,
-	AVG(OtherProcessUtilization) AS AverageOther,
-	MIN(EventTime) StartTime,
-	MAX(EventTime) EndTime
-FROM @Results
-*/
