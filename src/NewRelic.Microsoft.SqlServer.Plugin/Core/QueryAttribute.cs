@@ -38,7 +38,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		public string QueryName { get; set; }
 
 		/// <summary>
-		///     Optional. Default is true. When false, the query is ignored by the monitor.
+		///     Optional. Default is true. When false, the query is ignored by the monitor. Useful for a developer during query development to avoid destabilizing other queries.
 		/// </summary>
 		public bool Enabled { get; set; }
 
@@ -73,7 +73,5 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		///     </para>
 		/// </summary>
 		public string MetricPattern { get; private set; }
-
-		internal abstract bool ShouldParameterizeDatabaseInQuery { get; }
 	}
 }

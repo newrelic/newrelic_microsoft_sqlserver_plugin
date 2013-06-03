@@ -31,5 +31,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[sec/signal]")]
 		public decimal AvgSignalSeconds { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("WaitType: {0},\t" +
+			                     "WaitSeconds: {1},\t" +
+			                     "ResourceSeconds: {2},\t" +
+			                     "SignalSeconds: {3},\t" +
+			                     "WaitCount: {4},\t" +
+			                     "Percentage: {5},\t" +
+			                     "AvgWaitSeconds: {6},\t" +
+			                     "AvgResourceSeconds: {7},\t" +
+			                     "AvgSignalSeconds: {8}",
+			                     WaitType, WaitSeconds, ResourceSeconds, SignalSeconds, WaitCount, Percentage, AvgWaitSeconds, AvgResourceSeconds, AvgSignalSeconds);
+		}
 	}
 }

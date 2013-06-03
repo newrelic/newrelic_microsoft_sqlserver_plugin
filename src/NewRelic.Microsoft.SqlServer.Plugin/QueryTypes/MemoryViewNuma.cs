@@ -10,5 +10,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[sec]", MetricName = "PageLifeNuma/Node_{Node}")]
 		public long PageLife { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("Node: {0},\t" +
+			                     "PageLife: {1}",
+			                     Node != null ? Node.Trim() : "N/A", PageLife);
+		}
 	}
 }

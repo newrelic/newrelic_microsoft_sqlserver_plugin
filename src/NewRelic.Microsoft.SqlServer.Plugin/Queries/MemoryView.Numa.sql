@@ -7,4 +7,4 @@ SELECT
 FROM sys.dm_os_performance_counters
 WHERE counter_name = 'Page life expectancy'
 -- The OBJECT_NAME is fixed width with many trailing spaces
- AND RTRIM([OBJECT_NAME]) LIKE '%Buffer Node'
+ AND RTRIM([OBJECT_NAME]) LIKE '%:Buffer Node'

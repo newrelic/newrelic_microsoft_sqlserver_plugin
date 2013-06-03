@@ -34,5 +34,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 				return Math.Max(Math.Min(100, missRatio), 0);
 			}
 		}
+
+		public override string ToString()
+		{
+			return string.Format("BufferCacheHitRatio: {0},\t" +
+			                     "PageLife: {1},\t" +
+			                     "BufferCacheMissRatio: {2}",
+			                     BufferCacheHitRatio, PageLife, BufferCacheMissRatio);
+		}
 	}
 }

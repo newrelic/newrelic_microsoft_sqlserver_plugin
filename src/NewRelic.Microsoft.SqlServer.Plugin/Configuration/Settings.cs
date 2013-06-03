@@ -40,7 +40,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			}
 		}
 
-		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
+		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section, ILog log)
 		{
 			var sqlEndpoints = section.SqlServers
 			                          .Select(s =>
@@ -49,7 +49,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 				                                  var excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
 				                                  return (ISqlEndpoint) new SqlServer(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
 			                                  })
-			                          .Union(section.AzureSqlDatabases.Select(s => (ISqlEndpoint) new AzureSqlDatabase(s.Name, s.ConnectionString)));
+									  .Union(section.AzureSqlDatabases.Select(s => (ISqlEndpoint)new AzureSqlDatabase(s.Name, s.ConnectionString)));
 
 			var service = section.Service;
 			var settings = new Settings(sqlEndpoints.ToArray())

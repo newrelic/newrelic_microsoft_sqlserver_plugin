@@ -43,5 +43,25 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_Single_Use]")]
 		public decimal SingleUsePercent { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("DbSizeInMB: {0},\t" +
+			                     "NumberOfConnections: {1},\t" +
+			                     "NumberOfReads: {2},\t" +
+			                     "NumberOfWrites: {3},\t" +
+			                     "NumberOfSessions: {4},\t" +
+			                     "TotalCurrentRequests: {5},\t" +
+			                     "SumSessionMemoryUsageInKB: {6},\t" +
+			                     "MinSessionMemoryUsageInKB: {7},\t" +
+			                     "MaxSessionMemoryUsageInKB: {8},\t" +
+			                     "AvgSessionMemoryUsageInKB: {9},\t" +
+			                     "SingleUseObjects: {10},\t" +
+			                     "MultipleUseObjects: {11},\t" +
+			                     "SingleUsePercent: {12}",
+			                     DbSizeInMB, NumberOfConnections, NumberOfReads, NumberOfWrites, NumberOfSessions, TotalCurrentRequests,
+			                     SumSessionMemoryUsageInKB, MinSessionMemoryUsageInKB, MaxSessionMemoryUsageInKB,
+			                     AvgSessionMemoryUsageInKB, SingleUseObjects, MultipleUseObjects, SingleUsePercent);
+		}
 	}
 }

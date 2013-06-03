@@ -17,6 +17,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// </summary>
 		int Duration { get; }
 
+		string[] IncludedDatabaseNames { get; }
+		string[] ExcludedDatabaseNames { get; }
+
 		void SetQueries(IEnumerable<SqlQuery> queries);
 
 		IEnumerable<IQueryContext> ExecuteQueries(ILog log);

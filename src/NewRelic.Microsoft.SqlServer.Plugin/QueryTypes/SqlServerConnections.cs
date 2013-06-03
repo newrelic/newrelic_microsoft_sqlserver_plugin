@@ -23,5 +23,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			get { return "d.Name"; }
 		}
+
+		public override string ToString()
+		{
+			return string.Format("DatabaseName: {0},\t" +
+			                     "NumberOfConnections: {1},\t" +
+			                     "NumberOfReads: {2},\t" +
+			                     "NumberOfWrites: {3}",
+			                     DatabaseName, NumberOfConnections, NumberOfReads, NumberOfWrites);
+		}
 	}
 }
