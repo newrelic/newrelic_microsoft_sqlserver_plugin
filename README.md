@@ -80,11 +80,14 @@ Then create a user for each database to monitor. For example, with the database 
 
 Azure SQL is configured in two separate connections to the database. Use SSMS to access the `master` database.
 
-First, create the login in the `master` database for your Azure SQL Server.
+First, create the login in the `master` database for your Azure SQL Server and the user to query for service interuption metrics.
 
     CREATE LOGIN NewRelic WITH password='AnyPhraseHere';
     GO
 
+    CREATE USER NewRelicUser FROM LOGIN NewRelic;
+    GO
+    
 In a new connection to each individual Azure SQL Database:
 
     CREATE USER NewRelicUser FROM LOGIN NewRelic;
