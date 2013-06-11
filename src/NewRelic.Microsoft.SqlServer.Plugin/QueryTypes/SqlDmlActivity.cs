@@ -12,7 +12,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public Byte[] PlanHandle { get; set; }
 
 		[Metric(Ignore = true)]
-		public int ExecutionCount { get; set; }
+		public long ExecutionCount { get; set; }
 
 		[Metric(Ignore = true)]
 		public string QueryType { get; set; }
@@ -23,9 +23,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		[Metric(Ignore = true)]
 		public DateTime CreationTime { get; set; }
 
-		public int Writes { get; set; }
+		public long Writes { get; set; }
 
-		public int Reads { get; set; }
+		public long Reads { get; set; }
 
 		public override string ToString()
 		{
