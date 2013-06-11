@@ -18,10 +18,10 @@ declare @SqlText as table(
 	plan_handle varbinary(64),
 	SqlStatement nvarchar(max),
 	creation_time DATETIME,
-	execution_count INT,
-	total_logical_writes INT,
-	total_logical_reads INT,
-	total_physical_reads INT	
+	execution_count BIGINT,
+	total_logical_writes BIGINT,
+	total_logical_reads BIGINT,
+	total_physical_reads BIGINT	
 )
 
 
