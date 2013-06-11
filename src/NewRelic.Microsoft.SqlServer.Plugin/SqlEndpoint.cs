@@ -190,8 +190,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			var currentValues = sqlDmlActivities.ToDictionary(a => string.Format("{0}:{1}:{2}", BitConverter.ToString(a.PlanHandle), a.SQlStatement, a.CreationTime));
 
-			var reads = 0;
-			var writes = 0;
+			long reads = 0;
+			long writes = 0;
 
 			// If this is the first time through, reads and writes are definitely 0
 			if (SqlDmlActivityHistory.Count > 0)
@@ -199,7 +199,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				currentValues
 					.ForEach(a =>
 					         {
-						         int increase;
+						         long increase;
 
 						         // Find a matching previous value for a delta
 						         SqlDmlActivity previous;
