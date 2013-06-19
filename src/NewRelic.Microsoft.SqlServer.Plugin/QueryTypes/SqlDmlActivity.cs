@@ -5,7 +5,8 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	[AzureSqlQuery("SqlDMLActivity.SqlServerAndAzureSQL.sql", "Component/DMLActivity/{MetricName}", QueryName = "Sql DML Activity", Enabled = true)]
-	[SqlServerQuery("SqlDMLActivity.SqlServerAndAzureSQL.sql", "Component/DMLActivity/{MetricName}", QueryName = "Sql DML Activity", Enabled = true)]
+	// Currently failing for at least one user. Zen Desk Ticket #44389.
+	[SqlServerQuery("SqlDMLActivity.SqlServerAndAzureSQL.sql", "Component/DMLActivity/{MetricName}", QueryName = "Sql DML Activity", Enabled = false)]
 	public class SqlDmlActivity
 	{
 		[Metric(Ignore = true)]
