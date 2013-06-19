@@ -15,7 +15,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 3. Configure the plugin.
   1. Run a text editor **as administrator** and open the file `INSTALLDIR\NewRelic.Microsoft.SqlServer.Plugin.exe.config`.
   2. Find the setting `<service licenseKey="YOUR_KEY_HERE"...>` and replace `YOUR_KEY_HERE` with your New Relic license key.
-  3. Configure one or more SQL Servers or Azure SQL Databases ([See example](Example-Config))
+  3. Configure one or more SQL Servers or Azure SQL Databases ([See example](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/wiki/Example-config))
       * In the `<sqlServers>` section, add a `<sqlServer>` setting for a SQL Server.
           * `name="Production Database"` The name of your server is visible on the New Relic dashboard.
           * `connectionString="Server=prd.domain.com,1433;Database=master;Trusted_Connection=True;"` Any valid connection string to your database.
