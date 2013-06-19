@@ -1,87 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildProjectDirectory)\build.tasks" />
-  <Import Project="$(MSBuildProjectDirectory)\versions.targets" />
+	<Import Project="$(MSBuildProjectDirectory)\build.tasks" />
+	<Import Project="$(MSBuildProjectDirectory)\versions.targets" />
 
-  <PropertyGroup>
-    <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
-    <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
-    <ArtifactsDir>$(ProjectRoot)\local\$(Configuration)</ArtifactsDir>
-    <TestResultsPath>$(ArtifactsDir)\tests</TestResultsPath>
-    <NUnitPath>$(ProjectRoot)\tools\NUnit\</NUnitPath>
-    <KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\TODO.snk</KeyFile>
-    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+		<ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
+		<ArtifactsDir>$(ProjectRoot)\local\$(Configuration)</ArtifactsDir>
+		<TestResultsPath>$(ArtifactsDir)\tests</TestResultsPath>
+		<NUnitPath>$(ProjectRoot)\tools\NUnit\</NUnitPath>
+		<KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\TODO.snk</KeyFile>
+		<MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
+	</PropertyGroup>
 
-  <Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
+	<Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
 
-  <!-- Add extra properties to the build for signing -->
-  <PropertyGroup Condition="Exists('$(KeyFile)')">
-    <ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
-  </PropertyGroup>
+	<!-- Add extra properties to the build for signing -->
+	<PropertyGroup Condition="Exists('$(KeyFile)')">
+		<ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">+$(BuildQuality)</PrereleaseTagWithSeparator>
-    <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</AssemblyVersion>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">+$(BuildQuality)</PrereleaseTagWithSeparator>
+		<AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</AssemblyVersion>
+		<PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
-      <Find>AssemblyVersion\("[^"]+"\)</Find>
-      <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
-    </RegexTransform>
-    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
-      <Find>AssemblyFileVersion\("[^"]+"\)</Find>
-      <ReplaceWith>AssemblyFileVersion("$(AssemblyVersion)")</ReplaceWith>
-    </RegexTransform>
-    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
-      <Find>AssemblyInformationalVersion\("[^"]+"\)</Find>
-      <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
-    </RegexTransform>
-  </ItemGroup>
+	<ItemGroup>
+		<RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
+			<Find>AssemblyVersion\("[^"]+"\)</Find>
+			<ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
+		</RegexTransform>
+		<RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
+			<Find>AssemblyFileVersion\("[^"]+"\)</Find>
+			<ReplaceWith>AssemblyFileVersion("$(AssemblyVersion)")</ReplaceWith>
+		</RegexTransform>
+		<RegexTransform Include="$(ProjectRoot)\src\Common\CommonAssemblyInfo.cs">
+			<Find>AssemblyInformationalVersion\("[^"]+"\)</Find>
+			<ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
+		</RegexTransform>
+	</ItemGroup>
 
-  <Target Name="Go" DependsOnTargets="Build; RunTests;">
-  </Target>
+	<Target Name="Go" DependsOnTargets="Build; RunTests;">
+	</Target>
 
-  <Target Name="Dist" DependsOnTargets="Build; RunTests; Package;">
-  </Target>
+	<Target Name="Dist" DependsOnTargets="Build; RunTests; Package;">
+	</Target>
 
-  <Target Name="CreateOutputDir">
-    <RemoveDir Directories="$(ArtifactsDir)" Condition="Exists('$(ArtifactsDir)')" ContinueOnError="true" />
-    <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
-    <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
-  </Target>
+	<Target Name="CreateOutputDir">
+		<RemoveDir Directories="$(ArtifactsDir)" Condition="Exists('$(ArtifactsDir)')" ContinueOnError="true" />
+		<MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
+		<MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
+	</Target>
 
-  <Target Name="UpdateVersion">
-    <RegexTransform Items="@(RegexTransform)" />
-  </Target>
+	<Target Name="UpdateVersion">
+		<RegexTransform Items="@(RegexTransform)" />
+	</Target>
 
 
-  <Target Name="Build" DependsOnTargets="CreateOutputDir; UpdateVersion;">
-    <MSBuild Projects="$(ProjectRoot)\NewRelic.Microsoft.SqlServer.Plugin.sln"
-             Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"/>
-  </Target>
+	<Target Name="Build" DependsOnTargets="CreateOutputDir; UpdateVersion;">
+		<MSBuild Projects="$(ProjectRoot)\NewRelic.Microsoft.SqlServer.Plugin.sln"
+				 Targets="Build"
+				 Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"/>
+	</Target>
 
-  <Target Name="RunTests" Condition="'$(Configuration)' == 'Debug'">
-    <NUnit Assemblies="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\NewRelic.Microsoft.SqlServer.Plugin.Tests.dll"
-      WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\"
-           OutputXmlFile="$(TestResultsPath)\NunitResults.xml"
-           ToolPath="$(NUnitPath)"/>
-  </Target>
+	<Target Name="RunTests" Condition="'$(Configuration)' == 'Debug'">
+		<NUnit Assemblies="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\NewRelic.Microsoft.SqlServer.Plugin.Tests.dll"
+		  WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.Tests\"
+			   OutputXmlFile="$(TestResultsPath)\NunitResults.xml"
+			   ToolPath="$(NUnitPath)"/>
+	</Target>
 
-  <Target Name="Package" DependsOnTargets="Build">
-    <ItemGroup>
-      <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.dll" />
-      <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.exe" />
-      <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.config" />
-	  <FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.md" />
-    </ItemGroup>
-    <Zip Files="@(FilesToZip)" ZipFileName="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.zip" ZipLevel="9"
-         WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\"/>
-  </Target>
+	<Target Name="Package" DependsOnTargets="Build">
+		<ItemGroup>
+			<FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.dll" />
+			<FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.exe" />
+			<FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.config" />
+			<FilesToZip Include="$(ProjectRoot)\README.md" />
+			<FilesToZip Include="$(ProjectRoot)\LICENSE" />
+		</ItemGroup>
+		<Zip Files="@(FilesToZip)" ZipFileName="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin.zip" ZipLevel="9"
+			 WorkingDirectory="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\"/>
+	</Target>
 
-  <!-- Required to restore solution-level packages -->
-  <Import Project="$(ProjectRoot)\.nuget\nuget.targets" />
+	<!-- Required to restore solution-level packages -->
+	<Import Project="$(ProjectRoot)\.nuget\nuget.targets" />
 </Project>

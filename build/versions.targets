@@ -5,6 +5,6 @@
         <MinorVersion>0</MinorVersion>
         <PatchVersion>0</PatchVersion>
 
-        <BuildQuality>rc1</BuildQuality>
+        <BuildQuality></BuildQuality>
     </PropertyGroup>
 </Project>
