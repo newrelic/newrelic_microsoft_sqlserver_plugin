@@ -34,6 +34,65 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return queryContext.ComponentData.Guid;
 		}
 
+        public void AssertEndpointAppropriatelyMassagesDuplicatedData()
+        {
+            var endpoint = Substitute.For<SqlEndpoint>("", "");
+
+            var resultSet1 = new object[]
+					 {
+						 new SqlDmlActivity
+						 {
+							 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+							 SQlStatement = "INSERT INTO FOO",
+							 ExecutionCount = 10,
+							 QueryType = "Writes",
+						 },
+						 new SqlDmlActivity
+						 {
+							 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+							 SQlStatement = "INSERT INTO BAR",
+							 ExecutionCount = 8,
+							 QueryType = "Writes",
+						 },
+						 new SqlDmlActivity
+						 {
+							 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+							 SQlStatement = "INSERT INTO BAR",
+							 ExecutionCount = 8,
+							 QueryType = "Writes",
+						 },
+						 new SqlDmlActivity
+						 {
+							 PlanHandle = Encoding.UTF8.GetBytes("BB12"),
+							 SQlStatement = "SELECT * FROM FOO",
+							 ExecutionCount = 500,
+							 QueryType = "Reads",
+						 },
+						 new SqlDmlActivity
+						 {
+							 PlanHandle = Encoding.UTF8.GetBytes("CC12"),
+							 SQlStatement = "SELECT * FROM FOO",
+							 ExecutionCount = 600,
+							 QueryType = "Reads",
+						 },
+						 new SqlDmlActivity
+						 {
+							 PlanHandle = Encoding.UTF8.GetBytes("EE12"),
+							 SQlStatement = "SELECT * FROM BAR",
+							 ExecutionCount = 100,
+							 QueryType = "Reads",
+						 },
+					 };
+
+            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+
+            Assert.That(outputResults1, Is.Not.Null);
+            Assert.That(outputResults1.Count(), Is.EqualTo(1));
+
+            var sqlDmlActivity = outputResults1.First();
+            Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:0 Writes:0"));
+        }				
+
 		[Test]
 		public void AssertEndpointAppropriatelyMassagesData()
 		{
