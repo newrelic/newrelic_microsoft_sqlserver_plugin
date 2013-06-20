@@ -100,6 +100,19 @@ In a new connection to each individual Azure SQL Database:
 
 By default, the log files are written to `C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\`. To change the logging settings, edit the `INSTALLDIR\log4net.config` file.
 
+
+## Uninstall instructions
+
+The plugin is installed as a Windows Service which by default is named NewRelicSqlPlugin
+The service can be stopped or restarted manually, however if you want to uninstall the plugin perform the following steps
+
+1. Open a command prompt running **as administrator** to `INSTALLDIR`.
+2. Execute the following command: `NewRelic.Microsoft.SqlServer.Plugin.exe --uninstall`
+
+This will stop and remove the service. The binaries and config files will still be in the `INSTALLDIR` 
+and log files will be still be where they were. If you wish to remove these you can do so by hand.
+ 
+
 ## Want more information?
 
 The [wiki](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/wiki/) may be what you are looking for.

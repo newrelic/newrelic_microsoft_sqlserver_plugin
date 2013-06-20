@@ -5,7 +5,6 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	[AzureSqlQuery("SqlDMLActivity.SqlServerAndAzureSQL.sql", "Component/DMLActivity/{MetricName}", QueryName = "Sql DML Activity", Enabled = true)]
-	// Currently failing for at least one user. Zen Desk Ticket #44389.
 	[SqlServerQuery("SqlDMLActivity.SqlServerAndAzureSQL.sql", "Component/DMLActivity/{MetricName}", QueryName = "Sql DML Activity", Enabled = false)]
 	public class SqlDmlActivity
 	{
@@ -19,7 +18,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public string QueryType { get; set; }
 
 		[Metric(Ignore = true)]
-		public string SQlStatement { get; set; }
+		public Byte[] SqlStatementHash { get; set; }
 
 		[Metric(Ignore = true)]
 		public DateTime CreationTime { get; set; }
@@ -31,12 +30,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public override string ToString()
 		{
 			return string.Format("PlanHandle: {0},\t" +
-								  "ExecutionCount: {1}\t" +
-								  "CreationTime: {2}\t" +
-								  "QueryType: {3}",
+								 "SqlStatementHash: {1},\t" +
+			                     "ExecutionCount: {2},\t" +
+			                     "CreationTime: {3},\t" +
+			                     "QueryType: {4},",
 			                     PlanHandle != null ? BitConverter.ToString(PlanHandle) : string.Empty,
+			                     SqlStatementHash != null ? BitConverter.ToString(SqlStatementHash) : string.Empty,
 			                     ExecutionCount,
-								 CreationTime,
+			                     CreationTime,
 			                     QueryType
 				);
 		}

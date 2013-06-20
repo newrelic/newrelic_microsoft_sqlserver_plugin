@@ -26,72 +26,72 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
+		public void AssertEndpointAppropriatelyMassagesDuplicatedData()
+		{
+			var endpoint = Substitute.For<SqlEndpoint>("", "");
+
+			var resultSet1 = new object[]
+			                 {
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO FOO"),
+					                 ExecutionCount = 10,
+					                 QueryType = "Writes",
+				                 },
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO BAR"),
+					                 ExecutionCount = 8,
+					                 QueryType = "Writes",
+				                 },
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO BAR"),
+					                 ExecutionCount = 8,
+					                 QueryType = "Writes",
+				                 },
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("BB12"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM FOO"),
+					                 ExecutionCount = 500,
+					                 QueryType = "Reads",
+				                 },
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("CC12"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM FOO"),
+					                 ExecutionCount = 600,
+					                 QueryType = "Reads",
+				                 },
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("EE12"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM BAR"),
+					                 ExecutionCount = 100,
+					                 QueryType = "Reads",
+				                 },
+			                 };
+
+			IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+
+			Assert.That(outputResults1, Is.Not.Null);
+			Assert.That(outputResults1.Count(), Is.EqualTo(1));
+
+			SqlDmlActivity sqlDmlActivity = outputResults1.First();
+			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:0 Writes:0"));
+		}
+
 		[Test]
 		[TestCaseSource("ComponentGuidTestCases")]
 		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpoint endpoint)
 		{
-			var queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
+			QueryContext queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
 			return queryContext.ComponentData.Guid;
 		}
-
-        public void AssertEndpointAppropriatelyMassagesDuplicatedData()
-        {
-            var endpoint = Substitute.For<SqlEndpoint>("", "");
-
-            var resultSet1 = new object[]
-					 {
-						 new SqlDmlActivity
-						 {
-							 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-							 SQlStatement = "INSERT INTO FOO",
-							 ExecutionCount = 10,
-							 QueryType = "Writes",
-						 },
-						 new SqlDmlActivity
-						 {
-							 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-							 SQlStatement = "INSERT INTO BAR",
-							 ExecutionCount = 8,
-							 QueryType = "Writes",
-						 },
-						 new SqlDmlActivity
-						 {
-							 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-							 SQlStatement = "INSERT INTO BAR",
-							 ExecutionCount = 8,
-							 QueryType = "Writes",
-						 },
-						 new SqlDmlActivity
-						 {
-							 PlanHandle = Encoding.UTF8.GetBytes("BB12"),
-							 SQlStatement = "SELECT * FROM FOO",
-							 ExecutionCount = 500,
-							 QueryType = "Reads",
-						 },
-						 new SqlDmlActivity
-						 {
-							 PlanHandle = Encoding.UTF8.GetBytes("CC12"),
-							 SQlStatement = "SELECT * FROM FOO",
-							 ExecutionCount = 600,
-							 QueryType = "Reads",
-						 },
-						 new SqlDmlActivity
-						 {
-							 PlanHandle = Encoding.UTF8.GetBytes("EE12"),
-							 SQlStatement = "SELECT * FROM BAR",
-							 ExecutionCount = 100,
-							 QueryType = "Reads",
-						 },
-					 };
-
-            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
-
-            Assert.That(outputResults1, Is.Not.Null);
-            Assert.That(outputResults1.Count(), Is.EqualTo(1));
-
-            var sqlDmlActivity = outputResults1.First();
-            Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:0 Writes:0"));
-        }				
 
 		[Test]
 		public void AssertEndpointAppropriatelyMassagesData()
@@ -103,35 +103,35 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-					                 SQlStatement = "INSERT INTO FOO",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO FOO"),
 					                 ExecutionCount = 10,
 					                 QueryType = "Writes",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-					                 SQlStatement = "INSERT INTO BAR",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO BAR"),
 					                 ExecutionCount = 8,
 					                 QueryType = "Writes",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("BB12"),
-					                 SQlStatement = "SELECT * FROM FOO",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM FOO"),
 					                 ExecutionCount = 500,
 					                 QueryType = "Reads",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("CC12"),
-					                 SQlStatement = "SELECT * FROM FOO",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM FOO"),
 					                 ExecutionCount = 600,
 					                 QueryType = "Reads",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("EE12"),
-					                 SQlStatement = "SELECT * FROM BAR",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM BAR"),
 					                 ExecutionCount = 100,
 					                 QueryType = "Reads",
 				                 },
@@ -142,7 +142,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			Assert.That(outputResults1, Is.Not.Null);
 			Assert.That(outputResults1.Count(), Is.EqualTo(1));
 
-			var sqlDmlActivity = outputResults1.First();
+			SqlDmlActivity sqlDmlActivity = outputResults1.First();
 			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:0 Writes:0"));
 
 			var resultSet2 = new object[]
@@ -150,47 +150,55 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-					                 SQlStatement = "INSERT INTO FOO",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO FOO"),
 					                 ExecutionCount = 14,
 					                 QueryType = "Writes",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
-					                 SQlStatement = "INSERT INTO BAR",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO BAR"),
 					                 ExecutionCount = 18,
+					                 QueryType = "Writes",
+				                 },   
+				                 //Tests Duplicate Results gets aggregated
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO BAR"),
+					                 ExecutionCount = 2,
 					                 QueryType = "Writes",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("BB12"),
-					                 SQlStatement = "SELECT * FROM FOO",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM FOO"),
 					                 ExecutionCount = 550,
 					                 QueryType = "Reads",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("CC12"),
-					                 SQlStatement = "SELECT * FROM FOO",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM FOO"),
 					                 ExecutionCount = 625,
 					                 QueryType = "Reads",
 				                 },
 				                 new SqlDmlActivity
 				                 {
 					                 PlanHandle = Encoding.UTF8.GetBytes("DD12"),
-					                 SQlStatement = "SELECT * FROM BAR",
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("SELECT * FROM BAR"),
 					                 ExecutionCount = 1,
 					                 QueryType = "Reads",
 				                 },
 			                 };
 
-			var outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+			SqlDmlActivity[] outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
 			Assert.That(outputResults2, Is.Not.Null);
 			Assert.That(outputResults2.Count(), Is.EqualTo(1));
 
 			sqlDmlActivity = outputResults2.First();
 
-			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:76 Writes:14"));
+			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:76 Writes:16"));
 		}
 
 		[Test]
