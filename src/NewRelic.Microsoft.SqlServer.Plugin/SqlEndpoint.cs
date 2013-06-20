@@ -189,7 +189,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 
 			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities
-				.GroupBy(a => string.Format("{0}:{1}:{2}:{3}", BitConverter.ToString(a.PlanHandle), BitConverter.ToString(a.SqlStatementHash), a.CreationTime, a.QueryType))
+				.GroupBy(a => string.Format("{0}:{1}:{2}:{3}", BitConverter.ToString(a.PlanHandle), BitConverter.ToString(a.SqlStatementHash), a.CreationTime.Ticks, a.QueryType))
 				.Select(a => new
 				             {
 					             a.Key,
