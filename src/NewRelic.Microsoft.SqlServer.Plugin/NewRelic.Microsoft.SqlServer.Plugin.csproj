@@ -133,6 +133,9 @@
     <Compile Include="Core\SqlPoller.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\README.md">
+      <Link>README.md</Link>
+    </None>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>

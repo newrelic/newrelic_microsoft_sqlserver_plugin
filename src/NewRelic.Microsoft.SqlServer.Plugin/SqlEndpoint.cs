@@ -76,7 +76,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			queryContexts.ForEach(queryContext =>
 			                      {
-				                      var queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
+				                      Queue<IQueryContext> queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
 				                      if (queryHistory.Count >= 2) //Only track up to last run of this query
 				                      {
 					                      queryHistory.Dequeue();
@@ -89,8 +89,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			var platformData = new PlatformData(agentData);
 
-			var pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
-			                                       .Where(c => c != null).ToArray();
+			ComponentData[] pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
+			                                                   .Where(c => c != null).ToArray();
 
 			pendingComponentData.ForEach(platformData.AddComponent);
 
@@ -122,7 +122,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			using (var conn = new SqlConnection(connectionString))
 			{
-				foreach (var query in queries)
+				foreach (SqlQuery query in queries)
 				{
 					object[] results;
 					try
@@ -135,7 +135,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 							var verboseLogging = new StringBuilder();
 							verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
 
-							foreach (var result in results)
+							foreach (object result in results)
 							{
 								verboseLogging.AppendLine(result.ToString());
 							}
@@ -180,7 +180,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			var sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
+			SqlDmlActivity[] sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
 
 			if (!sqlDmlActivities.Any())
 			{
@@ -188,7 +188,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			var currentValues = sqlDmlActivities.ToDictionary(a => string.Format("{0}:{1}:{2}", BitConverter.ToString(a.PlanHandle), a.SQlStatement, a.CreationTime));
+			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities
+				.GroupBy(a => string.Format("{0}:{1}:{2}:{3}", BitConverter.ToString(a.PlanHandle), BitConverter.ToString(a.SqlStatementHash), a.CreationTime, a.QueryType))
+				.Select(a => new
+				             {
+					             a.Key,
+								 //If we ever gets dupes, sum Excution Count
+					             Activity = new SqlDmlActivity
+					                        {
+						                        CreationTime = a.First().CreationTime,
+						                        SqlStatementHash = a.First().SqlStatementHash,
+						                        PlanHandle = a.First().PlanHandle,
+						                        QueryType = a.First().QueryType,
+						                        ExecutionCount = a.Sum(dml => dml.ExecutionCount),
+					                        }
+				             })
+				.ToDictionary(a => a.Key, a => a.Activity);
 
 			long reads = 0;
 			long writes = 0;
@@ -210,7 +225,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 						         }
 						         else if (a.Value.QueryType == previous.QueryType)
 						         {
-									 // Calculate the delta
+							         // Calculate the delta
 							         increase = a.Value.ExecutionCount - previous.ExecutionCount;
 
 							         // Only record positive deltas, though theoretically impossible here
