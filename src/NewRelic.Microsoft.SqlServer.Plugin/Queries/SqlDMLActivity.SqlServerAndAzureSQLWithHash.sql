@@ -62,7 +62,6 @@ ORDER BY queryData.plan_handle, queryData.SQLStatement, queryData.creation_time;
 SELECT 
 	plan_handle AS PlanHandle,
 	hashbytes('MD2', SqlStatement) AS SqlStatementHash,
-	SqlStatement,
 	creation_time AS CreationTime,
 	execution_count AS ExecutionCount,
 	--total_logical_writes,
