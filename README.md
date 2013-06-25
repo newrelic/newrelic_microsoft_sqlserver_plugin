@@ -32,6 +32,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
   1. Use the command prompt from step #4.1 or open it again.
   2. Execute: `NewRelic.Microsoft.SqlServer.Plugin.exe --install` and ensure you see the message
      `Service NewRelicSQLServerPlugin has been successfully installed.`
+  3. Start the service: net start NewRelicSQLServerPlugin
 
 ## Configure permissions
 
