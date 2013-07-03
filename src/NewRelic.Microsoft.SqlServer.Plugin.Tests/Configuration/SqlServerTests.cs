@@ -243,24 +243,37 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 			queryNames.ForEach(queryNamesPass =>
 			                   {
-				                   var queryContexts = queryNamesPass.Select(queryName =>
-				                                                             {
-					                                                             var queryContext = Substitute.For<IQueryContext>();
-					                                                             queryContext.QueryName.Returns(queryName);
-					                                                             return queryContext;
-				                                                             }).ToArray();
+				                   IQueryContext[] queryContexts = queryNamesPass.Select(queryName =>
+				                                                                         {
+					                                                                         var queryContext = Substitute.For<IQueryContext>();
+					                                                                         queryContext.QueryName.Returns(queryName);
+					                                                                         return queryContext;
+				                                                                         }).ToArray();
 				                   sqlServerToMonitor.UpdateHistory(queryContexts);
 			                   });
 
-			var actual = sqlServerToMonitor.QueryHistory.Select(qh => string.Format("{0}:{1}", qh.Key, qh.Value.Count)).ToArray();
+			string[] actual = sqlServerToMonitor.QueryHistory.Select(qh => string.Format("{0}:{1}", qh.Key, qh.Value.Count)).ToArray();
 
 			return actual;
 		}
 
 		[Test]
+		public void AssertComplextIncludeSystemDatabasesWorks()
+		{
+			var includeDbNames = new[] {"FooDb", "BarDb"};
+			IEnumerable<Database> includedDbs = includeDbNames.Select(x => new Database {Name = x,});
+
+			var sqlServerToMonitor = new SqlServer("FooServer", ".", true, includedDbs, null);
+			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames.Length, Is.EqualTo(0));
+
+			IEnumerable<string> expectedIncludes = Constants.SystemDatabases.ToList().Concat(includeDbNames);
+			Assert.That(sqlServerToMonitor.IncludedDatabaseNames, Is.EquivalentTo(expectedIncludes));
+		}
+
+		[Test]
 		public void AssertIncludeExcludeListsBuiltAppropriately()
 		{
-			var includedDbs = new[] {"FooDb", "BarDb"}.Select(x => new Database {Name = x,});
+			IEnumerable<Database> includedDbs = new[] {"FooDb", "BarDb"}.Select(x => new Database {Name = x,});
 			var sqlServerToMonitor = new SqlServer("FooServer", ".", false, includedDbs, new[] {"Baz"});
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames, Is.EquivalentTo(new[] {"FooDb", "BarDb"}));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames, Is.EquivalentTo(Constants.SystemDatabases.Concat(new[] {"Baz"})));

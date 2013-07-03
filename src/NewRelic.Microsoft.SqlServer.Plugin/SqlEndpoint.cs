@@ -193,7 +193,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				.Select(a => new
 				             {
 					             a.Key,
-								 //If we ever gets dupes, sum Excution Count
+					             //If we ever gets dupes, sum Excution Count
 					             Activity = new SqlDmlActivity
 					                        {
 						                        CreationTime = a.First().CreationTime,

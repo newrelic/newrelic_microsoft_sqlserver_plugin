@@ -16,22 +16,37 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public SqlServer(string name, string connectionString, bool includeSystemDatabases)
 			: this(name, connectionString, includeSystemDatabases, null, null) {}
 
-		public SqlServer(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDbs, IEnumerable<string> excludedDatabaseNames)
+		public SqlServer(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDatabases, IEnumerable<string> excludedDatabaseNames)
 			: base(name, connectionString)
 		{
 			var excludedDbs = new List<string>();
-
-			if (!includeSystemDatabases)
-			{
-				excludedDbs.AddRange(Constants.SystemDatabases);
-			}
+			var includedDbs = new List<Database>();
 
 			if (excludedDatabaseNames != null)
 			{
 				excludedDbs.AddRange(excludedDatabaseNames);
 			}
 
-			IncludedDatabases = includedDbs != null ? includedDbs.ToArray() : new Database[0];
+			if (includedDatabases != null)
+			{
+				includedDbs.AddRange(includedDatabases);
+			}
+
+			if (includeSystemDatabases && includedDbs.Any())
+			{
+				IEnumerable<Database> systemDbsToAdd = Constants.SystemDatabases
+				                                                .Where(dbName => includedDbs.All(db => db.Name != dbName))
+				                                                .Select(dbName => new Database {Name = dbName});
+				includedDbs.AddRange(systemDbsToAdd);
+			}
+			else if (!includeSystemDatabases)
+			{
+				IEnumerable<string> systemDbsToAdd = Constants.SystemDatabases
+				                                              .Where(dbName => excludedDbs.All(db => db != dbName));
+				excludedDbs.AddRange(systemDbsToAdd);
+			}
+
+			IncludedDatabases = includedDbs.ToArray();
 			ExcludedDatabaseNames = excludedDbs.ToArray();
 		}
 
@@ -66,19 +81,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return;
 			}
 
-			var renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
+			Dictionary<string, string> renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
 			if (!renameMap.Any())
 			{
 				return;
 			}
 
-			var databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
+			IDatabaseMetric[] databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
 			if (!databaseMetrics.Any())
 			{
 				return;
 			}
 
-			foreach (var databaseMetric in databaseMetrics)
+			foreach (IDatabaseMetric databaseMetric in databaseMetrics)
 			{
 				string displayName;
 				if (renameMap.TryGetValue(databaseMetric.DatabaseName.ToLower(), out displayName))
@@ -97,12 +112,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			base.Trace(log);
 
-			foreach (var database in IncludedDatabases)
+			foreach (Database database in IncludedDatabases)
 			{
 				log.Debug("\t\t\tIncluding: " + database.Name);
 			}
 
-			foreach (var database in ExcludedDatabaseNames)
+			foreach (string database in ExcludedDatabaseNames)
 			{
 				log.Debug("\t\t\tExcluding: " + database);
 			}
