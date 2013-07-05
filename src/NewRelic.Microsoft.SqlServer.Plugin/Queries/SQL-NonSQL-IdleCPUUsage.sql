@@ -32,7 +32,7 @@ INSERT INTO @Results (RecordID
 , OtherProcessUtilization)
 	SELECT
 		RecordID,
-		DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())	AS EventTime,
+		DATEADD(ms, -1 * (@ts_now - TIMESTAMP), GETDATE())	AS EventTime,
 		SQLProcessUtilization,
 		SystemIdle,
 		100 - SystemIdle - SQLProcessUtilization				AS OtherProcessUtilization
@@ -49,7 +49,7 @@ INSERT INTO @Results (RecordID
 			FROM sys.dm_os_ring_buffers
 			WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
 			AND record LIKE '% %'
-			AND DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) BETWEEN @StartTime AND @EndTime)
+			AND DATEADD(ms, -1 * (@ts_now - TIMESTAMP), GETDATE()) BETWEEN @StartTime AND @EndTime)
 		AS x)
 	AS y
 
