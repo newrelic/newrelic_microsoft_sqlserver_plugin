@@ -15,6 +15,8 @@ using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using log4net;
 using log4net.Config;
 
+using System.Linq;
+
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     internal class Program
@@ -62,6 +64,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                     
                     log.Debug("Loaded Settings:");
 					settings.ToLog(log);
+
+	                if (!settings.Endpoints.Any())
+	                {
+		                log.Debug("No sql endpoints found please, update the configuration file to montior one or more sql server instances.");
+					}
 
                     if (Environment.UserInteractive)
                     {

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using NUnit.Framework;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
@@ -15,13 +17,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new TQuery();
 
-			var sqlServer = new SqlServer("foo", "foo", true, null, new[] { "exclude" });
+			var sqlServer = new SqlServer("foo", "foo", true, null, new[] {"exclude"});
 
 			var queryLocator = new QueryLocator(null);
-			var queries = sqlServer.FilterQueries(queryLocator.PrepareQueries(new[] { queryType.GetType() }, false));
-			foreach (var query in queries)
+			IEnumerable<SqlQuery> queries = sqlServer.FilterQueries(queryLocator.PrepareQueries(new[] {queryType.GetType()}, false));
+			foreach (SqlQuery query in queries)
 			{
-				var actual = queryType.ParameterizeQuery(query.CommandText, sqlServer);
+				string actual = queryType.ParameterizeQuery(query.CommandText, sqlServer);
 				Assert.That(actual, Is.StringContaining(ExcludedDatabaseExpectedSql));
 			}
 		}
@@ -31,13 +33,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new TQuery();
 
-			var sqlServer = new SqlServer("foo", "foo", true, new[] { new Database { Name = "include" }, }, null);
+			var sqlServer = new SqlServer("foo", "foo", false, new[] {new Database {Name = "include"},}, null);
 
 			var queryLocator = new QueryLocator(null);
-			var queries = sqlServer.FilterQueries(queryLocator.PrepareQueries(new[] { queryType.GetType() }, false));
-			foreach (var query in queries)
+			IEnumerable<SqlQuery> queries = sqlServer.FilterQueries(queryLocator.PrepareQueries(new[] {queryType.GetType()}, false));
+			foreach (SqlQuery query in queries)
 			{
-				var actual = queryType.ParameterizeQuery(query.CommandText, sqlServer);
+				string actual = queryType.ParameterizeQuery(query.CommandText, sqlServer);
 				Assert.That(actual, Is.StringContaining(IncludedDatabaseExpectedSql));
 			}
 		}

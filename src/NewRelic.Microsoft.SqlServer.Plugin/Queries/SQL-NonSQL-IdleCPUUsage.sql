@@ -34,7 +34,6 @@ INSERT INTO @Results (RecordID
 		RecordID,
 		DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())	AS EventTime,
 		SQLProcessUtilization,
-		SystemIdle,
 		100 - SystemIdle - SQLProcessUtilization				AS OtherProcessUtilization
 	FROM (SELECT
 			record.value('(./Record/@id)[1]', 'int')	AS RecordID,
@@ -42,9 +41,9 @@ INSERT INTO @Results (RecordID
 			'int')										AS SystemIdle,
 			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]',
 			'int')										AS SQLProcessUtilization,
-			TIMESTAMP
+			[timestamp]
 		FROM (SELECT
-				TIMESTAMP,
+				[timestamp],
 				CONVERT(xml, record)	AS record
 			FROM sys.dm_os_ring_buffers
 			WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
@@ -59,6 +58,5 @@ SELECT TOP 1
 	RecordID,
 	EventTime,
 	SQLProcessUtilization,
-	SystemIdle,
 	OtherProcessUtilization
 FROM @Results

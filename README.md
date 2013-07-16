@@ -11,7 +11,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 ## Installation instructions
 
 1. [Download the files](https://s3.amazonaws.com/new_relic_platform_plugin_binary_hosting/ms_sql_plugin/NewRelic.Microsoft.SqlServer.Plugin.zip)
-2. Unpack them to something like `C:\Program Files\New Relic\MicrosoftSQLServerPlugin\`. We'll call this `INSTALLDIR`.
+2. Unpack them to something like `C:\Program Files\New Relic\MicrosoftSQLServerPlugin\` (we'll call this `INSTALLDIR`.) on a server that has access to the SQL server(s) you want to monitor. In general, that means the agent could run on the server hosting the SQL server or another locally connected machine which network access to the SQL server. 
 3. Configure the plugin.
   1. Run a text editor **as administrator** and open the file `INSTALLDIR\NewRelic.Microsoft.SqlServer.Plugin.exe.config`.
   2. Find the setting `<service licenseKey="YOUR_KEY_HERE"...>` and replace `YOUR_KEY_HERE` with your New Relic license key.
@@ -32,6 +32,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
   1. Use the command prompt from step #4.1 or open it again.
   2. Execute: `NewRelic.Microsoft.SqlServer.Plugin.exe --install` and ensure you see the message
      `Service NewRelicSQLServerPlugin has been successfully installed.`
+  3. Start the service: net start NewRelicSQLServerPlugin
 
 ## Configure permissions
 

@@ -72,6 +72,14 @@
 	</Target>
 
 	<Target Name="Package" DependsOnTargets="Build">
+
+		<!-- Replace Config file with Deploy.config -->
+
+		<Copy 
+			SourceFiles="$(ProjectRoot)\src\NewRelic.Microsoft.SqlServer.Plugin\app.deploy.config" 
+			DestinationFiles="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\NewRelic.Microsoft.SqlServer.Plugin.exe.config">
+		</Copy>
+	 
 		<ItemGroup>
 			<FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.dll" />
 			<FilesToZip Include="$(ArtifactsDir)\NewRelic.Microsoft.SqlServer.Plugin\*.exe" />

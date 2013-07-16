@@ -16,7 +16,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		public byte SQLProcessUtilization { get; set; }
 
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_CPU]")]
-		public byte SystemIdle { get; set; }
+		public byte SystemIdle
+		{
+			get { return (byte) (100 - SQLProcessUtilization - OtherProcessUtilization); }
+		}
 
 		[Metric(MetricName = "OtherProcess", MetricValueType = MetricValueType.Value, Units = "[%_CPU]")]
 		public byte OtherProcessUtilization { get; set; }

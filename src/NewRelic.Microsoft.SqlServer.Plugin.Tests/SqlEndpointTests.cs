@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -199,6 +200,62 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			sqlDmlActivity = outputResults2.First();
 
 			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:76 Writes:16"));
+		}
+
+		[Test]
+		public void AssertSqlDMLActvityDataTakesCreateTimeMsIntoAccount()
+		{
+			var endpoint = Substitute.For<SqlEndpoint>("", "");
+			var d1 = new DateTime(2013, 06, 20, 8, 28, 10, 100);
+			var d2 = new DateTime(2013, 06, 20, 8, 28, 10, 200);
+
+			var resultSet1 = new object[]
+			                 {
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO FOO"),
+					                 CreationTime = d1,
+					                 ExecutionCount = 10,
+					                 QueryType = "Writes",
+				                 },
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO FOO"),
+					                 CreationTime = d2,
+					                 ExecutionCount = 12,
+					                 QueryType = "Writes",
+				                 },
+			                 };
+
+			IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+
+			Assert.That(outputResults1, Is.Not.Null);
+			Assert.That(outputResults1.Count(), Is.EqualTo(1));
+
+			SqlDmlActivity sqlDmlActivity = outputResults1.First();
+			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:0 Writes:0"));
+
+			var resultSet2 = new object[]
+			                 {
+				                 new SqlDmlActivity
+				                 {
+					                 PlanHandle = Encoding.UTF8.GetBytes("AA11"),
+					                 SqlStatementHash = Encoding.UTF8.GetBytes("INSERT INTO FOO"),
+					                 CreationTime = d2,
+					                 ExecutionCount = 15,
+					                 QueryType = "Writes",
+				                 },
+			                 };
+
+			SqlDmlActivity[] outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+			Assert.That(outputResults2, Is.Not.Null);
+			Assert.That(outputResults2.Count(), Is.EqualTo(1));
+
+			sqlDmlActivity = outputResults2.First();
+
+			Assert.That(string.Format("Reads:{0} Writes:{1}", sqlDmlActivity.Reads, sqlDmlActivity.Writes), Is.EqualTo("Reads:0 Writes:3"));
 		}
 
 		[Test]
