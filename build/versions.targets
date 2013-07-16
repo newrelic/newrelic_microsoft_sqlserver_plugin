@@ -5,6 +5,6 @@
         <MinorVersion>0</MinorVersion>
         <PatchVersion>3</PatchVersion>
 
-        <BuildQuality>beta</BuildQuality>
+        <BuildQuality></BuildQuality>
     </PropertyGroup>
 </Project>
