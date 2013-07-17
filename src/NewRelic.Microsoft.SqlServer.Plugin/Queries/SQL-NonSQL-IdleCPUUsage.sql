@@ -21,14 +21,12 @@ DECLARE @Results TABLE (
 			RecordID bigint NOT NULL,
 			EventTime datetime NOT NULL,
 			SQLProcessUtilization tinyint NOT NULL,
-			SystemIdle tinyint NOT NULL,
 			OtherProcessUtilization tinyint NOT NULL
 		)
 
 INSERT INTO @Results (RecordID
 , EventTime
 , SQLProcessUtilization
-, SystemIdle
 , OtherProcessUtilization)
 	SELECT
 		RecordID,
