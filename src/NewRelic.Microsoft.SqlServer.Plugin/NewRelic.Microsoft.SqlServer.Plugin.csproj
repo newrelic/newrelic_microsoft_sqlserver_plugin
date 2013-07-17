@@ -65,7 +65,7 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AzureSqlDatabase.cs" />
+    <Compile Include="AzureSqlEndpoint.cs" />
     <Compile Include="Configuration\AzureCollection.cs" />
     <Compile Include="Configuration\AzureSqlDatabaseElement.cs" />
     <Compile Include="Configuration\ComponentDataRetriever.cs" />
@@ -81,8 +81,8 @@
     <Compile Include="QueryTypes\AzureSqlDatabaseSummary.cs" />
     <Compile Include="QueryTypes\SqlDmlActivity.cs" />
     <Compile Include="QueryTypes\MemoryViewNuma.cs" />
-    <Compile Include="SqlEndpoint.cs" />
-    <Compile Include="SqlServer.cs" />
+    <Compile Include="SqlEndpointBase.cs" />
+    <Compile Include="SqlServerEndpoint.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
     <Compile Include="Configuration\SqlServerElement.cs" />
     <Compile Include="Core\AzureSqlQueryAttribute.cs" />

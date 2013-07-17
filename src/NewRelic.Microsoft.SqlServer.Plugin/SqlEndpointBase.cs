@@ -14,14 +14,14 @@ using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public abstract class SqlEndpoint : ISqlEndpoint
+	public abstract class SqlEndpointBase : ISqlEndpoint
 	{
 		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
 
 		private DateTime _lastSuccessfulReportTime;
 		private SqlQuery[] _queries;
 
-		protected SqlEndpoint(string name, string connectionString)
+		protected SqlEndpointBase(string name, string connectionString)
 		{
 			Name = name;
 			ConnectionString = connectionString;
@@ -106,7 +106,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				safeConnectionString.Password = "[redacted]";
 			}
 
-			log.DebugFormat("\t\t{0}: {1}", Name, safeConnectionString);
+			log.DebugFormat("\t\t\t{0}: {1}", Name, safeConnectionString);
 		}
 
 		protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)

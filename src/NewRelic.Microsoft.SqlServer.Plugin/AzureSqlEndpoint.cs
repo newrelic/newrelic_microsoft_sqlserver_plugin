@@ -11,11 +11,11 @@ using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public class AzureSqlDatabase : SqlEndpoint
+	public class AzureSqlEndpoint : SqlEndpointBase
 	{
 		private readonly string _masterConnectionString;
 
-		public AzureSqlDatabase(string name, string connectionString)
+		public AzureSqlEndpoint(string name, string connectionString)
 			: base(name, connectionString)
 		{
 			SqlDmlActivityHistory = new Dictionary<string, SqlDmlActivity>();
@@ -46,13 +46,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		/// <summary>
-		/// Runs a query against a connection to the master DB on this Azure SQL Server
+		///     Runs a query against a connection to the master DB on this Azure SQL Server
 		/// </summary>
 		/// <param name="log"></param>
 		/// <returns></returns>
 		internal IEnumerable<IQueryContext> PerformThrottlingQuery(ILog log)
 		{
-			var queries = new QueryLocator(new DapperWrapper()).PrepareQueries(new[] {typeof (AzureServiceInterruptionEvents)}, false).ToArray();
+			SqlQuery[] queries = new QueryLocator(new DapperWrapper()).PrepareQueries(new[] {typeof (AzureServiceInterruptionEvents)}, false).ToArray();
 			return ExecuteQueries(queries, _masterConnectionString, log);
 		}
 	}

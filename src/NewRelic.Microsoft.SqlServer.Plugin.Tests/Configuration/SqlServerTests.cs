@@ -237,7 +237,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[TestCaseSource("QueryHistoryTestData")]
 		public string[] Assert_that_query_history_updated_appropriately(string[][] queryNames)
 		{
-			var sqlServerToMonitor = new SqlServer("Best_DB_Ever", "", false);
+			var sqlServerToMonitor = new SqlServerEndpoint("Best_DB_Ever", "", false);
 
 			Assert.That(sqlServerToMonitor.QueryHistory.Count, Is.EqualTo(0), "History Should start off empty");
 
@@ -263,7 +263,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			var includeDbNames = new[] {"FooDb", "BarDb"};
 			IEnumerable<Database> includedDbs = includeDbNames.Select(x => new Database {Name = x,});
 
-			var sqlServerToMonitor = new SqlServer("FooServer", ".", true, includedDbs, null);
+			var sqlServerToMonitor = new SqlServerEndpoint("FooServer", ".", true, includedDbs, null);
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames.Length, Is.EqualTo(0));
 
 			IEnumerable<string> expectedIncludes = Constants.SystemDatabases.ToList().Concat(includeDbNames);
@@ -274,7 +274,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public void AssertIncludeExcludeListsBuiltAppropriately()
 		{
 			IEnumerable<Database> includedDbs = new[] {"FooDb", "BarDb"}.Select(x => new Database {Name = x,});
-			var sqlServerToMonitor = new SqlServer("FooServer", ".", false, includedDbs, new[] {"Baz"});
+			var sqlServerToMonitor = new SqlServerEndpoint("FooServer", ".", false, includedDbs, new[] {"Baz"});
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames, Is.EquivalentTo(new[] {"FooDb", "BarDb"}));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames, Is.EquivalentTo(Constants.SystemDatabases.Concat(new[] {"Baz"})));
 		}
@@ -282,11 +282,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[Test]
 		public void AssertIncludeSystemDatabasesWorks()
 		{
-			var sqlServerToMonitor = new SqlServer("FooServer", ".", false);
+			var sqlServerToMonitor = new SqlServerEndpoint("FooServer", ".", false);
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames.Length, Is.EqualTo(0));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames, Is.EquivalentTo(Constants.SystemDatabases));
 
-			sqlServerToMonitor = new SqlServer("FooServer", ".", true);
+			sqlServerToMonitor = new SqlServerEndpoint("FooServer", ".", true);
 			Assert.That(sqlServerToMonitor.IncludedDatabaseNames.Length, Is.EqualTo(0));
 			Assert.That(sqlServerToMonitor.ExcludedDatabaseNames.Length, Is.EqualTo(0));
 		}
@@ -294,7 +294,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		[Test]
 		public void Assert_that_duration_is_reported_correctly()
 		{
-			var sqlServerToMonitor = new SqlServer("", "", false);
+			var sqlServerToMonitor = new SqlServerEndpoint("", "", false);
 			Assert.That(sqlServerToMonitor.Duration, Is.EqualTo(0), "Expected 0 second Duration immediately after .ctor called");
 
 			Thread.Sleep(1000);

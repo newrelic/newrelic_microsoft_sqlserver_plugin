@@ -4,6 +4,9 @@ using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
+	/// <summary>
+	/// Specifies set and description of Commandline options for exe
+	/// </summary>
 	public class Options
 	{
 		[Option('i', "install", HelpText = "Installs the " + ServiceConstants.DisplayName + " Windows service on this machine using the current directory as the install directory for the process.",

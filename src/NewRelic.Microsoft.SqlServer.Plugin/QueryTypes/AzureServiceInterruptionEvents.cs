@@ -3,7 +3,7 @@ using NewRelic.Microsoft.SqlServer.Plugin.Core;
 namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 {
 	/// <summary>
-	/// Used in AzureSqlDatabase as a special query. Disabled to prevent auto-detection and execution.
+	/// Used in AzureSqlEndpoint as a special query. Disabled to prevent auto-detection and execution.
 	/// </summary>
 	[AzureSqlQuery("ServiceInterruptionEvents.AzureSQL.sql", "Component/{MetricName}/{Description}", QueryName = "Azure SQL Service Interuptions", Enabled = false)]
 	public class AzureServiceInterruptionEvents : DatabaseMetricBase
