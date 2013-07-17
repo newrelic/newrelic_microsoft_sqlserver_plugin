@@ -34,6 +34,7 @@ INSERT INTO @Results (RecordID
 		RecordID,
 		DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())	AS EventTime,
 		SQLProcessUtilization,
+		SystemIdle,		
 		100 - SystemIdle - SQLProcessUtilization				AS OtherProcessUtilization
 	FROM (SELECT
 			record.value('(./Record/@id)[1]', 'int')	AS RecordID,
