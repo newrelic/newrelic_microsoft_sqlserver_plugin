@@ -14,7 +14,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new SqlServerConnections();
 
-			var sqlServer = new SqlServer("foo", "foo", true, null, new[] {"blah"});
+			var sqlServer = new SqlServerEndpoint("foo", "foo", true, null, new[] {"blah"});
 
 			var queryLocator = new QueryLocator(null);
 			IEnumerable<SqlQuery> queries = queryLocator.PrepareQueries(new[] {queryType.GetType()}, false);
@@ -30,7 +30,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new SqlServerConnections();
 
-			var sqlServer = new SqlServer("foo", "foo", true, new[] {new Database {Name = "bar"},}, null);
+			var sqlServer = new SqlServerEndpoint("foo", "foo", true, new[] {new Database {Name = "bar"},}, null);
 
 			var queryLocator = new QueryLocator(null);
 			IEnumerable<SqlQuery> queries = queryLocator.PrepareQueries(new[] {queryType.GetType()}, false);
@@ -46,7 +46,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new SqlServerConnections();
 
-			var sqlServer = new SqlServer("foo", "foo", false, new[] {new Database {Name = "bar"},}, null);
+			var sqlServer = new SqlServerEndpoint("foo", "foo", false, new[] {new Database {Name = "bar"},}, null);
 
 			var queryLocator = new QueryLocator(null);
 			IEnumerable<SqlQuery> queries = queryLocator.PrepareQueries(new[] {queryType.GetType()}, false);

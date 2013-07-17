@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -12,14 +13,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 	{
 		private string _version;
 
-		public static Settings Default { get; internal set; }
-
 		public Settings(ISqlEndpoint[] endpoints)
 		{
 			Endpoints = endpoints;
 			PollIntervalSeconds = 60;
 			ServiceName = ServiceConstants.ServiceName;
 		}
+
+		public static Settings Default { get; internal set; }
 
 		public string LicenseKey { get; set; }
 		public int PollIntervalSeconds { get; set; }
@@ -42,21 +43,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		internal static Settings FromConfigurationSection(NewRelicConfigurationSection section, ILog log)
 		{
-			var sqlEndpoints = section.SqlServers
-			                          .Select(s =>
-			                                  {
-				                                  var includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
-				                                  var excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
-				                                  return (ISqlEndpoint) new SqlServer(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
-			                                  })
-									  .Union(section.AzureSqlDatabases.Select(s => (ISqlEndpoint)new AzureSqlDatabase(s.Name, s.ConnectionString)));
+			IEnumerable<ISqlEndpoint> sqlEndpoints = section.SqlServers
+			                                                .Select(s =>
+			                                                        {
+				                                                        Database[] includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
+				                                                        string[] excludedDatabaseNames = s.ExcludedDatabases.Select(d => d.Name).ToArray();
+				                                                        return
+					                                                        (ISqlEndpoint) new SqlServerEndpoint(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
+			                                                        })
+			                                                .Union(section.AzureSqlDatabases.Select(s => (ISqlEndpoint) new AzureSqlEndpoint(s.Name, s.ConnectionString)));
 
-			var service = section.Service;
+			ServiceElement service = section.Service;
 			var settings = new Settings(sqlEndpoints.ToArray())
-			{
-				LicenseKey = service.LicenseKey,
-				PollIntervalSeconds = service.PollIntervalSeconds,
-			};
+			               {
+				               LicenseKey = service.LicenseKey,
+				               PollIntervalSeconds = service.PollIntervalSeconds,
+			               };
 
 			if (!string.IsNullOrEmpty(service.ServiceName) && Regex.IsMatch(service.ServiceName, "^[a-zA-Z_0-9-]{6,32}$"))
 			{
@@ -71,9 +73,20 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			log.Debug("\tVersion: " + Version);
 			log.Debug("\tPollIntervalSeconds: " + PollIntervalSeconds);
 			log.Debug("\tCollectOnly: " + CollectOnly);
-			log.Debug("\tSqlEndpoints: " + Endpoints.Length);
+			log.Debug("\tTotalEndpoints: " + Endpoints.Length);
 
-			foreach (var endpoint in Endpoints)
+			var sqlServerEndpoints = Endpoints.OfType<SqlServerEndpoint>().ToArray();
+			log.DebugFormat("\t\tSqlServerEndpoints: {0}", sqlServerEndpoints.Count());
+			log.DebugFormat("\t\tPluginGUID: {0}", Constants.SqlServerComponentGuid);
+			foreach (ISqlEndpoint endpoint in sqlServerEndpoints)
+			{
+				endpoint.Trace(log);
+			}
+
+			var azureEndpoints = Endpoints.OfType<AzureSqlEndpoint>().ToArray();
+			log.DebugFormat("\t\tAzureEndpoints: {0}", azureEndpoints.Count());
+			log.DebugFormat("\t\tPluginGUID: {0}", Constants.SqlAzureComponentGuid);
+			foreach (ISqlEndpoint endpoint in azureEndpoints)
 			{
 				endpoint.Trace(log);
 			}

@@ -47,7 +47,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void Assert_command_text_is_parameterized()
 		{
-			var actual = SqlQuery.PrepareCommandText<FakeDatabaseMetric>("I have the power!", new SqlServer("Local", ".", false));
+			var actual = SqlQuery.PrepareCommandText<FakeDatabaseMetric>("I have the power!", new SqlServerEndpoint("Local", ".", false));
 			Assert.That(actual, Is.EqualTo("zoinks"), "Parameterization failed");
 		}
 

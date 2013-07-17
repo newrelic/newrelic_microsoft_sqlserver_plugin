@@ -11,12 +11,12 @@ using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public class SqlServer : SqlEndpoint
+	public class SqlServerEndpoint : SqlEndpointBase
 	{
-		public SqlServer(string name, string connectionString, bool includeSystemDatabases)
+		public SqlServerEndpoint(string name, string connectionString, bool includeSystemDatabases)
 			: this(name, connectionString, includeSystemDatabases, null, null) {}
 
-		public SqlServer(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDatabases, IEnumerable<string> excludedDatabaseNames)
+		public SqlServerEndpoint(string name, string connectionString, bool includeSystemDatabases, IEnumerable<Database> includedDatabases, IEnumerable<string> excludedDatabaseNames)
 			: base(name, connectionString)
 		{
 			var excludedDbs = new List<string>();
@@ -114,12 +114,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			foreach (Database database in IncludedDatabases)
 			{
-				log.Debug("\t\t\tIncluding: " + database.Name);
+				log.Debug("\t\t\t\tIncluding: " + database.Name);
 			}
 
 			foreach (string database in ExcludedDatabaseNames)
 			{
-				log.Debug("\t\t\tExcluding: " + database);
+				log.Debug("\t\t\t\tExcluding: " + database);
 			}
 		}
 

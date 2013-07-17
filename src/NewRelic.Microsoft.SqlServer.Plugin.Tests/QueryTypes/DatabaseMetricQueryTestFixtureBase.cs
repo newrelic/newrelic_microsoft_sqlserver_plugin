@@ -17,7 +17,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new TQuery();
 
-			var sqlServer = new SqlServer("foo", "foo", true, null, new[] {"exclude"});
+			var sqlServer = new SqlServerEndpoint("foo", "foo", true, null, new[] {"exclude"});
 
 			var queryLocator = new QueryLocator(null);
 			IEnumerable<SqlQuery> queries = sqlServer.FilterQueries(queryLocator.PrepareQueries(new[] {queryType.GetType()}, false));
@@ -33,7 +33,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		{
 			var queryType = new TQuery();
 
-			var sqlServer = new SqlServer("foo", "foo", false, new[] {new Database {Name = "include"},}, null);
+			var sqlServer = new SqlServerEndpoint("foo", "foo", false, new[] {new Database {Name = "include"},}, null);
 
 			var queryLocator = new QueryLocator(null);
 			IEnumerable<SqlQuery> queries = sqlServer.FilterQueries(queryLocator.PrepareQueries(new[] {queryType.GetType()}, false));

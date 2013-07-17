@@ -48,9 +48,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 					                                IncludedDatabases = new string[0],
 					                                ExcludedDatabases = new[] {"foo", "bar"}.Concat(Constants.SystemDatabases).ToArray(),
 				                                },
-			                                }.Select(i => SqlServer.FormatProperties(i.Name, i.ConnectionString, i.IncludedDatabases, i.ExcludedDatabases)).ToArray();
+			                                }.Select(i => SqlServerEndpoint.FormatProperties(i.Name, i.ConnectionString, i.IncludedDatabases, i.ExcludedDatabases)).ToArray();
 
-			SqlServer[] sqlServers = settings.Endpoints.OfType<SqlServer>().ToArray();
+			SqlServerEndpoint[] sqlServers = settings.Endpoints.OfType<SqlServerEndpoint>().ToArray();
 
 			string[] actualInstances = sqlServers.Select(s => s.ToString()).ToArray();
 			Assert.That(actualInstances, Is.EquivalentTo(expectedSqlInstances), "Endpoints Found different from expected");
@@ -58,7 +58,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			Database databaseWithDisplayName = sqlServers.Single(e => e.Name == "Local").IncludedDatabases.Single(d => d.Name == "Northwind");
 			Assert.That(databaseWithDisplayName.DisplayName, Is.EqualTo("Southbreeze"), "Display name cannot be configured");
 
-			string[] azureSqlDatabases = settings.Endpoints.OfType<AzureSqlDatabase>().Select(a => a.ToString()).ToArray();
+			string[] azureSqlDatabases = settings.Endpoints.OfType<AzureSqlEndpoint>().Select(a => a.ToString()).ToArray();
 			var expectedAzureDatabases = new[] {"Name: CloudFtw, ConnectionString: Server=zzz,1433;Database=CloudFtw;User ID=NewRelic;Password=aaa;Trusted_Connection=false;Encrypt=true;Connection Timeout=30;"};
 			Assert.That(azureSqlDatabases, Is.EqualTo(expectedAzureDatabases));
 		}

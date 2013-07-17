@@ -22,14 +22,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			get
 			{
-				yield return new TestCaseData(new SqlServer("FooServer", ".", false)).Returns(Constants.SqlServerComponentGuid).SetName("SqlServer Sets Appropriate Guid");
-				yield return new TestCaseData(new AzureSqlDatabase("FooServer", "")).Returns(Constants.SqlAzureComponentGuid).SetName("AzureSqlDatabase Sets Appropriate Guid");
+				yield return new TestCaseData(new SqlServerEndpoint("FooServer", ".", false)).Returns(Constants.SqlServerComponentGuid).SetName("SqlServer Sets Appropriate Guid");
+				yield return new TestCaseData(new AzureSqlEndpoint("FooServer", "")).Returns(Constants.SqlAzureComponentGuid).SetName("AzureSqlEndpoint Sets Appropriate Guid");
 			}
 		}
 
 		public void AssertEndpointAppropriatelyMassagesDuplicatedData()
 		{
-			var endpoint = Substitute.For<SqlEndpoint>("", "");
+			var endpoint = Substitute.For<SqlEndpointBase>("", "");
 
 			var resultSet1 = new object[]
 			                 {
@@ -88,7 +88,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		[Test]
 		[TestCaseSource("ComponentGuidTestCases")]
-		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpoint endpoint)
+		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpointBase endpoint)
 		{
 			QueryContext queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
 			return queryContext.ComponentData.Guid;
@@ -97,7 +97,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void AssertEndpointAppropriatelyMassagesData()
 		{
-			var endpoint = Substitute.For<SqlEndpoint>("", "");
+			var endpoint = Substitute.For<SqlEndpointBase>("", "");
 
 			var resultSet1 = new object[]
 			                 {
@@ -205,7 +205,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		[Test]
 		public void AssertSqlDMLActvityDataTakesCreateTimeMsIntoAccount()
 		{
-			var endpoint = Substitute.For<SqlEndpoint>("", "");
+			var endpoint = Substitute.For<SqlEndpointBase>("", "");
 			var d1 = new DateTime(2013, 06, 20, 8, 28, 10, 100);
 			var d2 = new DateTime(2013, 06, 20, 8, 28, 10, 200);
 
@@ -290,7 +290,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				              databaseMetric4,
 			              };
 
-			SqlServer.ApplyDatabaseDisplayNames(includedDatabases, results);
+			SqlServerEndpoint.ApplyDatabaseDisplayNames(includedDatabases, results);
 
 			Assert.That(databaseMetric1.DatabaseName, Is.EqualTo("Fantastic"));
 			Assert.That(databaseMetric2.DatabaseName, Is.EqualTo("Assassins"));
