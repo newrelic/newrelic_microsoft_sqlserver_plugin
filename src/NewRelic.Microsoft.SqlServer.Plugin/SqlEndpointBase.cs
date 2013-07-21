@@ -108,7 +108,17 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				safeConnectionString.Password = "[redacted]";
 			}
 
-			log.InfoFormat("\t\t\t{0}: {1}", Name, safeConnectionString);
+			log.InfoFormat("      {0}: {1}", Name, safeConnectionString);
+
+			// Validate that connection string do not provide both Trusted Security AND user/password
+			var hasUserCreds = !string.IsNullOrEmpty(safeConnectionString.UserID) || !string.IsNullOrEmpty(safeConnectionString.Password);
+			if (safeConnectionString.IntegratedSecurity == hasUserCreds)
+			{
+				log.Error("==================================================");
+				log.ErrorFormat("Connection string for '{0}' may not contain both Integrated Security and User ID/Password credentials. " +
+				                "Review the readme.md and update the config file.", safeConnectionString.DataSource);
+				log.Error("==================================================");
+			}
 		}
 
 		protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)
@@ -312,8 +322,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					else
 					{
 						log.ErrorFormat("User '{0}' cannot access the database '{1}'. " +
-										"Ensure the login has a user in the database (see readme.md).",
-										connectionString.UserID, connectionString.InitialCatalog);
+						                "Ensure the login has a user in the database (see readme.md).",
+						                connectionString.UserID, connectionString.InitialCatalog);
 					}
 					break;
 

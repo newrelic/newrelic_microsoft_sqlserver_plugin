@@ -1,3 +1,4 @@
+using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
@@ -78,17 +79,17 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		public void ToLog(ILog log)
 		{
-			log.Info("\tVersion: " + Version);
-			log.Info("\tPollIntervalSeconds: " + PollIntervalSeconds);
-			log.Info("\tCollectOnly: " + CollectOnly);
-			log.Info("\tRunAsAdministrator: " + IsProcessElevated);
-			log.Info("\tTotalEndpoints: " + Endpoints.Length);
+			log.Info("  Version: " + Version);
+			log.Info("  PollIntervalSeconds: " + PollIntervalSeconds);
+			log.Info("  CollectOnly: " + CollectOnly);
+			log.Info("  RunAsAdministrator: " + IsProcessElevated);
+			log.Info("  TotalEndpoints: " + Endpoints.Length);
 
 			var sqlServerEndpoints = Endpoints.OfType<SqlServerEndpoint>().ToArray();
 			if (sqlServerEndpoints.Any())
 			{
-				log.InfoFormat("\t\tSqlServerEndpoints: {0}", sqlServerEndpoints.Count());
-				log.InfoFormat("\t\tPluginGUID: {0}", Constants.SqlServerComponentGuid);
+				log.InfoFormat("    SqlServerEndpoints: {0}", sqlServerEndpoints.Count());
+				log.InfoFormat("    PluginGUID: {0}", Constants.SqlServerComponentGuid);
 				foreach (ISqlEndpoint endpoint in sqlServerEndpoints)
 				{
 					endpoint.ToLog(log);
@@ -102,8 +103,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 			var azureEndpoints = Endpoints.OfType<AzureSqlEndpoint>().ToArray();
 			if (azureEndpoints.Any())
 			{
-				log.InfoFormat("\t\tAzureEndpoints: {0}", azureEndpoints.Count());
-				log.InfoFormat("\t\tPluginGUID: {0}", Constants.SqlAzureComponentGuid);
+				log.InfoFormat("    AzureEndpoints: {0}", azureEndpoints.Count());
+				log.InfoFormat("    PluginGUID: {0}", Constants.SqlAzureComponentGuid);
 				foreach (ISqlEndpoint endpoint in azureEndpoints)
 				{
 					endpoint.ToLog(log);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
@@ -114,7 +115,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			foreach (var database in IncludedDatabases)
 			{
-				log.Info("\t\t\t\tIncluding DB: " + database.Name);
+				log.Info("        Including DB: " + database.Name);
 			}
 
 			// If there are included DB's, log the Excluded DB's as DEBUG info.
@@ -122,7 +123,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			foreach (var database in ExcludedDatabaseNames)
 			{
 
-				logger("\t\t\t\tExcluding DB: " + database);
+				logger("        Excluding DB: " + database);
 			}
 		}
 
