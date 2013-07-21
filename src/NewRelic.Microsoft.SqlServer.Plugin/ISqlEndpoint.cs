@@ -33,6 +33,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		void UpdateHistory(IQueryContext[] queryContexts);
 		PlatformData GeneratePlatformData(AgentData agentData);
 
-		void Trace(ILog log);
+		void ToLog(ILog log);
 	}
 }

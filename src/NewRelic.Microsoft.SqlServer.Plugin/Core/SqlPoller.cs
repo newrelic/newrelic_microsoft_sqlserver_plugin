@@ -43,11 +43,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 					var queries = new QueryLocator(new DapperWrapper()).PrepareQueries();
 					_settings.Endpoints.ForEach(e => e.SetQueries(queries));
 
+					var initialDelaySeconds = _settings.CollectOnly ? 0 : _settings.PollIntervalSeconds;
 					var pollingThreadSettings = new PollingThreadSettings
 					                            {
 						                            Name = "SqlPoller",
 													// Set to immediate when CollectOnly for instant gratification
-						                            InitialPollDelaySeconds = _settings.CollectOnly ? 0 : _settings.PollIntervalSeconds,
+						                            InitialPollDelaySeconds = initialDelaySeconds,
 						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
 						                            PollAction = () => _metricCollector.QueryEndpoints(queries),
 						                            AutoResetEvent = new AutoResetEvent(false),
@@ -57,6 +58,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 					_pollingThread.ExceptionThrown += e => _log.Error("Polling thread exception", e);
 
 					_log.Debug("Service Threads Starting...");
+
+					if (initialDelaySeconds > 0)
+					{
+						_log.InfoFormat("Waiting {0} seconds to begin polling", initialDelaySeconds);
+					}
 
 					_pollingThread.Start();
 

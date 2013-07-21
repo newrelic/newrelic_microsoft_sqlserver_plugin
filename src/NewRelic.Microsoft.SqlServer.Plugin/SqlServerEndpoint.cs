@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
@@ -34,15 +35,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			if (includeSystemDatabases && includedDbs.Any())
 			{
-				IEnumerable<Database> systemDbsToAdd = Constants.SystemDatabases
-				                                                .Where(dbName => includedDbs.All(db => db.Name != dbName))
-				                                                .Select(dbName => new Database {Name = dbName});
+				var systemDbsToAdd = Constants.SystemDatabases
+				                              .Where(dbName => includedDbs.All(db => db.Name != dbName))
+				                              .Select(dbName => new Database {Name = dbName});
 				includedDbs.AddRange(systemDbsToAdd);
 			}
 			else if (!includeSystemDatabases)
 			{
-				IEnumerable<string> systemDbsToAdd = Constants.SystemDatabases
-				                                              .Where(dbName => excludedDbs.All(db => db != dbName));
+				var systemDbsToAdd = Constants.SystemDatabases
+				                              .Where(dbName => excludedDbs.All(db => db != dbName));
 				excludedDbs.AddRange(systemDbsToAdd);
 			}
 
@@ -81,19 +82,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return;
 			}
 
-			Dictionary<string, string> renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
+			var renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
 			if (!renameMap.Any())
 			{
 				return;
 			}
 
-			IDatabaseMetric[] databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
+			var databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
 			if (!databaseMetrics.Any())
 			{
 				return;
 			}
 
-			foreach (IDatabaseMetric databaseMetric in databaseMetrics)
+			foreach (var databaseMetric in databaseMetrics)
 			{
 				string displayName;
 				if (renameMap.TryGetValue(databaseMetric.DatabaseName.ToLower(), out displayName))
@@ -108,18 +109,21 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return queries.Where(q => q.QueryAttribute is SqlServerQueryAttribute);
 		}
 
-		public override void Trace(ILog log)
+		public override void ToLog(ILog log)
 		{
-			base.Trace(log);
+			base.ToLog(log);
 
-			foreach (Database database in IncludedDatabases)
+			foreach (var database in IncludedDatabases)
 			{
-				log.Debug("\t\t\t\tIncluding: " + database.Name);
+				log.Info("        Including DB: " + database.Name);
 			}
 
-			foreach (string database in ExcludedDatabaseNames)
+			// If there are included DB's, log the Excluded DB's as DEBUG info.
+			var logger = IncludedDatabaseNames.Any() ? (Action<string>)log.Debug : log.Info;
+			foreach (var database in ExcludedDatabaseNames)
 			{
-				log.Debug("\t\t\t\tExcluding: " + database);
+
+				logger("        Excluding DB: " + database);
 			}
 		}
 

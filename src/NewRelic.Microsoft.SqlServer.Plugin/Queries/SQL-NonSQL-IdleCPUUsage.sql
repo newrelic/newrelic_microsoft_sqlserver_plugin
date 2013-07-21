@@ -32,13 +32,16 @@ INSERT INTO @Results (RecordID
 		RecordID,
 		DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE())	AS EventTime,
 		SQLProcessUtilization,
-		100 - SystemIdle - SQLProcessUtilization				AS OtherProcessUtilization
+		-- Some times the values can report impossible values (>100% CPU usage).
+		-- Correct for that here by forcing other process to 0 when system idle
+		-- and SQL CPU usage are more than 100%.
+		CASE
+			WHEN SystemIdle + SQLProcessUtilization > 100 THEN 0 ELSE 100 - SystemIdle - SQLProcessUtilization
+		END														AS OtherProcessUtilization
 	FROM (SELECT
-			record.value('(./Record/@id)[1]', 'int')	AS RecordID,
-			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]',
-			'int')										AS SystemIdle,
-			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]',
-			'int')										AS SQLProcessUtilization,
+			record.value('(./Record/@id)[1]', 'int')													AS RecordID,
+			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int')			AS SystemIdle,
+			record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int')	AS SQLProcessUtilization,
 			[timestamp]
 		FROM (SELECT
 				[timestamp],
@@ -49,7 +52,6 @@ INSERT INTO @Results (RecordID
 			AND DATEADD(ms, -1 * (@ts_now - [timestamp]), GETDATE()) BETWEEN @StartTime AND @EndTime)
 		AS x)
 	AS y
-
 
 --Return details
 SELECT TOP 1
