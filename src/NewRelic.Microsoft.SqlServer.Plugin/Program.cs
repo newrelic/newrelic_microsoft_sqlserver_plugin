@@ -26,15 +26,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			{
 				var options = new Options();
 
-				ILog log = SetUpLogConfig();
+				var log = SetUpLogConfig();
 
 				// If bad args were passed, will exit and print usage
 				Parser.Default.ParseArgumentsStrict(args, options);
 
-				Settings settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
+				var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
 				Settings.Default = settings;
 
-				var installController = new InstallController(settings.ServiceName, log);
+				var installController = new InstallController(settings.ServiceName);
 				if (options.Uninstall)
 				{
 					installController.Uninstall();
@@ -100,8 +100,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public static ILog SetUpLogConfig()
 		{
 			const string log4NetConfig = "log4net.config";
-			string assemblyPath = Assembly.GetExecutingAssembly().GetLocalPath();
-			string configPath = Path.Combine(assemblyPath, log4NetConfig);
+			var assemblyPath = Assembly.GetExecutingAssembly().GetLocalPath();
+			var configPath = Path.Combine(assemblyPath, log4NetConfig);
 			XmlConfigurator.ConfigureAndWatch(new FileInfo(configPath));
 			return LogManager.GetLogger(Constants.SqlMonitorLogger);
 		}
@@ -125,7 +125,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			do
 			{
 				Console.Out.WriteLine("Press Q to quit...");
-				ConsoleKeyInfo consoleKeyInfo = Console.ReadKey(true);
+				var consoleKeyInfo = Console.ReadKey(true);
 				Console.WriteLine();
 				key = consoleKeyInfo.KeyChar;
 			} while (key != 'q' && key != 'Q');

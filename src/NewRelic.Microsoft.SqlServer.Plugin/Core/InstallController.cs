@@ -3,21 +3,23 @@ using System.Collections;
 using System.Configuration.Install;
 using System.Linq;
 using System.ServiceProcess;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+
 using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
 	internal class InstallController
 	{
-		private readonly string _serviceName;
 		private readonly ILog _log;
+		private readonly string _serviceName;
 
-	    public InstallController(string serviceName, ILog log)
-	    {
-		    _serviceName = serviceName;
-		    _log = log;
-	    }
+		public InstallController(string serviceName)
+		{
+			_serviceName = serviceName;
+			_log = LogManager.GetLogger(Constants.InstallLogger);
+		}
 
 		public void Install()
 		{
@@ -33,7 +35,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		{
 			try
 			{
-                _log.Info(uninstall ? "Uninstalling" : "Installing");
+				_log.Info(uninstall ? "Uninstalling" : "Installing");
 				using (var inst = new AssemblyInstaller(typeof (Program).Assembly, null))
 				{
 					IDictionary state = new Hashtable();
@@ -59,7 +61,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 						}
 						catch (Exception ex)
 						{
-                            _log.Error("Error Rolling back");
+							_log.Error("Error Rolling back");
 							_log.Error(ex.Message);
 						}
 						throw;
@@ -68,7 +70,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 			}
 			catch (Exception ex)
 			{
-                _log.Error(ex.Message);
+				_log.Error(ex.Message);
 			}
 		}
 
@@ -92,27 +94,27 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 				return;
 			}
 
-            _log.Info("Service found");
+			_log.Info("Service found");
 
 			if (stop)
 			{
 				if (controller.Status.Equals(ServiceControllerStatus.Running)
 				    && controller.CanStop)
 				{
-                    _log.Info("Service is running. Attempting to stop service");
+					_log.Info("Service is running. Attempting to stop service");
 					controller.Stop();
-                    _log.Info("Service successfully stopped");
+					_log.Info("Service successfully stopped");
 				}
 				else
 				{
-                    _log.Info("Service is not running; skipping attempt to stop service");					
+					_log.Info("Service is not running; skipping attempt to stop service");
 				}
 			}
 			else
 			{
-                _log.Info("Attempting to start service");
+				_log.Info("Attempting to start service");
 				controller.Start();
-                _log.Info("Service successfully started");
+				_log.Info("Service successfully started");
 			}
 		}
 
