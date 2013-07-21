@@ -97,10 +97,47 @@ In a new connection to each individual Azure SQL Database:
     GRANT VIEW DATABASE STATE TO NewRelicUser
     GO
 
+
 ## Logging
 
 By default, the log files are written to `C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\`. To change the logging settings, edit the `INSTALLDIR\log4net.config` file.
 
+
+## Troubleshooting
+
+**Permissions Issues in the Database**
+
+For each database to be monitored, execute a sample query to confirm the correct rights have been applied. Do this by launching SQL Server Management Studio (SSMS) as the user configured to host the service.
+
+* When using Windows authentication, launch SSMS as the user. This can be done but holding down Ctrl+Shift when right-clicking on the SSMS shortcut. In the context menu is an entry for 'Run as a * different user' that prompts for credentials. Enter the username and password of the Windows user that will host the service.
+
+* When using SQL authentication or Azure, launch SSMS normally. When prompted, select 'SQL Server Authentication' and enter the credentials supplied in your config file.
+
+In each database, confirm the following query executes without failure:
+
+SQL Server
+
+    SELECT
+        d.Name							AS DatabaseName,
+        COUNT(c.connection_id)			AS NumberOfConnections,
+        ISNULL(SUM(c.num_reads), 0)		AS NumberOfReads,
+        ISNULL(SUM(c.num_writes), 0)	AS NumberOfWrites
+    FROM sys.databases d
+    LEFT JOIN sys.sysprocesses s ON s.dbid = d.database_id
+    LEFT JOIN sys.dm_exec_connections c ON c.session_id = s.spid
+    WHERE (s.spid IS NULL OR c.session_id >= 51)
+
+Azure SQL
+
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY [wait_time_ms] DESC)	AS [RowNum],
+        [wait_type],
+        [wait_time_ms] / 1000.0								AS [WaitSeconds],
+        ([wait_time_ms] - [signal_wait_time_ms]) / 1000.0	AS [ResourceSeconds],
+        [signal_wait_time_ms] / 1000.0						AS [SignalSeconds],
+        [waiting_tasks_count]								AS [WaitCount],
+        [wait_time_ms] * 100 / SUM([wait_time_ms]) OVER ()	AS [Percentage]
+    FROM sys.dm_db_wait_stats
 
 ## Uninstall instructions
 
@@ -111,7 +148,7 @@ The service can be stopped or restarted manually, however if you want to uninsta
 2. Execute the following command: `NewRelic.Microsoft.SqlServer.Plugin.exe --uninstall`
 
 This will stop and remove the service. The binaries and config files will still be in the `INSTALLDIR` 
-and log files will be still be where they were. If you wish to remove these you can do so by hand.
+and log files are not deleted. If you wish to remove these, it must be done manually.
  
 
 ## Want more information?
