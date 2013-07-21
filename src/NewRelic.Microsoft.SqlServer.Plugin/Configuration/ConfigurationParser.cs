@@ -51,7 +51,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             var configuration = ConfigurationManager.OpenMappedMachineConfiguration(fileMap);
             var section = (NewRelicConfigurationSection) configuration.GetSection("newRelic");
             var settingsFromConfig = Settings.FromConfigurationSection(section, log);
-            log.DebugFormat("Settings loaded successfully");
+            log.InfoFormat("Settings loaded successfully");
 
             return settingsFromConfig;
         }
@@ -61,7 +61,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             log.Debug("No external configuration path given, attempting to load settings from from default configuration file");
             var section = (NewRelicConfigurationSection) ConfigurationManager.GetSection("newRelic");
             var settingsFromAppConfig = Settings.FromConfigurationSection(section,log);
-            log.DebugFormat("Settings loaded successfully");
+			log.InfoFormat("Settings loaded successfully");
             return settingsFromAppConfig;
         }
     }

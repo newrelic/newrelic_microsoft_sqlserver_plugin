@@ -99,7 +99,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return platformData;
 		}
 
-		public virtual void Trace(ILog log)
+		public virtual void ToLog(ILog log)
 		{
 			// Remove password from logging
 			var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
@@ -108,7 +108,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				safeConnectionString.Password = "[redacted]";
 			}
 
-			log.DebugFormat("\t\t\t{0}: {1}", Name, safeConnectionString);
+			log.InfoFormat("\t\t\t{0}: {1}", Name, safeConnectionString);
 		}
 
 		protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)

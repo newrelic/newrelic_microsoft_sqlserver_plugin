@@ -34,7 +34,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
 				Settings.Default = settings;
 
-				var installController = new InstallController(settings.ServiceName);
+				var installController = new InstallController(settings.ServiceName, settings.IsProcessElevated);
 				if (options.Uninstall)
 				{
 					installController.Uninstall();
@@ -42,6 +42,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				else if (options.Install)
 				{
 					installController.Install();
+					if (options.Start)
+						installController.StartService();
 				}
 				else if (options.Start)
 				{
@@ -59,13 +61,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				{
 					Thread.CurrentThread.Name = "Main";
 					settings.CollectOnly = options.CollectOnly;
-					log.DebugFormat("New Relic® Sql Server Plugin");
-					log.Debug("Loaded Settings:");
+					log.InfoFormat("New Relic® Sql Server Plugin");
+					log.Info("Loaded Settings:");
 					settings.ToLog(log);
 
 					if (!settings.Endpoints.Any())
 					{
-						log.Debug("No sql endpoints found please, update the configuration file to montior one or more sql server instances.");
+						log.Error("No sql endpoints found please, update the configuration file to monitor one or more sql server instances.");
 					}
 
 					if (Environment.UserInteractive)
