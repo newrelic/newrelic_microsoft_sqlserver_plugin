@@ -37,7 +37,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			try
 			{
-				// Calculate "duration" as the span between "now" and the last recorded report time. This avoids "drop outs" in the charts.
 				var tasks = _settings.Endpoints
 				                     .Select(endpoint => Task.Factory
 				                                             .StartNew(() => endpoint.ExecuteQueries(_log))
