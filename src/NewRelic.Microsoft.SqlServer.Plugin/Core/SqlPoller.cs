@@ -43,11 +43,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 					var queries = new QueryLocator(new DapperWrapper()).PrepareQueries();
 					_settings.Endpoints.ForEach(e => e.SetQueries(queries));
 
-					var initialDelaySeconds = _settings.CollectOnly ? 0 : _settings.PollIntervalSeconds;
+					var initialDelaySeconds = _settings.TestMode ? 0 : _settings.PollIntervalSeconds;
 					var pollingThreadSettings = new PollingThreadSettings
 					                            {
 						                            Name = "SqlPoller",
-													// Set to immediate when CollectOnly for instant gratification
+													// Set to immediate when in TestMode for instant gratification.
 						                            InitialPollDelaySeconds = initialDelaySeconds,
 						                            PollIntervalSeconds = _settings.PollIntervalSeconds,
 						                            PollAction = () => _metricCollector.QueryEndpoints(queries),

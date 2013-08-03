@@ -72,7 +72,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			var platformData = endpoint.GeneratePlatformData(_agentData);
 
 			// Allows a testing mode that does not send data to New Relic
-			if (_settings.CollectOnly)
+			if (_settings.TestMode)
 			{
 				return;
 			}

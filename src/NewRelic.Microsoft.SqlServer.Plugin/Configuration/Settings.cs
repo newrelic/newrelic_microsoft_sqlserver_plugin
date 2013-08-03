@@ -1,3 +1,4 @@
+using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
@@ -34,7 +35,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public int PollIntervalSeconds { get; set; }
 		public string ServiceName { get; set; }
 		public ISqlEndpoint[] Endpoints { get; private set; }
-		public bool CollectOnly { get; set; }
+		public bool TestMode { get; set; }
 		public bool IsProcessElevated { get; private set; }
 
 		public string Version
@@ -79,11 +80,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		public void ToLog(ILog log)
 		{
+			// Pending review by New Relic before adding this information
+//			log.Info("  New Relic Key: " + LicenseKey);
+
 			log.Info("  Version: " + Version);
-			log.Info("  PollIntervalSeconds: " + PollIntervalSeconds);
-			log.Info("  CollectOnly: " + CollectOnly);
-			log.Info("  RunAsAdministrator: " + IsProcessElevated);
-			log.Info("  TotalEndpoints: " + Endpoints.Length);
+			log.Info("  Poll Interval Seconds: " + PollIntervalSeconds);
+			log.Info("  Test Mode: " + TestMode);
+			log.Info("  Windows Service: " + (Environment.UserInteractive ? "No" : "Yes"));
+			log.InfoFormat(@"  User: {0}\{1}", Environment.UserDomainName, Environment.UserName);
+			log.Info("  Run as Administrator: " + IsProcessElevated);
+			log.Info("  Total Endpoints: " + Endpoints.Length);
 
 			var sqlServerEndpoints = Endpoints.OfType<SqlServerEndpoint>().ToArray();
 			if (sqlServerEndpoints.Any())
@@ -118,7 +124,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
 		public override string ToString()
 		{
-			return string.Format("Version: {0}, PollIntervalSeconds: {1}, CollectOnly: {2}", Version, PollIntervalSeconds, CollectOnly);
+			return string.Format("Version: {0}, PollIntervalSeconds: {1}, TestMode: {2}", Version, PollIntervalSeconds, TestMode);
 		}
 	}
 }
