@@ -8,11 +8,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	public static class SqlErrorReporter
 	{
-		public static void LogError(this ILog log, SqlException sqlException, ISqlQuery query, string connString)
+		public static void LogSqlException(this ILog log, SqlException sqlException, ISqlQuery query, string connString)
 		{
-			// http://social.msdn.microsoft.com/Search/en-US?query=MSSQLSERVER_18452
-
 			var connectionString = new SqlConnectionStringBuilder(connString);
+
+			log.Error(string.Empty);
 
 			switch (sqlException.Number)
 			{
@@ -70,10 +70,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 				default:
 					log.ErrorFormat("Error collecting metric '{0}': {1}", query.QueryName, sqlException.Message);
-					log.Error(@"More details available in the error log at 'C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\ErrorDetailOutput.log'");
-					log.ErrorFormat("Search for more details at MSDN: http://www.google.com/search?q=site%3Amsdn.microsoft.com+mssqlserver_{0}", sqlException.Number);
-					log.ErrorFormat("If need help, contact New Relic support at https://support.newrelic.com/home. Details: C{0}, M{1}, S{2}",
-					                sqlException.Class, sqlException.Number, sqlException.State);
+					log.ErrorFormat("SQL Exception Details: Class {0}, Number {1}, State {2}", sqlException.Class, sqlException.Number, sqlException.State);
+					log.Error(@"Check the error log for more details at 'C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\ErrorDetailOutput.log'");
+					log.Error("For additional help, contact New Relic support at https://support.newrelic.com/home. Please paste all log messages above into the support request.");
 					break;
 			}
 		}
