@@ -1,5 +1,4 @@
 using System;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
@@ -81,15 +80,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 		public void ToLog(ILog log)
 		{
 			// Pending review by New Relic before adding this information
-//			log.Info("  New Relic Key: " + LicenseKey);
+			//			log.Info("  New Relic Key: " + LicenseKey);
 
 			log.Info("  Version: " + Version);
-			log.Info("  Poll Interval Seconds: " + PollIntervalSeconds);
-			log.Info("  Test Mode: " + TestMode);
+			log.Info("  Test Mode: " + (TestMode ? "Yes" : "No"));
 			log.Info("  Windows Service: " + (Environment.UserInteractive ? "No" : "Yes"));
 			log.InfoFormat(@"  User: {0}\{1}", Environment.UserDomainName, Environment.UserName);
-			log.Info("  Run as Administrator: " + IsProcessElevated);
+			log.Info("  Run as Administrator: " + (IsProcessElevated ? "Yes" : "No"));
 			log.Info("  Total Endpoints: " + Endpoints.Length);
+			log.Info("  Poll Interval Seconds: " + PollIntervalSeconds);
 
 			var sqlServerEndpoints = Endpoints.OfType<SqlServerEndpoint>().ToArray();
 			if (sqlServerEndpoints.Any())
