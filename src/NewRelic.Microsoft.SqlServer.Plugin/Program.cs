@@ -6,8 +6,6 @@ using System.Reflection;
 using System.ServiceProcess;
 using System.Threading;
 
-using CommandLine;
-
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
@@ -24,12 +22,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			try
 			{
-				var options = new Options();
-
 				var log = SetUpLogConfig();
 
-				// If bad args were passed, will exit and print usage
-				Parser.Default.ParseArgumentsStrict(args, options);
+				var options = Options.ParseArguments(args);
 
 				var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
 				Settings.Default = settings;
@@ -60,8 +55,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				else
 				{
 					Thread.CurrentThread.Name = "Main";
-					settings.CollectOnly = options.CollectOnly;
-					log.InfoFormat("New Relic® Sql Server Plugin");
+					settings.TestMode = options.TestMode;
+					log.InfoFormat("New Relic Sql Server Plugin");
 					log.Info("Loaded Settings:");
 					settings.ToLog(log);
 
@@ -72,7 +67,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 					if (Environment.UserInteractive)
 					{
-						Console.Out.WriteLine("Starting Interactive mode");
 						RunInteractive(settings);
 					}
 					else
@@ -114,8 +108,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <param name="settings"></param>
 		private static void RunInteractive(Settings settings)
 		{
-			Console.Out.WriteLine("Starting Server");
-
 			// Start our services
 			var poller = new SqlPoller(settings);
 			poller.Start();
@@ -131,8 +123,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				Console.WriteLine();
 				key = consoleKeyInfo.KeyChar;
 			} while (key != 'q' && key != 'Q');
-
-			Console.Out.WriteLine("Stopping...");
 
 			// Stop our services
 			poller.Stop();

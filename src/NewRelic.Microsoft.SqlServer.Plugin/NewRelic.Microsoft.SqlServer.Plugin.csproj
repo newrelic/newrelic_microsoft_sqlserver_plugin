@@ -82,6 +82,7 @@
     <Compile Include="QueryTypes\SqlDmlActivity.cs" />
     <Compile Include="QueryTypes\MemoryViewNuma.cs" />
     <Compile Include="SqlEndpointBase.cs" />
+    <Compile Include="SqlErrorReporter.cs" />
     <Compile Include="SqlServerEndpoint.cs" />
     <Compile Include="Configuration\SqlServerCollection.cs" />
     <Compile Include="Configuration\SqlServerElement.cs" />

@@ -10,7 +10,7 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 
 ## Installation instructions
 
-1. [Download the files](https://s3.amazonaws.com/new_relic_platform_plugin_binary_hosting/ms_sql_plugin/NewRelic.Microsoft.SqlServer.Plugin.zip)
+1. [Download the files](https://rpm.newrelic.com/plugins/55/b100e5e011d544ba024e265887b4dff3) from New Relic.
 2. Unpack them to something like `C:\Program Files\New Relic\MicrosoftSQLServerPlugin\` (we'll call this `INSTALLDIR`.) on a server that has access to the SQL server(s) you want to monitor. In general, that means the agent could run on the server hosting the SQL server or another locally connected machine which network access to the SQL server. 
 3. Configure the plugin.
   1. Run a text editor **as administrator** and open the file `INSTALLDIR\NewRelic.Microsoft.SqlServer.Plugin.exe.config`.
@@ -25,14 +25,16 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
     `connectionString="Server=tcp:zzz.database.windows.net,1433;Database=CustomerDB;User ID=NewRelic@zzz;`
     `Password=foobar;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;`
 4. Verify the settings.
-  1. Open a command prompt running **as administrator** to `INSTALLDIR`.
-  2. Run the plugin in read-only mode: `NewRelic.Microsoft.SqlServer.Plugin.exe --collect-only`
+  1. Open a command prompt, **not** running as administrator, to `INSTALLDIR`.
+  2. Run the plugin in read-only, test mode: `NewRelic.Microsoft.SqlServer.Plugin.exe --test`
   3. If there are no errors, move on to installing the service.
 5. Install the plugin as a Windows service.
-  1. Use the command prompt from step #4.1 or open it again.
+  1. Open a new command prompt, **running as administrator**, to `INSTALLDIR`.
   2. Execute: `NewRelic.Microsoft.SqlServer.Plugin.exe --install` and ensure you see the message
      `Service NewRelicSQLServerPlugin has been successfully installed.`
-  3. Start the service: net start NewRelicSQLServerPlugin
+  3. Start the service: `net start NewRelicSQLServerPlugin`
+  4. Review the log file at `C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\SqlMonitor.log` to confirm the service is running. Look at the end of the file for a successful startup similar to the output of step 4.2., but with `[Main] INFO  -   Windows Service: Yes`, indicating the Windows service is running.
+  5. After about 5 minutes, data is available in your New Relic dashboard in the 'MS SQL' and/or 'Azure SQL' area.
 
 ## Configure permissions
 
@@ -126,6 +128,7 @@ SQL Server
     LEFT JOIN sys.sysprocesses s ON s.dbid = d.database_id
     LEFT JOIN sys.dm_exec_connections c ON c.session_id = s.spid
     WHERE (s.spid IS NULL OR c.session_id >= 51)
+    GROUP BY d.Name
 
 Azure SQL
 
