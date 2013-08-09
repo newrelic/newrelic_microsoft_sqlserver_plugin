@@ -142,6 +142,8 @@ Azure SQL
         [wait_time_ms] * 100 / SUM([wait_time_ms]) OVER ()	AS [Percentage]
     FROM sys.dm_db_wait_stats
 
+Additional plugin support and troubleshooting assistance can be obtained by visiting [support.newrelic.com](https://support.newrelic.com)
+
 ## Uninstall instructions
 
 The plugin is installed as a Windows Service which by default is named NewRelicSqlPlugin
@@ -152,3 +154,6 @@ The service can be stopped or restarted manually, however if you want to uninsta
 
 This will stop and remove the service. The binaries and config files will still be in the `INSTALLDIR` 
 and log files are not deleted. If you wish to remove these, it must be done manually.
+
+## Credits
+The New Relic Microsoft SQL Server plugin was originally authored by https://github.com/edchapel, https://github.com/jstromwick, and Mike Merrill. Subsequent updates and support are provided by [New Relic](http://newrelic.com/platform).
