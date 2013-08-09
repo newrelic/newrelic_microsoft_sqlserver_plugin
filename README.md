@@ -152,8 +152,3 @@ The service can be stopped or restarted manually, however if you want to uninsta
 
 This will stop and remove the service. The binaries and config files will still be in the `INSTALLDIR` 
 and log files are not deleted. If you wish to remove these, it must be done manually.
- 
-
-## Want more information?
-
-The [wiki](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/wiki/) may be what you are looking for.
