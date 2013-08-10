@@ -10,12 +10,12 @@ A plugin for monitoring Microsoft SQL Server using the New Relic platform.
 
 ## Installation instructions
 
-1. [Download the files](https://rpm.newrelic.com/plugins/55/b100e5e011d544ba024e265887b4dff3) from New Relic.
+1. [Download the files](https://rpm.newrelic.com/extensions/com.newrelic.platform.microsoft.sqlserver) from New Relic.
 2. Unpack them to something like `C:\Program Files\New Relic\MicrosoftSQLServerPlugin\` (we'll call this `INSTALLDIR`.) on a server that has access to the SQL server(s) you want to monitor. In general, that means the agent could run on the server hosting the SQL server or another locally connected machine which network access to the SQL server. 
 3. Configure the plugin.
   1. Run a text editor **as administrator** and open the file `INSTALLDIR\NewRelic.Microsoft.SqlServer.Plugin.exe.config`.
   2. Find the setting `<service licenseKey="YOUR_KEY_HERE"...>` and replace `YOUR_KEY_HERE` with your New Relic license key.
-  3. Configure one or more SQL Servers or Azure SQL Databases ([See example](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/wiki/Example-config))
+  3. Configure one or more SQL Servers or Azure SQL Databases
       * In the `<sqlServers>` section, add a `<sqlServer>` setting for a SQL Server.
           * `name="Production Database"` The name of your server is visible on the New Relic dashboard.
           * `connectionString="Server=prd.domain.com,1433;Database=master;Trusted_Connection=True;"` Any valid connection string to your database.
@@ -142,6 +142,8 @@ Azure SQL
         [wait_time_ms] * 100 / SUM([wait_time_ms]) OVER ()	AS [Percentage]
     FROM sys.dm_db_wait_stats
 
+Additional plugin support and troubleshooting assistance can be obtained by visiting [support.newrelic.com](https://support.newrelic.com)
+
 ## Uninstall instructions
 
 The plugin is installed as a Windows Service which by default is named NewRelicSqlPlugin
@@ -152,8 +154,6 @@ The service can be stopped or restarted manually, however if you want to uninsta
 
 This will stop and remove the service. The binaries and config files will still be in the `INSTALLDIR` 
 and log files are not deleted. If you wish to remove these, it must be done manually.
- 
 
-## Want more information?
-
-The [wiki](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/wiki/) may be what you are looking for.
+## Credits
+The New Relic Microsoft SQL Server plugin was originally authored by https://github.com/edchapel, https://github.com/jstromwick, and Mike Merrill. Subsequent updates and support are provided by [New Relic](http://newrelic.com/platform).
