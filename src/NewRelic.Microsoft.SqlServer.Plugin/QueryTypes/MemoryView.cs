@@ -24,6 +24,33 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[sec]")]
 		public long PageLife { get; set; }
 
+		/// <summary>
+		/// <see cref="PageLife"/> is an important metric, however, it is an even increasing metric.
+		/// Such metrics, where higher is better, are not supported as Summary metrics in the New Relic dashboard.
+		/// The Page Life Threat is a metric that takes the inverse of the page life and scores it against a default minimum page life.
+		/// As the page life reaches this mininum, the value approaches 100% and this an indicator that something is bad.
+		/// </summary>
+		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_threat]")]
+		public decimal PageLifeThreat
+		{
+			get
+			{
+				// Defend against bad page life
+				if (PageLife <= 0) return 100m;
+				// Minimum is 5 mins
+				const decimal minimumPageLifeInSeconds = 300;
+				// Get a "threat" value that maxes out at 1
+				var threat = Math.Min(1m, minimumPageLifeInSeconds/PageLife);
+				// Minimize decimal length
+				// Square it to minimize the threat at values far away from 300
+				var result = threat*threat
+				       // Multiply for percentage
+				       *100;
+				// Reduce number of digits
+				return decimal.Round(result, 2);
+			}
+		}
+
 		[Metric(MetricValueType = MetricValueType.Value, Units = "[%_miss]")]
 		public decimal BufferCacheMissRatio
 		{
