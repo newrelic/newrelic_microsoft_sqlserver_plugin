@@ -12,12 +12,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	{
 		private readonly Assembly _assembly;
 		private readonly IDapperWrapper _dapper;
-		private readonly Type[] _ignoreTypes;
 
-		public QueryLocator(IDapperWrapper dapper, Assembly assembly = null, Type[] ignoreTypes = null)
+		public QueryLocator(IDapperWrapper dapper, Assembly assembly = null)
 		{
-			_ignoreTypes = ignoreTypes ?? new Type[0];
-
 			_dapper = dapper;
 			// The default is to look for SQL resources in this assembly
 			_assembly = assembly ?? Assembly.GetExecutingAssembly();
@@ -34,8 +31,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		public IEnumerable<SqlQuery> PrepareQueries(Type[] types, bool onlyEnabledQueries = true)
 		{
 			// Search for types with at least one attribute that have a QueryAttribute
-			return types.Where(t => !_ignoreTypes.Contains(t))
-			            .SelectMany(t => t.GetCustomAttributes<QueryAttribute>()
+			return types.SelectMany(t => t.GetCustomAttributes<QueryAttribute>()
 			                              .Where(a => !onlyEnabledQueries || a.Enabled)
 			                              .Select(a => new SqlQuery(t, a, _dapper)))
 			            .ToArray();

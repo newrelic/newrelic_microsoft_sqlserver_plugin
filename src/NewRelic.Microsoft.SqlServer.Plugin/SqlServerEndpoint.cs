@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
@@ -112,13 +113,73 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			base.ToLog(log);
 
-			foreach (var database in IncludedDatabases)
+			// Attempt to connect to the server and get basic details about the server and the databases.
+			Dictionary<string, DatabaseDetails> databaseDetailsByName;
+			try
 			{
-				log.Info("        Including DB: " + database.Name);
+				var queryLocator = new QueryLocator(new DapperWrapper());
+				var serverDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (SqlServerDetails),}, false).Single();
+				var databasesDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (DatabaseDetails),}, false).Single();
+				using (var conn = new SqlConnection(ConnectionString))
+				{
+					// Log the server details
+					var serverDetails = serverDetailsQuery.Query<SqlServerDetails>(conn, this).Single();
+					LogVerboseSqlResults(serverDetailsQuery, new [] { serverDetails });
+					log.InfoFormat("        {0} {1} {2} ({3})", serverDetails.SQLTitle, serverDetails.Edition, serverDetails.ProductLevel, serverDetails.ProductVersion);
+
+					// Sotre these for reporting below
+					var databasesDetails = databasesDetailsQuery.DatabaseMetricQuery<DatabaseDetails>(conn, this).ToArray();
+					LogVerboseSqlResults(databasesDetailsQuery, databasesDetails);
+					databaseDetailsByName = databasesDetails.ToDictionary(d => d.DatabaseName);
+				}
+			}
+			catch (Exception e)
+			{
+				// Just log some details here. The subsequent queries for metrics yields more error details.
+				log.ErrorFormat("        Unable to connect: {0}", e.Message);
+				databaseDetailsByName = null;
+			}
+
+			var hasExplicitIncludedDatabases = IncludedDatabaseNames.Any();
+			if (hasExplicitIncludedDatabases)
+			{
+				// Show the user the databases we'll be working from
+				foreach (var database in IncludedDatabases)
+				{
+					var message = "        Including DB: " + database.Name;
+
+					// When the details are reachable, show them
+					if (databaseDetailsByName != null)
+					{
+						DatabaseDetails details;
+						if (databaseDetailsByName.TryGetValue(database.Name, out details))
+						{
+							message += string.Format(" [CompatibilityLevel={0};State={1}({2});CreateDate={3:yyyy-MM-dd};UserAccess={4}({5})]",
+							                         details.compatibility_level, details.state_desc, details.state, details.create_date, details.user_access_desc, details.user_access);
+						}
+						else
+						{
+							// More error details are reported with metric queries
+							message += " [Unable to find database information]";
+						}
+					}
+
+					log.Info(message);
+				}
+			}
+			else if (databaseDetailsByName != null)
+			{
+				// The user didn't specifically include any databases
+				// Report details for all of the DBs we expect to gather metrics against
+				foreach (var details in databaseDetailsByName.Values)
+				{
+					log.InfoFormat("        Including DB: {0} [CompatibilityLevel={1};State={2}({3});CreateDate={4:yyyy-MM-dd};UserAccess={5}({6})]",
+					               details.DatabaseName, details.compatibility_level, details.state_desc, details.state, details.create_date, details.user_access_desc, details.user_access);
+				}
 			}
 
 			// If there are included DB's, log the Excluded DB's as DEBUG info.
-			var logger = IncludedDatabaseNames.Any() ? (Action<string>) log.Debug : log.Info;
+			var logger = hasExplicitIncludedDatabases ? (Action<string>) log.Debug : log.Info;
 			foreach (var database in ExcludedDatabaseNames)
 			{
 				logger("        Excluding DB: " + database);
@@ -142,6 +203,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 				if (query.QueryType != typeof (RecompileSummary)) continue;
 
+				// Manually add this summary metric
 				var max = GetMaxRecompileSummaryMetric(query.Results);
 				if (max != null)
 				{
@@ -150,6 +212,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
+		/// <summary>
+		/// Reports a maximum set of values for the recompiles to support the Summary Metric on the New Relic dashboard
+		/// </summary>
+		/// <param name="results"></param>
+		/// <returns></returns>
 		internal IQueryContext GetMaxRecompileSummaryMetric(IEnumerable<object> results)
 		{
 			if (results == null) return null;
@@ -164,7 +231,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				          MultipleUseObjects = recompileSummaries.Max(s => s.MultipleUseObjects),
 			          };
 
-			var metricQuery = new MetricQuery(typeof(RecompileMaximums), typeof(RecompileMaximums).Name, typeof(RecompileMaximums).Name);
+			var metricQuery = new MetricQuery(typeof (RecompileMaximums), typeof (RecompileMaximums).Name, typeof (RecompileMaximums).Name);
 			return CreateQueryContext(metricQuery, new[] {max});
 		}
 	}

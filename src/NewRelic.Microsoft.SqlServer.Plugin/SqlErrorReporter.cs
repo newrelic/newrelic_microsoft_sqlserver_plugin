@@ -40,9 +40,18 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					// System.Data.SqlClient.SqlException: Cannot open database "Junk" requested by the login. The login failed.
 					if (connectionString.IntegratedSecurity)
 					{
-						log.ErrorFormat("The Windows service is running as user '{0}', however, the user cannot access the database '{1}'. " +
-						                "Ensure the login has a user in the database (see readme.md).",
-						                Environment.UserName, connectionString.InitialCatalog);
+						if (Environment.UserInteractive)
+						{
+							log.ErrorFormat("The plugin is running as user '{0}', however, the user cannot access the database '{1}'. " +
+							                "Ensure the login has a user in the database (see readme.md).",
+							                Environment.UserName, connectionString.InitialCatalog);
+						}
+						else
+						{
+							log.ErrorFormat("The Windows service is running as user '{0}', however, the user cannot access the database '{1}'. " +
+							                "Ensure the login has a user in the database (see readme.md).",
+							                Environment.UserName, connectionString.InitialCatalog);
+						}
 					}
 					else
 					{
