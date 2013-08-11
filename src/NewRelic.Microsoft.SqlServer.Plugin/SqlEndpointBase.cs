@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
@@ -168,7 +167,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		internal QueryContext CreateQueryContext(ISqlQuery query, IEnumerable<object> results)
+		internal QueryContext CreateQueryContext(IMetricQuery query, IEnumerable<object> results)
 		{
 			return new QueryContext(query) {Results = results, ComponentData = new ComponentData(Name, ComponentGuid, Duration)};
 		}

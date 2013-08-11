@@ -5,7 +5,6 @@ using NSubstitute;
 
 using NUnit.Framework;
 
-using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;

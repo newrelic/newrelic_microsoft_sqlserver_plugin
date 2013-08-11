@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
@@ -119,10 +118,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 
 			// If there are included DB's, log the Excluded DB's as DEBUG info.
-			var logger = IncludedDatabaseNames.Any() ? (Action<string>)log.Debug : log.Info;
+			var logger = IncludedDatabaseNames.Any() ? (Action<string>) log.Debug : log.Info;
 			foreach (var database in ExcludedDatabaseNames)
 			{
-
 				logger("        Excluding DB: " + database);
 			}
 		}
@@ -130,9 +128,44 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		protected override object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
 		{
 			results = base.OnQueryExecuted(query, results, log);
-
 			ApplyDatabaseDisplayNames(IncludedDatabases, results);
 			return results;
+		}
+
+		public override IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+		{
+			var queries = base.ExecuteQueries(log);
+
+			foreach (var query in queries)
+			{
+				yield return query;
+
+				if (query.QueryType != typeof (RecompileSummary)) continue;
+
+				var max = GetMaxRecompileSummaryMetric(query.Results);
+				if (max != null)
+				{
+					yield return max;
+				}
+			}
+		}
+
+		internal IQueryContext GetMaxRecompileSummaryMetric(IEnumerable<object> results)
+		{
+			if (results == null) return null;
+
+			var recompileSummaries = results.OfType<RecompileSummary>().ToArray();
+			if (!recompileSummaries.Any()) return null;
+
+			var max = new RecompileMaximums
+			          {
+				          SingleUsePercent = recompileSummaries.Max(s => s.SingleUsePercent),
+				          SingleUseObjects = recompileSummaries.Max(s => s.SingleUseObjects),
+				          MultipleUseObjects = recompileSummaries.Max(s => s.MultipleUseObjects),
+			          };
+
+			var metricQuery = new MetricQuery(typeof(RecompileMaximums), typeof(RecompileMaximums).Name, typeof(RecompileMaximums).Name);
+			return CreateQueryContext(metricQuery, new[] {max});
 		}
 	}
 }

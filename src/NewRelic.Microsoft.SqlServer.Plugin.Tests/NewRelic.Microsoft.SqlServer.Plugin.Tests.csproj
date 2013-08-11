@@ -56,7 +56,7 @@
     <Compile Include="Configuration\ComponentDataRetrieverTests.cs" />
     <Compile Include="Configuration\ConfigurationParserTests.cs" />
     <Compile Include="Configuration\Log4NetTests.cs" />
-    <Compile Include="Configuration\SqlServerTests.cs" />
+    <Compile Include="Configuration\SqlServerEndpointTests.cs" />
     <Compile Include="Core\ExtensionsForAssemblyTests.cs" />
     <Compile Include="MetricMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
