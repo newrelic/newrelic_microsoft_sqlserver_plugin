@@ -32,6 +32,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		public void Install()
 		{
 			Install(true);
+			StartService();
 		}
 
 		public void Uninstall()

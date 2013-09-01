@@ -52,7 +52,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// <returns></returns>
 		internal IEnumerable<IQueryContext> PerformThrottlingQuery(ILog log)
 		{
-			SqlQuery[] queries = new QueryLocator(new DapperWrapper()).PrepareQueries(new[] {typeof (AzureServiceInterruptionEvents)}, false).ToArray();
+			var queries = new QueryLocator(new DapperWrapper()).PrepareQueries(new[] {typeof (AzureServiceInterruptionEvents)}, false).ToArray();
 			return ExecuteQueries(queries, _masterConnectionString, log);
 		}
 	}

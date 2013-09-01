@@ -8,8 +8,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 	{
 		public ServiceProcessInstaller()
 		{
-			//Installs using local Service, this will need to be updated with the proper credentials after install
-			Account = ServiceAccount.LocalService;
+			//Installs using Local System. This may need to be updated with the proper credentials after install.
+			Account = ServiceAccount.LocalSystem;
 		}
 	}
 }

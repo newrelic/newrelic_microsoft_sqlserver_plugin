@@ -156,4 +156,4 @@ This will stop and remove the service. The binaries and config files will still 
 and log files are not deleted. If you wish to remove these, it must be done manually.
 
 ## Credits
-The New Relic Microsoft SQL Server plugin was originally authored by https://github.com/edchapel, https://github.com/jstromwick, and Mike Merrill. Subsequent updates and support are provided by [New Relic](http://newrelic.com/platform).
+The New Relic Microsoft SQL Server plugin was originally authored by [Ed Chapel](https://github.com/edchapel), [Jesse Stromwick](https://github.com/jstromwick), and [Mike Merrill](https://github.com/infoone). Subsequent updates and support are provided by [New Relic](http://newrelic.com/platform).

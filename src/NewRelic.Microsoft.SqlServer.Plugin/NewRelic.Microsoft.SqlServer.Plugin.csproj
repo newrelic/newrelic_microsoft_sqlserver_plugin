@@ -73,12 +73,19 @@
     <Compile Include="Configuration\Database.cs" />
     <Compile Include="Configuration\DatabaseCollection.cs" />
     <Compile Include="Configuration\DatabaseElement.cs" />
+    <Compile Include="IMetricQuery.cs" />
+    <Compile Include="IQueryContext.cs" />
     <Compile Include="ISqlEndpoint.cs" />
     <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
+    <Compile Include="ISqlQuery.cs" />
+    <Compile Include="MetricQuery.cs" />
     <Compile Include="QueryTypes\AzureServiceInterruptionEvents.cs" />
     <Compile Include="QueryTypes\AzureSqlDatabaseSummary.cs" />
+    <Compile Include="QueryTypes\SqlServerDetails.cs" />
+    <Compile Include="QueryTypes\DatabaseDetails.cs" />
+    <Compile Include="QueryTypes\RecompileMaximums.cs" />
     <Compile Include="QueryTypes\SqlDmlActivity.cs" />
     <Compile Include="QueryTypes\MemoryViewNuma.cs" />
     <Compile Include="SqlEndpointBase.cs" />
@@ -175,6 +182,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Queries\SqlDMLActivity.SqlServerAndAzureSQL.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\ServerDetails.SqlServer.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\DatabaseDetails.SqlServer.sql" />
   </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

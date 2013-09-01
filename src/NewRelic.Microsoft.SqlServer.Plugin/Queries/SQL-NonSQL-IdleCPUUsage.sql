@@ -1,3 +1,9 @@
+SET ANSI_WARNINGS           ON
+SET ANSI_PADDING            ON
+SET ANSI_NULLS              ON
+SET QUOTED_IDENTIFIER       ON
+SET CONCAT_NULL_YIELDS_NULL ON
+
 -- Pass start and end times if desired. 
 -- Detail: Returns 1 line for each minute in range. 
 -- Summary: Returns Average of range. 

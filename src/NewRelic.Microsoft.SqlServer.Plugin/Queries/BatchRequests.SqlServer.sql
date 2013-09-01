@@ -2,8 +2,8 @@
 -- Not for Azure
 -- For entire instance
 
-select 
+SELECT 
 'Total Batch Requests' AS CounterName,
 cntr_value AS TotalNumberOfBatches
-from sys.dm_os_performance_counters
-where counter_name = 'Batch Requests/sec'
+FROM sys.dm_os_performance_counters
+WHERE counter_name = 'Batch Requests/sec'

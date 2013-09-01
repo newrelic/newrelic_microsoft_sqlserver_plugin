@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
@@ -139,22 +138,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 					object[] results;
 					try
 					{
+						// Raw results from the database
 						results = query.Query(conn, this).ToArray();
-
-						// This could be slow, so only proceed if it actually gets logged
-						if (_VerboseSqlOutputLogger.IsInfoEnabled)
-						{
-							var verboseLogging = new StringBuilder();
-							verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
-
-							foreach (var result in results)
-							{
-								verboseLogging.AppendLine(result.ToString());
-							}
-
-							_VerboseSqlOutputLogger.Info(verboseLogging.ToString());
-						}
-
+						// Log them
+						LogVerboseSqlResults(query, results);
+						// Allow them to be transformed
 						results = OnQueryExecuted(query, results, log);
 					}
 					catch (Exception e)
@@ -168,7 +156,23 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		internal QueryContext CreateQueryContext(ISqlQuery query, IEnumerable<object> results)
+		protected static void LogVerboseSqlResults(ISqlQuery query, IEnumerable<object> results)
+		{
+			// This could be slow, so only proceed if it actually gets logged
+			if (!_VerboseSqlOutputLogger.IsInfoEnabled) return;
+			
+			var verboseLogging = new StringBuilder();
+			verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
+
+			foreach (var result in results)
+			{
+				verboseLogging.AppendLine(result.ToString());
+			}
+
+			_VerboseSqlOutputLogger.Info(verboseLogging.ToString());
+		}
+
+		internal QueryContext CreateQueryContext(IMetricQuery query, IEnumerable<object> results)
 		{
 			return new QueryContext(query) {Results = results, ComponentData = new ComponentData(Name, ComponentGuid, Duration)};
 		}

@@ -27,7 +27,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
-		public void AssertEndpointAppropriatelyMassagesDuplicatedData()
+		public void Assert_endpoint_appropriately_massages_duplicated_data()
 		{
 			var endpoint = Substitute.For<SqlEndpointBase>("", "");
 
@@ -88,14 +88,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		[Test]
 		[TestCaseSource("ComponentGuidTestCases")]
-		public string AssertCorrectComponentGuidSuppliedToQueryContext(SqlEndpointBase endpoint)
+		public string Assert_correct_component_guid_supplied_to_query_context(SqlEndpointBase endpoint)
 		{
 			QueryContext queryContext = endpoint.CreateQueryContext(Substitute.For<ISqlQuery>(), new object[0]);
 			return queryContext.ComponentData.Guid;
 		}
 
 		[Test]
-		public void AssertEndpointAppropriatelyMassagesData()
+		public void Assert_endpoint_appropriately_massages_data()
 		{
 			var endpoint = Substitute.For<SqlEndpointBase>("", "");
 
@@ -203,7 +203,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		[Test]
-		public void AssertSqlDMLActvityDataTakesCreateTimeMsIntoAccount()
+		public void Assert_sql_dml_actvity_data_takes_create_time_ms_into_account()
 		{
 			var endpoint = Substitute.For<SqlEndpointBase>("", "");
 			var d1 = new DateTime(2013, 06, 20, 8, 28, 10, 100);

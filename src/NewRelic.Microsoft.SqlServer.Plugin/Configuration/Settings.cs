@@ -99,6 +99,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 				{
 					endpoint.ToLog(log);
 				}
+				log.Info(string.Empty);
 			}
 			else
 			{
@@ -114,6 +115,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 				{
 					endpoint.ToLog(log);
 				}
+				log.Info(string.Empty);
 			}
 			else
 			{
