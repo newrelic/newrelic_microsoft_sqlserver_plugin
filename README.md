@@ -121,8 +121,8 @@ If you are upgrading from version 1.0.8 or earlier, you'll need to add that snip
 
 If your proxy requires additional credentials (username and password) you need to take the following steps:
 
-1. Replace the above `defaultProxy` configuration with the snippet below
-
+Replace the above `defaultProxy` configuration with the snippet below
+    
     <system.net>
       <defaultProxy enabled="true" useDefaultCredentials="false">
         <module type="NewRelic.Platform.Binding.DotNET.Proxy, NewRelic.Platform.Binding.DotNET"/>
@@ -131,7 +131,7 @@ If your proxy requires additional credentials (username and password) you need t
 
 This instructs the plugin to use our `the NewRelic.Platform.Binding.DotNET.Proxy` module when interacting with the proxy
 
-2. Specify the username and password as `appSettings` below:
+Specify the username and password as `appSettings` below:
 
     <appSettings>
       <add key="proxyUsername" value="OFFICE\jdoe"/>
