@@ -4,10 +4,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
 	internal class NewRelicConfigurationSection : ConfigurationSection
 	{
-		[ConfigurationProperty("service")]
+		[ConfigurationProperty("service", IsRequired = true)]
 		public ServiceElement Service
 		{
 			get { return ((ServiceElement) (base["service"])); }
+		}
+
+		[ConfigurationProperty("proxy")]
+		public ProxyElement Proxy
+		{
+			get { return ((ProxyElement)(base["proxy"])); }
 		}
 
 		[ConfigurationProperty("sqlServers")]
