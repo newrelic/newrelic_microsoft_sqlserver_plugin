@@ -4,18 +4,22 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
+using log4net;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Binding.DotNET;
 
-using log4net;
-
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
 	public abstract class SqlEndpointBase : ISqlEndpoint
 	{
+		/// <summary>
+		/// Metrics with a Duration greater than this value will be rejected by the server (400)
+		/// </summary>
+		private const int MaximumAllowedDuration = 1800;
 		private static readonly ILog _ErrorDetailOutputLogger = LogManager.GetLogger(Constants.ErrorDetailLogger);
 		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
 
@@ -54,7 +58,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		public int Duration
 		{
-			get { return (int) DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds; }
+			get
+			{
+				var secondsSinceLastSuccessfulReport = (int) DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds;
+
+				return secondsSinceLastSuccessfulReport <= MaximumAllowedDuration
+					? secondsSinceLastSuccessfulReport
+					: MaximumAllowedDuration;
+			}
 		}
 
 		public void SetQueries(IEnumerable<SqlQuery> queries)
@@ -77,7 +88,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			queryContexts.ForEach(queryContext =>
 			                      {
-				                      var queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
+				                      Queue<IQueryContext> queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
 				                      if (queryHistory.Count >= 2) //Only track up to last run of this query
 				                      {
 					                      queryHistory.Dequeue();
@@ -90,8 +101,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			var platformData = new PlatformData(agentData);
 
-			var pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
-			                                       .Where(c => c != null).ToArray();
+			ComponentData[] pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
+				.Where(c => c != null).ToArray();
 
 			pendingComponentData.ForEach(platformData.AddComponent);
 
@@ -110,12 +121,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			log.InfoFormat("      {0}: {1}", Name, safeConnectionString);
 
 			// Validate that connection string do not provide both Trusted Security AND user/password
-			var hasUserCreds = !string.IsNullOrEmpty(safeConnectionString.UserID) || !string.IsNullOrEmpty(safeConnectionString.Password);
+			bool hasUserCreds = !string.IsNullOrEmpty(safeConnectionString.UserID) || !string.IsNullOrEmpty(safeConnectionString.Password);
 			if (safeConnectionString.IntegratedSecurity == hasUserCreds)
 			{
 				log.Error("==================================================");
 				log.ErrorFormat("Connection string for '{0}' may not contain both Integrated Security and User ID/Password credentials. " +
-				                "Review the readme.md and update the config file.", safeConnectionString.DataSource);
+				                "Review the readme.md and update the config file.",
+					safeConnectionString.DataSource);
 				log.Error("==================================================");
 			}
 		}
@@ -133,7 +145,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			using (var conn = new SqlConnection(connectionString))
 			{
-				foreach (var query in queries)
+				foreach (SqlQuery query in queries)
 				{
 					object[] results;
 					try
@@ -159,12 +171,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		protected static void LogVerboseSqlResults(ISqlQuery query, IEnumerable<object> results)
 		{
 			// This could be slow, so only proceed if it actually gets logged
-			if (!_VerboseSqlOutputLogger.IsInfoEnabled) return;
-			
+			if (!_VerboseSqlOutputLogger.IsInfoEnabled)
+			{
+				return;
+			}
+
 			var verboseLogging = new StringBuilder();
 			verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
 
-			foreach (var result in results)
+			foreach (object result in results)
 			{
 				verboseLogging.AppendLine(result.ToString());
 			}
@@ -197,7 +212,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			var sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
+			SqlDmlActivity[] sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
 
 			if (!sqlDmlActivities.Any())
 			{
@@ -205,7 +220,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return inputResults;
 			}
 
-			var currentValues = sqlDmlActivities
+			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities
 				.GroupBy(a => string.Format("{0}:{1}:{2}:{3}", BitConverter.ToString(a.PlanHandle), BitConverter.ToString(a.SqlStatementHash), a.CreationTime.Ticks, a.QueryType))
 				.Select(a => new
 				             {
@@ -246,7 +261,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 							         increase = a.Value.ExecutionCount - previous.ExecutionCount;
 
 							         // Only record positive deltas, though theoretically impossible here
-							         if (increase <= 0) return;
+							         if (increase <= 0)
+							         {
+								         return;
+							         }
 						         }
 						         else
 						         {
@@ -282,14 +300,17 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				       {
 					       Reads = reads,
 					       Writes = writes,
-				       },
+				       }
 			       };
 		}
 
 		private void LogErrorSummary(ILog log, Exception e, ISqlQuery query)
 		{
 			var sqlException = e.InnerException as SqlException;
-			if (sqlException == null) return;
+			if (sqlException == null)
+			{
+				return;
+			}
 
 			log.LogSqlException(sqlException, query, ConnectionString);
 		}
