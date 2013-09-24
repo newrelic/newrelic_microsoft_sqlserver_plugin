@@ -17,9 +17,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	public abstract class SqlEndpointBase : ISqlEndpoint
 	{
 		/// <summary>
-		/// Metrics with a Duration greater than this value will be rejected by the server (400)
+		///     Metrics with a Duration greater than this value will be rejected by the server (400)
 		/// </summary>
 		private const int MaximumAllowedDuration = 1800;
+
 		private static readonly ILog _ErrorDetailOutputLogger = LogManager.GetLogger(Constants.ErrorDetailLogger);
 		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
 
@@ -171,10 +172,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		protected static void LogVerboseSqlResults(ISqlQuery query, IEnumerable<object> results)
 		{
 			// This could be slow, so only proceed if it actually gets logged
-			if (!_VerboseSqlOutputLogger.IsInfoEnabled)
-			{
-				return;
-			}
+			if (!_VerboseSqlOutputLogger.IsInfoEnabled) return;
 
 			var verboseLogging = new StringBuilder();
 			verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
@@ -261,10 +259,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 							         increase = a.Value.ExecutionCount - previous.ExecutionCount;
 
 							         // Only record positive deltas, though theoretically impossible here
-							         if (increase <= 0)
-							         {
-								         return;
-							         }
+							         if (increase <= 0) return;
 						         }
 						         else
 						         {
@@ -300,17 +295,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				       {
 					       Reads = reads,
 					       Writes = writes,
-				       }
+				       },
 			       };
 		}
 
 		private void LogErrorSummary(ILog log, Exception e, ISqlQuery query)
 		{
 			var sqlException = e.InnerException as SqlException;
-			if (sqlException == null)
-			{
-				return;
-			}
+			if (sqlException == null) return;
 
 			log.LogSqlException(sqlException, query, ConnectionString);
 		}

@@ -2,9 +2,9 @@
 -- Retrieves relevant data about each database
 -- Assists support when a user reports a problem
 
-
-SELECT
-	d.[name] AS DatabaseName,
+SELECT d.[name] AS DatabaseName,
+	* -- Use * as differnt databases seem to have different columns. This isn't critical data so we must fail gracefully.
+/*
 	d.[database_id],
 	d.[source_database_id],
 	d.[create_date],
@@ -70,5 +70,6 @@ SELECT
 	d.[containment],
 	d.[containment_desc],
 	d.[target_recovery_time_in_seconds]
+*/
 FROM sys.databases d
 /*{WHERE}*/
