@@ -101,58 +101,26 @@ In a new connection to each individual Azure SQL Database:
 
 ## Proxy Support ##
 
-When the plugin is installed behind a proxy, there are a few configuration options.
+For installations behind a proxy, the details are set in the config file.
 
-**Default Proxy**
+    <!-- Proxy settings for connecting to the New Relic service. -->
+    <!-- If a proxy is used, the host attribute is required.
 
-Assuming the proxy is configured at the system level (Internet Options in Control Panel), just uncomment the default configuration so that it reads as follows:
+    Attributes:
+    host - The proxy server host name.
+    port - The proxy server port (optional - defaults to 8080).
+    user - The username used to authenticate with the proxy server (optional).
+    password - The password used to authenticate with the proxy server (optional).
+    domain - The domain used to authenticate with the proxy server (optional).
+    useDefaultCredentials - 'true' or 'false. Uses the credentials of the account running the plugin (optional - defaults to false).
+                            If specified, 'user' and 'password' are ignored.
+    -->
 
-    <system.net>
-      <defaultProxy enabled="true" useDefaultCredentials="true">
-        <proxy usesystemdefault="True" bypassonlocal="True" />
-      </defaultProxy>
-    </system.net>
+    <!--
+    <proxy host="hostname" />
+    -->
 
-This configuration may be used with the username and password in the next section.
-
-If you are upgrading from version 1.0.8 or earlier, you'll need to add that snippet to the config.
-
-**Authenticated Proxy**
-
-If your proxy requires additional credentials (username and password) you need to take the following steps:
-
-Replace the above `defaultProxy` configuration with the snippet below
-    
-    <system.net>
-      <defaultProxy enabled="true" useDefaultCredentials="false">
-        <module type="NewRelic.Platform.Binding.DotNET.Proxy, NewRelic.Platform.Binding.DotNET"/>
-      </defaultProxy>
-    </system.net>
-
-This instructs the plugin to use our `the NewRelic.Platform.Binding.DotNET.Proxy` module when interacting with the proxy
-
-Specify the username and password as `appSettings` below:
-
-    <appSettings>
-      <add key="proxyUsername" value="OFFICE\jdoe"/>
-      <add key="proxyPassword" value="p@ssw0rd"/>
-    </appSettings>
-
-The domain name before the user is optional. 
-
-By default the plugin will make web requests through the proxy at the address configured under Internet Settings in Windows. If, however, you
-would like the plugin to point to a different proxy you should use the above configuration and simply add one 
-additional `appSettings` entry with a value key of `proxyAddress` like so:
-
-    <appSettings>
-      <!-- The proxyAddress can be a url or an IP address. The port is required after the colon. -->
-      <add key="proxyAddress" value="http://www.urlOrIpAddress.com:5503"/>
-      <add key="proxyUsername" value="jdoe"/>
-      <add key="proxyPassword" value="p@ssw0rd"/>
-    </appSettings>
-
-If you have any questions regarding the expected look of the config file, please review the [latest source on GitHub](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/blob/develop/src/NewRelic.Microsoft.SqlServer.Plugin/app.config).
-
+If you are upgrading from version 1.0.9 or earlier, you'll need to replace the previous proxy settings with this new snippet in the config.
 
 ## Logging
 
