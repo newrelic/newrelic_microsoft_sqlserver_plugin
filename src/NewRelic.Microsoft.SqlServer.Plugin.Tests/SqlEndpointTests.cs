@@ -27,6 +27,29 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			}
 		}
 
+		//Tests fix for issue where Plugin gets 400's after server is unavailable for a time https://support.newrelic.com/tickets/55385
+		[Test]
+		[TestCase(1, TestName = "A Minute Since Success")]
+		[TestCase(5, TestName = "5 Minutes Since Success")]
+		[TestCase(30, TestName = "30 Minutes Since Success")]
+		[TestCase(60, TestName = "An Hour Since Success")]
+		[TestCase(120, TestName = "Two Hours Since Success")]
+		[TestCase(1440, TestName = "A Day Since Success")]
+		[TestCase(2880, TestName = "Two Days Since Success")]
+		public void Assert_duration_does_not_exceed_allowed_max(int minutesSinceLastSuccessful)
+		{
+			var endpoint = new SqlServerEndpoint("Foo",".",false);
+			endpoint.MetricReportSuccessful(DateTime.Now.AddMinutes(minutesSinceLastSuccessful * -1));
+
+			const int thirtyMinutesInSeconds = 30 * 60;
+			Assert.That(endpoint.Duration, Is.LessThanOrEqualTo(thirtyMinutesInSeconds), "Duration should never be longer than 30 minutes, regardless of last succssful reported time");
+
+			endpoint.MetricReportSuccessful(DateTime.Now.AddMinutes(-.5));
+			Assert.That(endpoint.Duration, Is.LessThanOrEqualTo(31), "Duration should reset to be around 30 seconds regardless of previous value");
+
+		}
+
+		[Test]
 		public void Assert_endpoint_appropriately_massages_duplicated_data()
 		{
 			var endpoint = Substitute.For<SqlEndpointBase>("", "");
