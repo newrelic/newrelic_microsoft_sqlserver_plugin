@@ -70,7 +70,7 @@
     <Compile Include="QueryTypes\MemoryViewTests.cs" />
     <Compile Include="QueryTypes\RecompileSummaryTests.cs" />
     <Compile Include="SqlEndpointTests.cs" />
-    <Compile Include="SqlMonitoryQueryTests.cs" />
+    <Compile Include="SqlMonitorQueryTests.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
