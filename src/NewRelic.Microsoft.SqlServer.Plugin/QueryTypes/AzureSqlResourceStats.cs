@@ -38,9 +38,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
          return string.Format("AvgCpuCoresUsed: {0},\t" +
                               "AvgPhysicalReadIops: {1},\t" +
                               "AvgPhysicalWriteIops: {2},\t" +
-                              "ActiveSessionCount: {3},\t" +
-                              "ActiveWorkerCount: {4}",
-                              AvgCpuCoresUsed, AvgPhysicalReadIops, AvgPhysicalWriteIops, ActiveSessionCount, ActiveWorkerCount);
+                              "ActiveMemoryUsed: {3},\t" +
+                              "ActiveSessionCount: {4},\t" +
+                              "ActiveWorkerCount: {5}",
+                              AvgCpuCoresUsed, AvgPhysicalReadIops, AvgPhysicalWriteIops, ActiveMemoryUsed, ActiveSessionCount, ActiveWorkerCount);
       }
    }
 
