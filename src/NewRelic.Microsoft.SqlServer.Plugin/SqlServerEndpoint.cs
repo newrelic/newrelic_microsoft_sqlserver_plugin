@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 
+using log4net;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
-
-using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -35,15 +35,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 			if (includeSystemDatabases && includedDbs.Any())
 			{
-				var systemDbsToAdd = Constants.SystemDatabases
-				                              .Where(dbName => includedDbs.All(db => db.Name != dbName))
-				                              .Select(dbName => new Database {Name = dbName});
+				IEnumerable<Database> systemDbsToAdd = Constants.SystemDatabases
+				                                                .Where(dbName => includedDbs.All(db => db.Name != dbName))
+				                                                .Select(dbName => new Database {Name = dbName});
 				includedDbs.AddRange(systemDbsToAdd);
 			}
 			else if (!includeSystemDatabases)
 			{
-				var systemDbsToAdd = Constants.SystemDatabases
-				                              .Where(dbName => excludedDbs.All(db => db != dbName));
+				IEnumerable<string> systemDbsToAdd = Constants.SystemDatabases
+				                                              .Where(dbName => excludedDbs.All(db => db != dbName));
 				excludedDbs.AddRange(systemDbsToAdd);
 			}
 
@@ -71,7 +71,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		/// <summary>
-		///     Replaces the database name on <see cref="IDatabaseMetric" /> results with the <see cref="Database.DisplayName" /> when possible.
+		///     Replaces the database name on <see cref="IDatabaseMetric" /> results with the <see cref="Database.DisplayName" />
+		///     when possible.
 		/// </summary>
 		/// <param name="includedDatabases"></param>
 		/// <param name="results"></param>
@@ -82,19 +83,19 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				return;
 			}
 
-			var renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
+			Dictionary<string, string> renameMap = includedDatabases.Where(d => !string.IsNullOrEmpty(d.DisplayName)).ToDictionary(d => d.Name.ToLower(), d => d.DisplayName);
 			if (!renameMap.Any())
 			{
 				return;
 			}
 
-			var databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
+			IDatabaseMetric[] databaseMetrics = results.OfType<IDatabaseMetric>().Where(d => !string.IsNullOrEmpty(d.DatabaseName)).ToArray();
 			if (!databaseMetrics.Any())
 			{
 				return;
 			}
 
-			foreach (var databaseMetric in databaseMetrics)
+			foreach (IDatabaseMetric databaseMetric in databaseMetrics)
 			{
 				string displayName;
 				if (renameMap.TryGetValue(databaseMetric.DatabaseName.ToLower(), out displayName))
@@ -118,17 +119,17 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			try
 			{
 				var queryLocator = new QueryLocator(new DapperWrapper());
-				var serverDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (SqlServerDetails),}, false).Single();
-				var databasesDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (DatabaseDetails),}, false).Single();
+				SqlQuery serverDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (SqlServerDetails),}, false).Single();
+				SqlQuery databasesDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (DatabaseDetails),}, false).Single();
 				using (var conn = new SqlConnection(ConnectionString))
 				{
 					// Log the server details
-					var serverDetails = serverDetailsQuery.Query<SqlServerDetails>(conn, this).Single();
-					LogVerboseSqlResults(serverDetailsQuery, new [] { serverDetails });
+					SqlServerDetails serverDetails = serverDetailsQuery.Query<SqlServerDetails>(conn, this).Single();
+					LogVerboseSqlResults(serverDetailsQuery, new[] {serverDetails});
 					log.InfoFormat("        {0} {1} {2} ({3})", serverDetails.SQLTitle, serverDetails.Edition, serverDetails.ProductLevel, serverDetails.ProductVersion);
 
 					// Sotre these for reporting below
-					var databasesDetails = databasesDetailsQuery.DatabaseMetricQuery<DatabaseDetails>(conn, this).ToArray();
+					DatabaseDetails[] databasesDetails = databasesDetailsQuery.DatabaseMetricQuery<DatabaseDetails>(conn, this).ToArray();
 					LogVerboseSqlResults(databasesDetailsQuery, databasesDetails);
 					databaseDetailsByName = databasesDetails.ToDictionary(d => d.DatabaseName);
 				}
@@ -140,13 +141,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 				databaseDetailsByName = null;
 			}
 
-			var hasExplicitIncludedDatabases = IncludedDatabaseNames.Any();
+			bool hasExplicitIncludedDatabases = IncludedDatabaseNames.Any();
 			if (hasExplicitIncludedDatabases)
 			{
 				// Show the user the databases we'll be working from
-				foreach (var database in IncludedDatabases)
+				foreach (Database database in IncludedDatabases)
 				{
-					var message = "        Including DB: " + database.Name;
+					string message = "        Including DB: " + database.Name;
 
 					// When the details are reachable, show them
 					if (databaseDetailsByName != null)
@@ -155,7 +156,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 						if (databaseDetailsByName.TryGetValue(database.Name, out details))
 						{
 							message += string.Format(" [CompatibilityLevel={0};State={1}({2});CreateDate={3:yyyy-MM-dd};UserAccess={4}({5})]",
-							                         details.compatibility_level, details.state_desc, details.state, details.create_date, details.user_access_desc, details.user_access);
+							                         details.compatibility_level,
+							                         details.state_desc,
+							                         details.state,
+							                         details.create_date,
+							                         details.user_access_desc,
+							                         details.user_access);
 						}
 						else
 						{
@@ -171,16 +177,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			{
 				// The user didn't specifically include any databases
 				// Report details for all of the DBs we expect to gather metrics against
-				foreach (var details in databaseDetailsByName.Values)
+				foreach (DatabaseDetails details in databaseDetailsByName.Values)
 				{
 					log.InfoFormat("        Including DB: {0} [CompatibilityLevel={1};State={2}({3});CreateDate={4:yyyy-MM-dd};UserAccess={5}({6})]",
-					               details.DatabaseName, details.compatibility_level, details.state_desc, details.state, details.create_date, details.user_access_desc, details.user_access);
+					               details.DatabaseName,
+					               details.compatibility_level,
+					               details.state_desc,
+					               details.state,
+					               details.create_date,
+					               details.user_access_desc,
+					               details.user_access);
 				}
 			}
 
 			// If there are included DB's, log the Excluded DB's as DEBUG info.
-			var logger = hasExplicitIncludedDatabases ? (Action<string>) log.Debug : log.Info;
-			foreach (var database in ExcludedDatabaseNames)
+			Action<string> logger = hasExplicitIncludedDatabases ? (Action<string>) log.Debug : log.Info;
+			foreach (string database in ExcludedDatabaseNames)
 			{
 				logger("        Excluding DB: " + database);
 			}
@@ -195,16 +207,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		public override IEnumerable<IQueryContext> ExecuteQueries(ILog log)
 		{
-			var queries = base.ExecuteQueries(log);
+			IEnumerable<IQueryContext> queries = base.ExecuteQueries(log);
 
-			foreach (var query in queries)
+			foreach (IQueryContext query in queries)
 			{
 				yield return query;
 
 				if (query.QueryType != typeof (RecompileSummary)) continue;
 
 				// Manually add this summary metric
-				var max = GetMaxRecompileSummaryMetric(query.Results);
+				IQueryContext max = GetMaxRecompileSummaryMetric(query.Results);
 				if (max != null)
 				{
 					yield return max;
@@ -213,7 +225,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		}
 
 		/// <summary>
-		/// Reports a maximum set of values for the recompiles to support the Summary Metric on the New Relic dashboard
+		///     Reports a maximum set of values for the recompiles to support the Summary Metric on the New Relic dashboard
 		/// </summary>
 		/// <param name="results"></param>
 		/// <returns></returns>
@@ -221,7 +233,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		{
 			if (results == null) return null;
 
-			var recompileSummaries = results.OfType<RecompileSummary>().ToArray();
+			RecompileSummary[] recompileSummaries = results.OfType<RecompileSummary>().ToArray();
 			if (!recompileSummaries.Any()) return null;
 
 			var max = new RecompileMaximums

@@ -23,7 +23,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		internal QueryAttribute QueryAttribute;
 
 		public SqlQuery(Type queryType, QueryAttribute attribute, IDapperWrapper dapperWrapper, string commandText = null)
-			: base(queryType, attribute.QueryName, queryType.Name)
+			: base(queryType, attribute.QueryName, queryType.Name, attribute.MetricTransformEnum)
 		{
 			_dapperWrapper = dapperWrapper;
 			QueryAttribute = attribute;

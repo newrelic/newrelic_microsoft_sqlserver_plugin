@@ -11,20 +11,21 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 	{
 		private readonly MetricMapper[] _metricMappers;
 
-		public MetricQuery(Type queryType, string queryName, string resultTypeName)
+		public MetricQuery(Type queryType, string queryName, string resultTypeName, MetricTransformEnum metricTransformEnum = MetricTransformEnum.Simple)
 		{
 			QueryType = queryType;
 			QueryName = queryName;
 			ResultTypeName = resultTypeName;
 			_metricMappers = GetMappers(QueryType);
 			MetricPattern = string.Format("Component/{0}", QueryType.Name);
+			MetricTransformEnum = metricTransformEnum;
 		}
 
 		public Type QueryType { get; private set; }
 
 		public string QueryName { get; private set; }
 
-		public MetricTransformEnum MetricTransformEnum { get; set; }
+		public MetricTransformEnum MetricTransformEnum { get; protected set; }
 
 		public string MetricPattern { get; protected set; }
 
