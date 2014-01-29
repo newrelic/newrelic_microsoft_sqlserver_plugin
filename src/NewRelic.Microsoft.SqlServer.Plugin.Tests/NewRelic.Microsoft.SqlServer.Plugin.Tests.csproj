@@ -29,9 +29,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\log4net.2.0.0\lib\net35-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="NewRelic.Platform.Binding.DotNET, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\NewRelic.Microsoft.SqlServer.Plugin\bin\Debug\NewRelic.Platform.Binding.DotNET.dll</HintPath>
+    <Reference Include="NewRelic.Platform.Sdk">
+      <HintPath>..\..\lib\NewRelic.Platform.Sdk.dll</HintPath>
     </Reference>
     <Reference Include="NSubstitute">
       <HintPath>..\..\packages\NSubstitute.1.6.0.0\lib\NET35\NSubstitute.dll</HintPath>
@@ -53,7 +52,6 @@
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Configuration\ComponentDataRetrieverTests.cs" />
     <Compile Include="Configuration\ConfigurationParserTests.cs" />
     <Compile Include="Configuration\Log4NetTests.cs" />
     <Compile Include="Configuration\SqlServerEndpointTests.cs" />

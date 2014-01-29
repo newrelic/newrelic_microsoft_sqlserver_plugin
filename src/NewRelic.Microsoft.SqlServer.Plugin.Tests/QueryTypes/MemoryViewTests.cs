@@ -37,6 +37,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
 			var memoryView = new MemoryView {PageLife = 0};
 			Assert.That(memoryView.PageLifeThreat, Is.EqualTo(100m), "0 page life maxes at 100%");
 
+			// Try just above 0
+			memoryView.PageLife = 1; 
+			Assert.That(memoryView.PageLifeThreat, Is.EqualTo(100m), "1 page life maxes at 100%");
+
 			// Try the default
 			memoryView.PageLife = 300; 
 			Assert.That(memoryView.PageLifeThreat, Is.EqualTo(100m), "300 page life maxes at 100%");

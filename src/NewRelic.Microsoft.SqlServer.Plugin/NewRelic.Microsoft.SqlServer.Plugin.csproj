@@ -41,8 +41,8 @@
     <Reference Include="log4net">
       <HintPath>..\..\packages\log4net.2.0.0\lib\net35-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="NewRelic.Platform.Binding.DotNET">
-      <HintPath>..\..\lib\NewRelic.Platform.Binding.DotNET.dll</HintPath>
+    <Reference Include="NewRelic.Platform.Sdk">
+      <HintPath>..\..\lib\NewRelic.Platform.Sdk.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.4\lib\net35\Newtonsoft.Json.dll</HintPath>
@@ -68,12 +68,12 @@
     <Compile Include="AzureSqlEndpoint.cs" />
     <Compile Include="Configuration\AzureCollection.cs" />
     <Compile Include="Configuration\AzureSqlDatabaseElement.cs" />
-    <Compile Include="Configuration\ComponentDataRetriever.cs" />
     <Compile Include="Configuration\ConfigurationParser.cs" />
     <Compile Include="Configuration\Database.cs" />
     <Compile Include="Configuration\DatabaseCollection.cs" />
     <Compile Include="Configuration\DatabaseElement.cs" />
     <Compile Include="Configuration\ProxyElement.cs" />
+    <Compile Include="Core\DeltaProcessor.cs" />
     <Compile Include="IMetricQuery.cs" />
     <Compile Include="IQueryContext.cs" />
     <Compile Include="ISqlEndpoint.cs" />
@@ -136,7 +136,6 @@
     <Compile Include="Core\SqlMonitorServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Communication\SqlRequest.cs" />
     <Compile Include="QueryTypes\WhereClauseTokenEnum.cs" />
     <Compile Include="SqlQuery.cs" />
     <Compile Include="Core\SqlPoller.cs" />
