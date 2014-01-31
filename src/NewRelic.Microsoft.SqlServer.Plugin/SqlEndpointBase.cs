@@ -10,301 +10,249 @@ using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
-using NewRelic.Platform.Binding.DotNET;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
-	public abstract class SqlEndpointBase : ISqlEndpoint
-	{
-		/// <summary>
-		///     Metrics with a Duration greater than this value will be rejected by the server (400)
-		/// </summary>
-		private const int MaximumAllowedDuration = 1800;
+    public abstract class SqlEndpointBase : ISqlEndpoint
+    {
+        private static readonly ILog _ErrorDetailOutputLogger = LogManager.GetLogger(Constants.ErrorDetailLogger);
+        private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
 
-		private static readonly ILog _ErrorDetailOutputLogger = LogManager.GetLogger(Constants.ErrorDetailLogger);
-		private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
+        private SqlQuery[] _queries;
 
-		private DateTime _lastSuccessfulReportTime;
-		private SqlQuery[] _queries;
+        protected SqlEndpointBase(string name, string connectionString)
+        {
+            Name = name;
+            ConnectionString = connectionString;
 
-		protected SqlEndpointBase(string name, string connectionString)
-		{
-			Name = name;
-			ConnectionString = connectionString;
-			_lastSuccessfulReportTime = DateTime.Now;
+            SqlDmlActivityHistory = new Dictionary<string, SqlDmlActivity>();
 
-			QueryHistory = new Dictionary<string, Queue<IQueryContext>>();
-			SqlDmlActivityHistory = new Dictionary<string, SqlDmlActivity>();
+            IncludedDatabases = new Database[0];
+            ExcludedDatabaseNames = new string[0];
+        }
 
-			IncludedDatabases = new Database[0];
-			ExcludedDatabaseNames = new string[0];
-		}
+        protected abstract string ComponentGuid { get; }
 
-		protected abstract string ComponentGuid { get; }
+        protected Dictionary<string, SqlDmlActivity> SqlDmlActivityHistory { get; set; }
 
-		public IDictionary<string, Queue<IQueryContext>> QueryHistory { get; private set; }
-		protected Dictionary<string, SqlDmlActivity> SqlDmlActivityHistory { get; set; }
+        public Database[] IncludedDatabases { get; protected set; }
 
-		public Database[] IncludedDatabases { get; protected set; }
+        public string[] IncludedDatabaseNames
+        {
+            get { return IncludedDatabases.Select(d => d.Name).ToArray(); }
+        }
 
-		public string[] IncludedDatabaseNames
-		{
-			get { return IncludedDatabases.Select(d => d.Name).ToArray(); }
-		}
+        public string[] ExcludedDatabaseNames { get; protected set; }
 
-		public string[] ExcludedDatabaseNames { get; protected set; }
+        public string Name { get; private set; }
+        public string ConnectionString { get; private set; }
 
-		public string Name { get; private set; }
-		public string ConnectionString { get; private set; }
+        public void SetQueries(IEnumerable<SqlQuery> queries)
+        {
+            _queries = FilterQueries(queries).ToArray();
+        }
 
-		public int Duration
-		{
-			get
-			{
-				var secondsSinceLastSuccessfulReport = (int) DateTime.Now.Subtract(_lastSuccessfulReportTime).TotalSeconds;
+        public virtual IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+        {
+            return ExecuteQueries(_queries, ConnectionString, log);
+        }
 
-				return secondsSinceLastSuccessfulReport <= MaximumAllowedDuration
-					? secondsSinceLastSuccessfulReport
-					: MaximumAllowedDuration;
-			}
-		}
+        public virtual void ToLog(ILog log)
+        {
+            // Remove password from logging
+            var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
+            if (!string.IsNullOrEmpty(safeConnectionString.Password))
+            {
+                safeConnectionString.Password = "[redacted]";
+            }
 
-		public void SetQueries(IEnumerable<SqlQuery> queries)
-		{
-			_queries = FilterQueries(queries).ToArray();
-		}
+            log.InfoFormat("      {0}: {1}", Name, safeConnectionString);
 
-		public virtual IEnumerable<IQueryContext> ExecuteQueries(ILog log)
-		{
-			return ExecuteQueries(_queries, ConnectionString, log);
-		}
+            // Validate that connection string do not provide both Trusted Security AND user/password
+            bool hasUserCreds = !string.IsNullOrEmpty(safeConnectionString.UserID) || !string.IsNullOrEmpty(safeConnectionString.Password);
+            if (safeConnectionString.IntegratedSecurity == hasUserCreds)
+            {
+                log.Error("==================================================");
+                log.ErrorFormat("Connection string for '{0}' may not contain both Integrated Security and User ID/Password credentials. " +
+                                "Review the readme.md and update the config file.",
+                    safeConnectionString.DataSource);
+                log.Error("==================================================");
+            }
+        }
 
-		public void MetricReportSuccessful(DateTime? reportDate = null)
-		{
-			_lastSuccessfulReportTime = reportDate ?? DateTime.Now;
-			QueryHistory.Values.ForEach(histories => histories.ForEach(qc => qc.DataSent = true));
-		}
+        protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)
+        {
+            // Remove password from logging
+            var safeConnectionString = new SqlConnectionStringBuilder(connectionString);
+            if (!string.IsNullOrEmpty(safeConnectionString.Password))
+            {
+                safeConnectionString.Password = "[redacted]";
+            }
 
-		public void UpdateHistory(IQueryContext[] queryContexts)
-		{
-			queryContexts.ForEach(queryContext =>
-			                      {
-				                      Queue<IQueryContext> queryHistory = QueryHistory.GetOrCreate(queryContext.QueryName);
-				                      if (queryHistory.Count >= 2) //Only track up to last run of this query
-				                      {
-					                      queryHistory.Dequeue();
-				                      }
-				                      queryHistory.Enqueue(queryContext);
-			                      });
-		}
+            _VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
 
-		public PlatformData GeneratePlatformData(AgentData agentData)
-		{
-			var platformData = new PlatformData(agentData);
+            using (var conn = new SqlConnection(connectionString))
+            {
+                foreach (SqlQuery query in queries)
+                {
+                    object[] results;
+                    try
+                    {
+                        // Raw results from the database
+                        results = query.Query(conn, this).ToArray();
+                        // Log them
+                        LogVerboseSqlResults(query, results);
+                        // Allow them to be transformed
+                        results = OnQueryExecuted(query, results, log);
+                    }
+                    catch (Exception e)
+                    {
+                        _ErrorDetailOutputLogger.Error(string.Format("Error with query '{0}' at endpoint '{1}'", query.QueryName, safeConnectionString), e);
+                        LogErrorSummary(log, e, query);
+                        continue;
+                    }
+                    yield return CreateQueryContext(query, results);
+                }
+            }
+        }
 
-			ComponentData[] pendingComponentData = QueryHistory.Select(qh => ComponentDataRetriever.GetData(qh.Value.ToArray()))
-				.Where(c => c != null).ToArray();
+        protected static void LogVerboseSqlResults(ISqlQuery query, IEnumerable<object> results)
+        {
+            // This could be slow, so only proceed if it actually gets logged
+            if (!_VerboseSqlOutputLogger.IsInfoEnabled) return;
 
-			pendingComponentData.ForEach(platformData.AddComponent);
+            var verboseLogging = new StringBuilder();
+            verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
 
-			return platformData;
-		}
+            foreach (object result in results)
+            {
+                verboseLogging.AppendLine(result.ToString());
+            }
 
-		public virtual void ToLog(ILog log)
-		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
+            _VerboseSqlOutputLogger.Info(verboseLogging.ToString());
+        }
 
-			log.InfoFormat("      {0}: {1}", Name, safeConnectionString);
+        internal QueryContext CreateQueryContext(IMetricQuery query, IEnumerable<object> results)
+        {
+            return new QueryContext(query) {Results = results, ComponentName = Name, ComponentGuid = ComponentGuid };
+        }
 
-			// Validate that connection string do not provide both Trusted Security AND user/password
-			bool hasUserCreds = !string.IsNullOrEmpty(safeConnectionString.UserID) || !string.IsNullOrEmpty(safeConnectionString.Password);
-			if (safeConnectionString.IntegratedSecurity == hasUserCreds)
-			{
-				log.Error("==================================================");
-				log.ErrorFormat("Connection string for '{0}' may not contain both Integrated Security and User ID/Password credentials. " +
-				                "Review the readme.md and update the config file.",
-					safeConnectionString.DataSource);
-				log.Error("==================================================");
-			}
-		}
+        protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
 
-		protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)
-		{
-			// Remove password from logging
-			var safeConnectionString = new SqlConnectionStringBuilder(connectionString);
-			if (!string.IsNullOrEmpty(safeConnectionString.Password))
-			{
-				safeConnectionString.Password = "[redacted]";
-			}
+        protected virtual object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
+        {
+            // TODO: We should be able to remove the special casing of SqlDmlActivity here, but simply changing it to a delta counter doe
+            return query.QueryType == typeof (SqlDmlActivity) ? CalculateSqlDmlActivityIncrease(results, log) : results;
+        }
 
-			_VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
+        public override string ToString()
+        {
+            return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
+        }
 
-			using (var conn = new SqlConnection(connectionString))
-			{
-				foreach (SqlQuery query in queries)
-				{
-					object[] results;
-					try
-					{
-						// Raw results from the database
-						results = query.Query(conn, this).ToArray();
-						// Log them
-						LogVerboseSqlResults(query, results);
-						// Allow them to be transformed
-						results = OnQueryExecuted(query, results, log);
-					}
-					catch (Exception e)
-					{
-						_ErrorDetailOutputLogger.Error(string.Format("Error with query '{0}' at endpoint '{1}'", query.QueryName, safeConnectionString), e);
-						LogErrorSummary(log, e, query);
-						continue;
-					}
-					yield return CreateQueryContext(query, results);
-				}
-			}
-		}
+        internal object[] CalculateSqlDmlActivityIncrease(object[] inputResults, ILog log)
+        {
+            if (inputResults == null || inputResults.Length == 0)
+            {
+                log.Error("No values passed to CalculateSqlDmlActivityIncrease");
+                return inputResults;
+            }
 
-		protected static void LogVerboseSqlResults(ISqlQuery query, IEnumerable<object> results)
-		{
-			// This could be slow, so only proceed if it actually gets logged
-			if (!_VerboseSqlOutputLogger.IsInfoEnabled) return;
+            SqlDmlActivity[] sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
 
-			var verboseLogging = new StringBuilder();
-			verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
+            if (!sqlDmlActivities.Any())
+            {
+                log.Error("In trying to Process results for SqlDmlActivity, results were NULL or not of the appropriate type");
+                return inputResults;
+            }
 
-			foreach (object result in results)
-			{
-				verboseLogging.AppendLine(result.ToString());
-			}
+            Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities
+                .GroupBy(a => string.Format("{0}:{1}:{2}:{3}", BitConverter.ToString(a.PlanHandle), BitConverter.ToString(a.SqlStatementHash), a.CreationTime.Ticks, a.QueryType))
+                .Select(a => new
+                             {
+                                 a.Key,
+                                 //If we ever gets dupes, sum Excution Count
+                                 Activity = new SqlDmlActivity
+                                            {
+                                                CreationTime = a.First().CreationTime,
+                                                SqlStatementHash = a.First().SqlStatementHash,
+                                                PlanHandle = a.First().PlanHandle,
+                                                QueryType = a.First().QueryType,
+                                                ExecutionCount = a.Sum(dml => dml.ExecutionCount),
+                                            }
+                             })
+                .ToDictionary(a => a.Key, a => a.Activity);
 
-			_VerboseSqlOutputLogger.Info(verboseLogging.ToString());
-		}
+            long reads = 0;
+            long writes = 0;
 
-		internal QueryContext CreateQueryContext(IMetricQuery query, IEnumerable<object> results)
-		{
-			return new QueryContext(query) {Results = results, ComponentData = new ComponentData(Name, ComponentGuid, Duration)};
-		}
+            // If this is the first time through, reads and writes are definitely 0
+            if (SqlDmlActivityHistory.Count > 0)
+            {
+                currentValues
+                    .ForEach(a =>
+                             {
+                                 long increase;
 
-		protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
+                                 // Find a matching previous value for a delta
+                                 SqlDmlActivity previous;
+                                 if (!SqlDmlActivityHistory.TryGetValue(a.Key, out previous))
+                                 {
+                                     // Nothing previous, the delta is the absolute value here
+                                     increase = a.Value.ExecutionCount;
+                                 }
+                                 else if (a.Value.QueryType == previous.QueryType)
+                                 {
+                                     // Calculate the delta
+                                     increase = a.Value.ExecutionCount - previous.ExecutionCount;
 
-		protected virtual object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
-		{
-			return query.QueryType == typeof (SqlDmlActivity) ? CalculateSqlDmlActivityIncrease(results, log) : results;
-		}
+                                     // Only record positive deltas, though theoretically impossible here
+                                     if (increase <= 0) return;
+                                 }
+                                 else
+                                 {
+                                     return;
+                                 }
 
-		public override string ToString()
-		{
-			return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
-		}
+                                 switch (a.Value.QueryType)
+                                 {
+                                     case "Writes":
+                                         writes += increase;
+                                         break;
+                                     case "Reads":
+                                         reads += increase;
+                                         break;
+                                 }
+                             });
+            }
 
-		internal object[] CalculateSqlDmlActivityIncrease(object[] inputResults, ILog log)
-		{
-			if (inputResults == null || inputResults.Length == 0)
-			{
-				log.Error("No values passed to CalculateSqlDmlActivityIncrease");
-				return inputResults;
-			}
+            //Current Becomes the new history
+            SqlDmlActivityHistory = currentValues;
 
-			SqlDmlActivity[] sqlDmlActivities = inputResults.OfType<SqlDmlActivity>().ToArray();
+            if (_VerboseSqlOutputLogger.IsInfoEnabled)
+            {
+                _VerboseSqlOutputLogger.InfoFormat("SQL DML Activity: Reads={0} Writes={1}", reads, writes);
+                _VerboseSqlOutputLogger.Info("");
+            }
 
-			if (!sqlDmlActivities.Any())
-			{
-				log.Error("In trying to Process results for SqlDmlActivity, results were NULL or not of the appropriate type");
-				return inputResults;
-			}
+            //return the sum of all increases for reads and writes
+            //if there is was no history (first time for this db) then reads and writes will be 0
+            return new object[]
+                   {
+                       new SqlDmlActivity
+                       {
+                           Reads = reads,
+                           Writes = writes,
+                       },
+                   };
+        }
 
-			Dictionary<string, SqlDmlActivity> currentValues = sqlDmlActivities
-				.GroupBy(a => string.Format("{0}:{1}:{2}:{3}", BitConverter.ToString(a.PlanHandle), BitConverter.ToString(a.SqlStatementHash), a.CreationTime.Ticks, a.QueryType))
-				.Select(a => new
-				             {
-					             a.Key,
-					             //If we ever gets dupes, sum Excution Count
-					             Activity = new SqlDmlActivity
-					                        {
-						                        CreationTime = a.First().CreationTime,
-						                        SqlStatementHash = a.First().SqlStatementHash,
-						                        PlanHandle = a.First().PlanHandle,
-						                        QueryType = a.First().QueryType,
-						                        ExecutionCount = a.Sum(dml => dml.ExecutionCount),
-					                        }
-				             })
-				.ToDictionary(a => a.Key, a => a.Activity);
+        private void LogErrorSummary(ILog log, Exception e, ISqlQuery query)
+        {
+            var sqlException = e.InnerException as SqlException;
+            if (sqlException == null) return;
 
-			long reads = 0;
-			long writes = 0;
-
-			// If this is the first time through, reads and writes are definitely 0
-			if (SqlDmlActivityHistory.Count > 0)
-			{
-				currentValues
-					.ForEach(a =>
-					         {
-						         long increase;
-
-						         // Find a matching previous value for a delta
-						         SqlDmlActivity previous;
-						         if (!SqlDmlActivityHistory.TryGetValue(a.Key, out previous))
-						         {
-							         // Nothing previous, the delta is the absolute value here
-							         increase = a.Value.ExecutionCount;
-						         }
-						         else if (a.Value.QueryType == previous.QueryType)
-						         {
-							         // Calculate the delta
-							         increase = a.Value.ExecutionCount - previous.ExecutionCount;
-
-							         // Only record positive deltas, though theoretically impossible here
-							         if (increase <= 0) return;
-						         }
-						         else
-						         {
-							         return;
-						         }
-
-						         switch (a.Value.QueryType)
-						         {
-							         case "Writes":
-								         writes += increase;
-								         break;
-							         case "Reads":
-								         reads += increase;
-								         break;
-						         }
-					         });
-			}
-
-			//Current Becomes the new history
-			SqlDmlActivityHistory = currentValues;
-
-			if (_VerboseSqlOutputLogger.IsInfoEnabled)
-			{
-				_VerboseSqlOutputLogger.InfoFormat("SQL DML Activity: Reads={0} Writes={1}", reads, writes);
-				_VerboseSqlOutputLogger.Info("");
-			}
-
-			//return the sum of all increases for reads and writes
-			//if there is was no history (first time for this db) then reads and writes will be 0
-			return new object[]
-			       {
-				       new SqlDmlActivity
-				       {
-					       Reads = reads,
-					       Writes = writes,
-				       },
-			       };
-		}
-
-		private void LogErrorSummary(ILog log, Exception e, ISqlQuery query)
-		{
-			var sqlException = e.InnerException as SqlException;
-			if (sqlException == null) return;
-
-			log.LogSqlException(sqlException, query, ConnectionString);
-		}
-	}
+            log.LogSqlException(sqlException, query, ConnectionString);
+        }
+    }
 }

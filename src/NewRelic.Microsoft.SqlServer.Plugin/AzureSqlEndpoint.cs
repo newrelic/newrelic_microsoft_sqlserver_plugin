@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-
+using log4net;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
-
-using log4net;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {

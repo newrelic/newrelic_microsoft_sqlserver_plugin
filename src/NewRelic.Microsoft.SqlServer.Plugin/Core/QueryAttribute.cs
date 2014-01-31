@@ -43,11 +43,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 		public bool Enabled { get; set; }
 
 		/// <summary>
-		///     Optional. Indicates how, once collected the metrics should be sent to New Relic. Defaults to Simple which does no transform and sends the most recent values.
-		/// </summary>
-		public MetricTransformEnum MetricTransformEnum { get; set; }
-
-		/// <summary>
 		///     <para>Required. The pattern is formatted and sent to New Relic.</para>
 		///     <para>A pattern must start with 'Custom/'. A good metric supports wildcards for supporting better charts.</para>
 		///     <para>For example, file I/O metrics patterns could look like:</para>

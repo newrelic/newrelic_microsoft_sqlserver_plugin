@@ -33,7 +33,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                 throw new FileNotFoundException("Unable to locate config file", configFilePath);
             }
 
-	        return LoadConfigurationFromFile(configFilePath, log);
+            return LoadConfigurationFromFile(configFilePath, log);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             log.Debug("No external configuration path given, attempting to load settings from from default configuration file");
             var section = (NewRelicConfigurationSection) ConfigurationManager.GetSection("newRelic");
             var settingsFromAppConfig = Settings.FromConfigurationSection(section,log);
-			log.InfoFormat("Settings loaded successfully");
+            log.InfoFormat("Settings loaded successfully");
             return settingsFromAppConfig;
         }
     }

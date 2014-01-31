@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewRelic.Microsoft.SqlServer.Plugin", "src\NewRelic.Microsoft.SqlServer.Plugin\NewRelic.Microsoft.SqlServer.Plugin.csproj", "{D5E2A43F-3302-420E-BFD0-798A328390C4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E17681A6-21E5-4111-8E50-37A442286BB6}"
