@@ -56,6 +56,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
                 // Wait for all of them to complete
                 Task.WaitAll(tasks.ToArray<Task>());
+
+                // This sends all components to the server in a single request, we may run into performance issues with one component delaying the others.
                 SendComponentDataToCollector();
 
                 _log.InfoFormat("Recorded {0} metrics", tasks.Sum(t => t.Result));
