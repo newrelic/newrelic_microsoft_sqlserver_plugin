@@ -40,7 +40,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
 		public override IEnumerable<IQueryContext> ExecuteQueries(ILog log)
 		{
-			return base.ExecuteQueries(log).Concat(PerformThrottlingQuery(log));
+			return base.ExecuteQueries(log).Concat(PerformMasterDatabaseQueries(log));
 		}
 
 		/// <summary>
@@ -48,9 +48,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// </summary>
 		/// <param name="log"></param>
 		/// <returns></returns>
-		internal IEnumerable<IQueryContext> PerformThrottlingQuery(ILog log)
+		internal IEnumerable<IQueryContext> PerformMasterDatabaseQueries(ILog log)
 		{
-			var queries = new QueryLocator(new DapperWrapper()).PrepareQueries(new[] {typeof (AzureServiceInterruptionEvents)}, false).ToArray();
+			var queries = new QueryLocator(new DapperWrapper())
+               .PrepareQueries(new[]
+                               {
+                                    typeof (AzureServiceInterruptionEvents),
+                                    typeof (AzureSqlResourceStats)
+                               }, false).ToArray();
 			return ExecuteQueries(queries, _masterConnectionString, log);
 		}
 	}
