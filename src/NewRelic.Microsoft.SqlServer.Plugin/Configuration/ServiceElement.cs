@@ -1,5 +1,4 @@
 using System.Configuration;
-
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
@@ -24,16 +23,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         {
             get { return (int?)(base["pollIntervalSeconds"]) ?? 60; }
             set { base["pollIntervalSeconds"] = value; }
-        }
-
-        /// <summary>
-        /// Override the default Windows service name. Must contain only letters or the default is used.
-        /// </summary>
-        [ConfigurationProperty("serviceName", DefaultValue = ServiceConstants.ServiceName, IsKey = false, IsRequired = false)]
-        public string ServiceName
-        {
-            get { return ((string)(base["serviceName"])); }
-            set { base["serviceName"] = value; }
         }
     }
 }

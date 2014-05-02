@@ -8,24 +8,28 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         public ServiceElement Service
         {
             get { return ((ServiceElement) (base["service"])); }
+            set { base["service"] = (ServiceElement)value; }
         }
 
         [ConfigurationProperty("proxy")]
         public ProxyElement Proxy
         {
             get { return ((ProxyElement)(base["proxy"])); }
+            set { base["proxy"] = (ProxyElement)base["proxy"]; }
         }
 
         [ConfigurationProperty("sqlServers")]
         public SqlServerCollection SqlServers
         {
             get { return ((SqlServerCollection) (base["sqlServers"])); }
+            set { base["sqlServers"] = (SqlServerCollection)value; }
         }
 
         [ConfigurationProperty("azure")]
         public AzureCollection AzureSqlDatabases
         {
             get { return ((AzureCollection)(base["azure"])); }
+            set { base["azure"] = (AzureCollection)value; }
         }
     }
 }

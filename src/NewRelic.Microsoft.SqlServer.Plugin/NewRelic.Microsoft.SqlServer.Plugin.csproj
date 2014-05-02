@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NewRelic.Microsoft.SqlServer.Plugin</RootNamespace>
-    <AssemblyName>NewRelic.Microsoft.SqlServer.Plugin</AssemblyName>
+    <AssemblyName>plugin</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>$(SolutionDir)\build\$(Platform)-$(Configuration)\$(AssemblyName)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +29,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>$(SolutionDir)\build\$(Platform)-$(Configuration)\$(AssemblyName)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -38,11 +38,9 @@
     <Reference Include="CommandLine">
       <HintPath>..\..\packages\CommandLineParser.1.9.71\lib\net35\CommandLine.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>..\..\packages\log4net.2.0.0\lib\net35-full\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="NewRelic.Platform.Sdk">
-      <HintPath>..\..\lib\NewRelic.Platform.Sdk.dll</HintPath>
+    <Reference Include="NewRelic.Platform.Sdk, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\externals\newrelic_platform_dotnet_sdk_v1.0.0.0\NewRelic.Platform.Sdk.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.4\lib\net35\Newtonsoft.Json.dll</HintPath>
@@ -74,6 +72,7 @@
     <Compile Include="Configuration\DatabaseElement.cs" />
     <Compile Include="Configuration\ProxyElement.cs" />
     <Compile Include="Core\DeltaProcessor.cs" />
+    <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
     <Compile Include="IMetricQuery.cs" />
     <Compile Include="IQueryContext.cs" />
     <Compile Include="ISqlEndpoint.cs" />
@@ -101,7 +100,6 @@
     <Compile Include="Core\QueryAttribute.cs" />
     <Compile Include="Properties\Constants.cs" />
     <Compile Include="Core\DapperWrapper.cs" />
-    <Compile Include="Core\Extensions\ExtensionsForAssembly.cs" />
     <Compile Include="Core\Extensions\ExtensionsForEnumerable.cs" />
     <Compile Include="Core\Extensions\ExtensionsForReflection.cs" />
     <Compile Include="Core\Extensions\ExtensionsForTask.cs" />
@@ -110,7 +108,6 @@
     <Compile Include="Core\PollingThreadSettings.cs" />
     <Compile Include="Core\SqlServerQueryAttribute.cs" />
     <Compile Include="Core\Dapper.cs" />
-    <Compile Include="Core\InstallController.cs" />
     <Compile Include="MetricMapper.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
@@ -124,18 +121,8 @@
     <Compile Include="QueryTypes\RecompileSummary.cs" />
     <Compile Include="QueryTypes\SqlServerConnections.cs" />
     <Compile Include="QueryTypes\SqlCpuUsage.cs" />
-    <Compile Include="Properties\ServiceConstants.cs" />
-    <Compile Include="Core\ServiceProcessInstaller.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="QueryTypes\WaitState.cs" />
     <Compile Include="MetricCollector.cs" />
-    <Compile Include="Core\SqlMonitorService.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Core\SqlMonitorServiceInstaller.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="QueryTypes\WhereClauseTokenEnum.cs" />
     <Compile Include="SqlQuery.cs" />
     <Compile Include="Core\SqlPoller.cs" />
@@ -144,15 +131,11 @@
     <None Include="..\..\README.md">
       <Link>README.md</Link>
     </None>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="app.deploy.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="log4net.config">
+    <None Include="config\newrelic.template.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
+    </None>
+    <None Include="config\plugin.template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
@@ -189,6 +172,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Queries\DatabaseDetails.SqlServer.sql" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

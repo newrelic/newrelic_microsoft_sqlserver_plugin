@@ -1,0 +1,21 @@
+﻿{
+  "agents": [
+    {
+      "type" : "sqlserver",
+      "name" : "Production Database",
+      "connectionString" : "Server=.\SQLExpress;Database=master;Trusted_Connection=True;",
+      "includeSystemDatabases" : "true",
+      "includes" : [
+
+      ],
+      "excludes" : [
+
+      ]
+    },
+    {
+      "type" : "azure",
+      "name" : "Azure Cloud Database",
+      "connectionString" : "Server=tcp:{Azure SQL Server Name}.database.windows.net,1433;Database={Azure SQL Database Name};User ID={Azure SQL User Name}@{Azure SQL Server Name};Password={Password for User Name};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;"
+    }
+  ]
+}

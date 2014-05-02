@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using log4net;
-
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
 using NewRelic.Platform.Sdk.Binding;
 using NewRelic.Platform.Sdk.Processors;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     public class QueryContext : IQueryContext
     {
-        private static readonly ILog _VerboseMetricsLogger = LogManager.GetLogger(Constants.VerboseMetricsLogger);
+        private static readonly Logger _log = Logger.GetLogger(typeof(QueryContext).Name);
 
         private readonly DateTime _creationTime;
         private readonly IMetricQuery _query;
@@ -55,7 +54,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
         public void AddMetric(string name, string units, int value, MetricTransformEnum transform)
         {
-            _VerboseMetricsLogger.InfoFormat("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentName, name, value);
+            _log.Info("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentName, name, value);
             float? val = value;
 
             if (transform != MetricTransformEnum.Simple)
@@ -70,7 +69,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
         public void AddMetric(string name, string units, decimal value, MetricTransformEnum transform)
         {
-            _VerboseMetricsLogger.InfoFormat("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentName, name, value);
+            _log.Info("Gathering Component: {0}; Metric: {1}; Value: {2}", ComponentName, name, value);
             float? val = (float) value;
 
             if (transform != MetricTransformEnum.Simple)

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using log4net;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Platform.Sdk.Binding;
 using NewRelic.Platform.Sdk.Processors;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
@@ -15,15 +15,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
     /// </summary>
     internal class MetricCollector
     {
+        private static readonly Logger _log = Logger.GetLogger(typeof(MetricCollector).Name);
+
         private readonly IContext _context;
         private readonly IDictionary<string, IProcessor> _processors;
-        private readonly ILog _log;
         private readonly Settings _settings;
 
-        public MetricCollector(Settings settings, ILog log)
+        public MetricCollector(Settings settings)
         {
             _settings = settings;
-            _log = log;
             _context = new Context(_settings.LicenseKey) { Version = _settings.Version };
             _processors = new Dictionary<string, IProcessor>();
         }
@@ -38,15 +38,15 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             {
                 var tasks = _settings.Endpoints
                                      .Select(endpoint => Task.Factory
-                                                             .StartNew(() => endpoint.ExecuteQueries(_log))
-                                                             .Catch(e => _log.Error(e))
+                                                             .StartNew(() => endpoint.ExecuteQueries())
+                                                             .Catch(e => _log.Error("{0}\n{1}", e.Message, e.StackTrace))
                                                              .ContinueWith(t => t.Result.ForEach(ctx => 
                                                                                                     {
                                                                                                         ctx.Context = _context;
                                                                                                         ctx.MetricProcessors = _processors;
                                                                                                         ctx.AddAllMetrics(); 
                                                                                                     }))
-                                                             .Catch(e => _log.Error(e))
+                                                             .Catch(e => _log.Error("{0}\n{1}", e.Message, e.StackTrace))
                                                              .ContinueWith(t =>
                                                                            {
                                                                                var queryContexts = t.Result.ToArray();
@@ -60,11 +60,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 // This sends all components to the server in a single request, we may run into performance issues with one component delaying the others.
                 SendComponentDataToCollector();
 
-                _log.InfoFormat("Recorded {0} metrics", tasks.Sum(t => t.Result));
+                _log.Info("Recorded {0} metrics", tasks.Sum(t => t.Result));
             }
             catch (Exception e)
             {
-                _log.Error(e);
+                _log.Error("{0}\n{1}", e.Message, e.StackTrace);
             }
         }
 

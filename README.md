@@ -1,44 +1,162 @@
-## New Relic Microsoft SQL Server Plugin
+## New Relic Microsoft SQL Server Plugin - .NET
 
-A plugin for monitoring Microsoft SQL Server using the New Relic platform.
+Find the New Relic Microsoft SQL Server plugin in the [New Relic storefront](http://newrelic.com/plugins/new-relic-inc/55)
+
+Find the New Relic Microsoft SQL Server plugin in [Plugin Central](https://rpm.newrelic.com/extensions/com.newrelic.platform.microsoft.sqlserver)
 
 ## System Requirements
 
-1. .NET 3.5 or later
-2. Windows 7/Server 2008 or later
-3. SQL Server 2005 or later
+- A New Relic account. Sign up for a free account [here](http://newrelic.com)
+- .NET 3.5 or later
+- Windows 7/Server 2008 or later
+- SQL Server 2005 or later
+- Network access to New Relic
 
-## Installation instructions
+## Installation
 
-1. [Download the files](https://rpm.newrelic.com/extensions/com.newrelic.platform.microsoft.sqlserver) from New Relic.
-2. Unpack them to something like `C:\Program Files\New Relic\MicrosoftSQLServerPlugin\` (we'll call this `INSTALLDIR`.) on a server that has access to the SQL server(s) you want to monitor. In general, that means the agent could run on the server hosting the SQL server or another locally connected machine which network access to the SQL server. 
-3. Configure the plugin.
-  1. Run a text editor **as administrator** and open the file `INSTALLDIR\NewRelic.Microsoft.SqlServer.Plugin.exe.config`.
-  2. Find the setting `<service licenseKey="YOUR_KEY_HERE"...>` and replace `YOUR_KEY_HERE` with your New Relic license key.
-  3. Configure one or more SQL Servers or Azure SQL Databases
-      * In the `<sqlServers>` section, add a `<sqlServer>` setting for _each_ SQL Server instance you wish to monitor.
-          * `name="Production Database"` The name of your server is visible on the New Relic dashboard.
-          * `connectionString="Server=prd.domain.com,1433;Database=master;Trusted_Connection=True;"` Any valid connection string to your database.
-      * In the `<azure>` section, add a `<database>` setting for _each_ Windows Azure SQL Database.
-          * `name="Production Database"` The name of your Azure SQL Database is visible on the New Relic dashboard.
-          * Get the connection string from the [Azure Portal](https://manage.windowsazure.com/#Workspaces/SqlAzureExtension/Databases).<br/>
-    `connectionString="Server=tcp:zzz.database.windows.net,1433;Database=CustomerDB;User ID=NewRelic@zzz;`
-    `Password=foobar;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;`
-4. Verify the settings.
-  1. Open a command prompt, **not** running as administrator, to `INSTALLDIR`.
-  2. Run the plugin in read-only, test mode: `NewRelic.Microsoft.SqlServer.Plugin.exe --test`
-  3. If there are no errors, move on to installing the service.
-5. Install the plugin as a Windows service.
-  1. Open a new command prompt, **running as administrator**, to `INSTALLDIR`.
-  2. Execute: `NewRelic.Microsoft.SqlServer.Plugin.exe --install` and ensure you see the message
-     `Service NewRelicSQLServerPlugin has been successfully installed.`
-  3. Start the service: `net start NewRelicSQLServerPlugin`
-  4. Review the log file at `C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\SqlMonitor.log` to confirm the service is running. Look at the end of the file for a successful startup similar to the output of step 4.2., but with `[Main] INFO  -   Windows Service: Yes`, indicating the Windows service is running.
-  5. After about 5 minutes, data is available in your New Relic dashboard in the 'MS SQL' and/or 'Azure SQL' area.
+This plugin can be installed one of the following ways:
 
-## Configure permissions
+* [Option 1 - New Relic Platform Installer (Beta)](#option-1--install-with-the-new-relic-platform-installer-beta)
+* [Option 2 - Manual Install](#option-3--install-manually)
 
-By default, the service installs itself as Local Service. Use the Services MMC to change the user when using a trusted connection.
+### Option 1 - Install with the New Relic Platform Installer (Beta)
+
+The New Relic Platform Installer (NPI) is a simple, lightweight command line tool that helps you easily download, configure and manage New Relic Platform Plugins.  If you're interested in participating in our public beta, simply go to [our forum category](https://discuss.newrelic.com/category/platform-plugins/platform-installer-beta) and checkout the ['Getting Started' section](https://discuss.newrelic.com/t/getting-started-for-the-platform-installer-beta/842).  If you have any questions, concerns or feedback, please do not hesitate to reach out through the forums as we greatly appreciate your feedback!
+
+Once you've installed the NPI tool, run the following command:
+
+```
+	./npi install com.newrelic.platform.microsoft.sqlserver
+```	
+
+This command will take care of the creation of `newrelic.json` and `plugin.json` configuration files.  See the [configuration information](#configuration-information) section for more information.
+
+### Option 2 - Install Manually (Non-standard)
+
+#### Step 1 - Downloading and Extracting the Plugin
+
+The latest version of the plugin can be downloaded [here](https://rpm.newrelic.com/extensions/com.newrelic.platform.microsoft.sqlserver).  Once the plugin is on your box, extract it to a location of your choosing.
+
+**note** - This plugin is distributed in tar.gz format and can be extracted with the following command on Unix-based systems (Windows users will need to download a third-party extraction tool or use the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer-beta/842)):
+
+```
+	tar -xvzf newrelic_sqlserver_plugin-vX.Y.Z.tar.gz
+```
+
+#### Step 2 - Configuring the Plugin
+
+Check out the [configuration information](#configuration-information) section for details on configuring your plugin. 
+
+#### Step 3 - Running the Plugin
+
+To run the plugin, execute the following command from a terminal or command window (assuming you are in the directory where the plugin was extracted):
+
+```
+	.\plugin.exe
+```
+ 
+#### Step 4 - Keeping the Plugin Running
+
+Step 3 showed you how to run the plugin; however, there are several problems with running the process directly in the foreground (For example, when the machine reboots the process will not be started again).  That said, there are several common ways to keep a plugin running, but they do require more advanced knowledge or additional tooling.  We highly recommend considering using the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer-beta/842) as it will take care of most of the heavy lifting for you.  
+
+If you prefer to be more involved in the maintaince of the process, consider one of these tools for managing your plugin process (bear in mind that some of these are OS-specific):
+
+- [WinSW](https://github.com/kohsuke/winsw)
+
+----
+
+## Configuration Information
+
+### Configuration Files
+
+You will need to modify two configuration files in order to set this plugin up to run.  The first (`newrelic.json`) contains configurations used by all Platform plugins (e.g. license key, logging information, proxy settings) and can be shared across your plugins.  The second (`plugin.json`) contains data specific to each plugin such as a list of hosts and port combination for what you are monitoring.  Templates for both of these files should be located in the '`config`' directory in your extracted plugin folder. 
+
+#### Configuring the `plugin.json` file: 
+
+The `plugin.json` file has a provided template in the `config` directory named `plugin.template.json`.  If you are installing manually, make a copy of this template file and rename it to `plugin.json` (the New Relic Platform Installer will automatically handle creation of configuration files for you).  
+
+Below is an example of the `plugin.json` file's contents, you can add multiple objects to the "agents" array to monitor different instances:
+
+```
+{  "agents": [    {      "type" : "sqlserver",      "name" : "Production Database",      "connectionString" : "Server=.\SQLExpress;Database=master;Trusted_Connection=True;",      "includeSystemDatabases" : "false",      "includes" : [        {
+          "name": "AdventureWorks",
+          "displayName": "My AdventureWorks Database"        }      ],      "excludes" : [        {
+          "name": "nameOfDatabaseToExclude"        }      ]    },    {      "type" : "azure",      "name" : "Azure Cloud Database",      "connectionString" : <Your SQL Azure connection string>    }  ]}
+```
+
+**note** - Set the "name" attribute to identify each Memcached host, e.g. "Production" as this will be used to identify specific instances in the New Relic UI. 
+
+**note** - Each JSON object in the 'agents' array should have a type of either 'sqlserver' or 'azure'.
+
+**note** - Get your SQL Azure connection string from the [Azure Portal](https://manage.windowsazure.com/#Workspaces/SqlAzureExtension/Databases).
+
+#### Configuring the `newrelic.json` file: 
+
+The `newrelic.json` file also has a provided template in the `config` directory named `newrelic.template.json`.  If you are installing manually, make a copy of this template file and rename it to `newrelic.json` (again, the New Relic Platform Installer will automatically handle this for you).  
+
+The `newrelic.json` is a standardized file containing configuration information that applies to any plugin (e.g. license key, logging, proxy settings), so going forward you will be able to copy a single `newrelic.json` file from one plugin to another.  Below is a list of the configuration fields that can be managed through this file:
+
+##### Configuring your New Relic License Key
+
+Your New Relic license key is the only required field in the `newrelic.json` file as it is used to determine what account you are reporting to.  If you do not know what your license key is, you can learn about it [here](https://newrelic.com/docs/subscriptions/license-key).
+
+Example: 
+
+```
+{
+  "license_key": "YOUR_LICENSE_KEY_HERE"
+}
+```
+
+##### Logging configuration
+
+By default Platform plugins will have their logging turned on; however, you can manage these settings with the following configurations:
+
+`log_level` - The log level. Valid values: [`debug`, `info`, `warn`, `error`, `fatal`]. Defaults to `info`.
+
+`log_file_name` - The log file name. Defaults to `newrelic_plugin.log`.
+
+`log_file_path` - The log file path. Defaults to `logs`.
+
+`log_limit_in_kbytes` - The log file limit in kilobytes. Defaults to `25600` (25 MB). If limit is set to `0`, the log file size would not be limited.
+
+Example:
+
+```
+{
+  "license_key": "YOUR_LICENSE_KEY_HERE"
+  "log_level": "debug",
+  "log_file_path": "/var/logs/newrelic"
+}
+```
+
+##### Proxy configuration
+
+If you are running your plugin from a machine that runs outbound traffic through a proxy, you can use the following optional configurations in your `newrelic.json` file:
+
+`proxy_host` - The proxy host (e.g. `webcache.example.com`)
+
+`proxy_port` - The proxy port (e.g. `8080`).  Defaults to `80` if a `proxy_host` is set
+
+`proxy_username` - The proxy username
+
+`proxy_password` - The proxy password
+
+Example:
+
+```
+{
+  "license_key": "YOUR_LICENSE_KEY_HERE",
+  "proxy_host": "proxy.mycompany.com",
+  "proxy_port": 9000
+}
+```
+
+### Additional Configuration
+ 
+#### Configure permissions
+
+By default, most services will be installed as Local Service. Use the Services MMC to change the user when using a trusted connection.
 
 **SQL Server - Trusted Connection**
 
@@ -99,35 +217,8 @@ In a new connection to each individual Azure SQL Database:
     GRANT VIEW DATABASE STATE TO NewRelicUser
     GO
 
-## Proxy Support ##
 
-For installations behind a proxy, the details are set in the config file.
-
-    <!-- Proxy settings for connecting to the New Relic service. -->
-    <!-- If a proxy is used, the host attribute is required.
-
-    Attributes:
-    host - The proxy server host name.
-    port - The proxy server port (optional - defaults to 8080).
-    user - The username used to authenticate with the proxy server (optional).
-    password - The password used to authenticate with the proxy server (optional).
-    domain - The domain used to authenticate with the proxy server (optional).
-    useDefaultCredentials - 'true' or 'false. Uses the credentials of the account running the plugin (optional - defaults to false).
-                            If specified, 'user' and 'password' are ignored.
-    -->
-
-    <!--
-    <proxy host="hostname" />
-    -->
-
-If you are upgrading from version 1.0.9 or earlier, you'll need to replace the previous proxy settings with this new snippet in the config.
-
-## Logging
-
-By default, the log files are written to `C:\ProgramData\New Relic\MicrosoftSQLServerPlugin\`. To change the logging settings, edit the `INSTALLDIR\log4net.config` file.
-
-
-## Troubleshooting
+### Troubleshooting
 
 **Permissions Issues in the Database**
 
@@ -164,18 +255,16 @@ Azure SQL
         [wait_time_ms] * 100 / SUM([wait_time_ms]) OVER ()	AS [Percentage]
     FROM sys.dm_db_wait_stats
 
-Additional plugin support and troubleshooting assistance can be obtained by visiting [support.newrelic.com](https://support.newrelic.com)
+----
 
-## Uninstall instructions
+## Support
 
-The plugin is installed as a Windows Service which by default is named NewRelicSqlPlugin
-The service can be stopped or restarted manually, however if you want to uninstall the plugin perform the following steps
+Find a bug? Post it to [http://support.newrelic.com](http://support.newrelic.com).
 
-1. Open a command prompt running **as administrator** to `INSTALLDIR`.
-2. Execute the following command: `NewRelic.Microsoft.SqlServer.Plugin.exe --uninstall`
+## Fork me!
 
-This will stop and remove the service. The binaries and config files will still be in the `INSTALLDIR` 
-and log files are not deleted. If you wish to remove these, it must be done manually.
+The New Relic Platform uses an extensible architecture that allows you to define new metrics beyond the provided defaults. To expose more data about your Memcached servers, fork this repository, create a new GUID, add the metrics you would like to collect to the code and then build summary metrics and dashboards to expose your newly collected metrics.
+
 
 ## Credits
 The New Relic Microsoft SQL Server plugin was originally authored by [Ed Chapel](https://github.com/edchapel), [Jesse Stromwick](https://github.com/jstromwick), and [Mike Merrill](https://github.com/infoone). Subsequent updates and support are provided by [New Relic](http://newrelic.com/platform).

@@ -1,79 +1,42 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.ServiceProcess;
 using System.Threading;
-
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
-using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
-using NewRelic.Microsoft.SqlServer.Plugin.Properties;
-
-using log4net;
-using log4net.Config;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     internal class Program
     {
+        private static readonly Logger _log = Logger.GetLogger(typeof(Program).Name);
+
         private static int Main(string[] args)
         {
             try
             {
-                var log = SetUpLogConfig();
-
                 var options = Options.ParseArguments(args);
 
-                var settings = ConfigurationParser.ParseSettings(log, options.ConfigFile);
+                var settings = ConfigurationParser.ParseSettings();
+                settings.TestMode = options.TestMode;
                 Settings.Default = settings;
 
-                var installController = new InstallController(settings.ServiceName, settings.IsProcessElevated);
-                if (options.Uninstall)
+                Thread.CurrentThread.Name = "Main";
+                _log.Info("New Relic Sql Server Plugin");
+                _log.Info("Loaded Settings:");
+                settings.ToLog();
+
+                if (!settings.Endpoints.Any())
                 {
-                    installController.Uninstall();
-                }
-                else if (options.Install)
-                {
-                    installController.Install();
-                    if (options.Start)
-                        installController.StartService();
-                }
-                else if (options.Start)
-                {
-                    installController.StartService();
-                }
-                else if (options.Stop)
-                {
-                    installController.StopService();
-                }
-                else if (options.InstallOrStart)
-                {
-                    installController.InstallOrStart();
+                    _log.Error("No sql endpoints found please, update the configuration file to monitor one or more sql server instances.");
                 }
                 else
                 {
-                    Thread.CurrentThread.Name = "Main";
-                    settings.TestMode = options.TestMode;
-                    log.InfoFormat("New Relic Sql Server Plugin");
-                    log.Info("Loaded Settings:");
-                    settings.ToLog(log);
+                    var poller = new SqlPoller(settings);
+                    poller.Start();
 
-                    if (!settings.Endpoints.Any())
-                    {
-                        log.Error("No sql endpoints found please, update the configuration file to monitor one or more sql server instances.");
-                    }
-
-                    if (Environment.UserInteractive)
-                    {
-                        RunInteractive(settings);
-                    }
-                    else
-                    {
-                        ServiceBase[] services = {new SqlMonitorService(settings)};
-                        ServiceBase.Run(services);
-                    }
+                    // Suspend the main thread indefinitely as the SqlPoller will spawn its own thread
+                    Thread.Sleep(Timeout.Infinite);
                 }
 
                 return 0;
@@ -81,59 +44,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             catch (Exception ex)
             {
                 Console.Out.WriteLine(ex.Message);
-
-                if (Environment.UserInteractive)
-                {
-                    Console.Out.WriteLine();
-                    Console.Out.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
-                }
+                Console.Out.WriteLine();
 
                 return -1;
             }
-        }
-
-        public static ILog SetUpLogConfig()
-        {
-            const string log4NetConfig = "log4net.config";
-            var assemblyPath = Assembly.GetExecutingAssembly().GetLocalPath();
-            var configPath = Path.Combine(assemblyPath, log4NetConfig);
-            XmlConfigurator.ConfigureAndWatch(new FileInfo(configPath));
-            return LogManager.GetLogger(Constants.SqlMonitorLogger);
-        }
-
-        /// <summary>
-        ///     Runs from the command shell, printing to the Console.
-        /// </summary>
-        /// <param name="settings"></param>
-        private static void RunInteractive(Settings settings)
-        {
-            // Start our services
-            var poller = new SqlPoller(settings);
-            poller.Start();
-
-            // Capture Ctrl+C
-            Console.TreatControlCAsInput = true;
-
-            char key;
-            do
-            {
-                Console.Out.WriteLine("Press Q to quit...");
-                var consoleKeyInfo = Console.ReadKey(true);
-                Console.WriteLine();
-                key = consoleKeyInfo.KeyChar;
-            } while (key != 'q' && key != 'Q');
-
-            // Stop our services
-            poller.Stop();
-
-#if DEBUG
-            if (Debugger.IsAttached)
-            {
-                Console.Out.WriteLine("Press any key to stop debugging...");
-                Console.ReadKey();
-            }
-#endif
         }
     }
 }

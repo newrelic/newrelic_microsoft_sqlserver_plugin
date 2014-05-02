@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 
-using log4net;
-
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     public class SqlServerEndpoint : SqlEndpointBase
     {
+        private static readonly Logger _log = Logger.GetLogger(typeof(SqlServerEndpoint).Name);
+
         public SqlServerEndpoint(string name, string connectionString, bool includeSystemDatabases)
             : this(name, connectionString, includeSystemDatabases, null, null) {}
 
@@ -110,23 +111,23 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             return queries.Where(q => q.QueryAttribute is SqlServerQueryAttribute);
         }
 
-        public override void ToLog(ILog log)
+        public override void ToLog()
         {
-            base.ToLog(log);
+            base.ToLog();
 
             // Attempt to connect to the server and get basic details about the server and the databases.
             Dictionary<string, DatabaseDetails> databaseDetailsByName;
             try
             {
                 var queryLocator = new QueryLocator(new DapperWrapper());
-                SqlQuery serverDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (SqlServerDetails),}, false).Single();
-                SqlQuery databasesDetailsQuery = queryLocator.PrepareQueries(new[] {typeof (DatabaseDetails),}, false).Single();
+                SqlQuery serverDetailsQuery = queryLocator.PrepareQueries(new[] { typeof(SqlServerDetails), }, false).Single();
+                SqlQuery databasesDetailsQuery = queryLocator.PrepareQueries(new[] { typeof(DatabaseDetails), }, false).Single();
                 using (var conn = new SqlConnection(ConnectionString))
                 {
                     // Log the server details
                     SqlServerDetails serverDetails = serverDetailsQuery.Query<SqlServerDetails>(conn, this).Single();
-                    LogVerboseSqlResults(serverDetailsQuery, new[] {serverDetails});
-                    log.InfoFormat("        {0} {1} {2} ({3})", serverDetails.SQLTitle, serverDetails.Edition, serverDetails.ProductLevel, serverDetails.ProductVersion);
+                    LogVerboseSqlResults(serverDetailsQuery, new[] { serverDetails });
+                    _log.Info("        {0} {1} {2} ({3})", serverDetails.SQLTitle, serverDetails.Edition, serverDetails.ProductLevel, serverDetails.ProductVersion);
 
                     // Sotre these for reporting below
                     DatabaseDetails[] databasesDetails = databasesDetailsQuery.DatabaseMetricQuery<DatabaseDetails>(conn, this).ToArray();
@@ -137,7 +138,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             catch (Exception e)
             {
                 // Just log some details here. The subsequent queries for metrics yields more error details.
-                log.ErrorFormat("        Unable to connect: {0}", e.Message);
+                _log.Error("        Unable to connect: {0}", e.Message);
                 databaseDetailsByName = null;
             }
 
@@ -170,7 +171,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                         }
                     }
 
-                    log.Info(message);
+                    _log.Info(message);
                 }
             }
             else if (databaseDetailsByName != null)
@@ -179,7 +180,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 // Report details for all of the DBs we expect to gather metrics against
                 foreach (DatabaseDetails details in databaseDetailsByName.Values)
                 {
-                    log.InfoFormat("        Including DB: {0} [CompatibilityLevel={1};State={2}({3});CreateDate={4:yyyy-MM-dd};UserAccess={5}({6})]",
+                    _log.Info("        Including DB: {0} [CompatibilityLevel={1};State={2}({3});CreateDate={4:yyyy-MM-dd};UserAccess={5}({6})]",
                                    details.DatabaseName,
                                    details.compatibility_level,
                                    details.state_desc,
@@ -191,23 +192,22 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             }
 
             // If there are included DB's, log the Excluded DB's as DEBUG info.
-            Action<string> logger = hasExplicitIncludedDatabases ? (Action<string>) log.Debug : log.Info;
             foreach (string database in ExcludedDatabaseNames)
             {
-                logger("        Excluding DB: " + database);
+                _log.Debug("        Excluding DB: " + database);
             }
         }
 
-        protected override object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
+        protected override object[] OnQueryExecuted(ISqlQuery query, object[] results)
         {
-            results = base.OnQueryExecuted(query, results, log);
+            results = base.OnQueryExecuted(query, results);
             ApplyDatabaseDisplayNames(IncludedDatabases, results);
             return results;
         }
 
-        public override IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+        public override IEnumerable<IQueryContext> ExecuteQueries()
         {
-            IEnumerable<IQueryContext> queries = base.ExecuteQueries(log);
+            IEnumerable<IQueryContext> queries = base.ExecuteQueries();
 
             foreach (IQueryContext query in queries)
             {

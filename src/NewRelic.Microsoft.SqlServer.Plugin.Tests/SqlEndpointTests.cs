@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using log4net;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
@@ -74,7 +74,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                  },
                              };
 
-            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1).Cast<SqlDmlActivity>().ToArray();
 
             Assert.That(outputResults1, Is.Not.Null);
             Assert.That(outputResults1.Count(), Is.EqualTo(1));
@@ -135,7 +135,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                  },
                              };
 
-            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1).Cast<SqlDmlActivity>().ToArray();
 
             Assert.That(outputResults1, Is.Not.Null);
             Assert.That(outputResults1.Count(), Is.EqualTo(1));
@@ -190,7 +190,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                  },
                              };
 
-            SqlDmlActivity[] outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+            SqlDmlActivity[] outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2).Cast<SqlDmlActivity>().ToArray();
             Assert.That(outputResults2, Is.Not.Null);
             Assert.That(outputResults2.Count(), Is.EqualTo(1));
 
@@ -226,7 +226,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                  },
                              };
 
-            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+            IEnumerable<SqlDmlActivity> outputResults1 = endpoint.CalculateSqlDmlActivityIncrease(resultSet1).Cast<SqlDmlActivity>().ToArray();
 
             Assert.That(outputResults1, Is.Not.Null);
             Assert.That(outputResults1.Count(), Is.EqualTo(1));
@@ -246,7 +246,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                                  },
                              };
 
-            SqlDmlActivity[] outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2, Substitute.For<ILog>()).Cast<SqlDmlActivity>().ToArray();
+            SqlDmlActivity[] outputResults2 = endpoint.CalculateSqlDmlActivityIncrease(resultSet2).Cast<SqlDmlActivity>().ToArray();
             Assert.That(outputResults2, Is.Not.Null);
             Assert.That(outputResults2.Count(), Is.EqualTo(1));
 

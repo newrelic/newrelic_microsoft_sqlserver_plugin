@@ -1,16 +1,19 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
-using log4net;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
     public class Settings
     {
+        private static readonly Logger _log = Logger.GetLogger(typeof(Settings).Name);
+
         private string _version;
         private static string _ProxyDetails;
 
@@ -18,7 +21,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         {
             Endpoints = endpoints;
             PollIntervalSeconds = 60;
-            ServiceName = ServiceConstants.ServiceName;
 
             var identity = WindowsIdentity.GetCurrent();
             if (identity != null)
@@ -32,7 +34,6 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
         public string LicenseKey { get; set; }
         public int PollIntervalSeconds { get; set; }
-        public string ServiceName { get; set; }
         public ISqlEndpoint[] Endpoints { get; private set; }
         public bool TestMode { get; set; }
         public bool IsProcessElevated { get; private set; }
@@ -50,7 +51,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             }
         }
 
-        internal static Settings FromConfigurationSection(NewRelicConfigurationSection section, ILog log)
+        internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
         {
             var sqlEndpoints = section.SqlServers
                                       .Select(s =>
@@ -69,13 +70,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                                PollIntervalSeconds = service.PollIntervalSeconds,
                            };
 
-
-            if (!string.IsNullOrEmpty(service.ServiceName) && Regex.IsMatch(service.ServiceName, "^[a-zA-Z_0-9-]{6,32}$"))
-            {
-                settings.ServiceName = service.ServiceName;
-            }
-
-            var webProxy = GetWebProxy(section, log);
+            var webProxy = GetWebProxy(section);
             if (webProxy != null)
             {
                 WebRequest.DefaultWebProxy = webProxy;
@@ -84,7 +79,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             return settings;
         }
 
-        private static IWebProxy GetWebProxy(NewRelicConfigurationSection section, ILog log)
+        private static IWebProxy GetWebProxy(NewRelicConfigurationSection section)
         {
             var proxyElement = section.Proxy;
             if (proxyElement == null || !proxyElement.ElementInformation.IsPresent) return null;
@@ -92,14 +87,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             Uri uri;
             if (!Uri.TryCreate(proxyElement.Host, UriKind.RelativeOrAbsolute, out uri))
             {
-                log.ErrorFormat("Proxy host '{0}' is not a valid URI, skipping proxy.", proxyElement.Host);
+                _log.Error("Proxy host '{0}' is not a valid URI, skipping proxy.", proxyElement.Host);
                 return null;	
             }
 
             int port;
             if (!int.TryParse(proxyElement.Port, out port))
             {
-                log.ErrorFormat("Unable to parse proxy port from '{0}', skipping proxy. Expecting a number from 1-65535.", proxyElement.Port);
+                _log.Error("Unable to parse proxy port from '{0}', skipping proxy. Expecting a number from 1-65535.", proxyElement.Port);
                 return null;
             }
 
@@ -110,7 +105,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             }
             catch (Exception e)
             {
-                log.ErrorFormat("Proxy settings are invalid. {0}", e.Message);
+                _log.Error("Proxy settings are invalid. {0}", e.Message);
                 return null;
             }
 
@@ -141,55 +136,53 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             return webProxy;
         }
 
-        public void ToLog(ILog log)
+        public void ToLog()
         {
-            // Pending review by New Relic before adding this information
-            //			log.Info("  New Relic Key: " + LicenseKey);
-
-            log.Info("  Version: " + Version);
-            log.Info("  Test Mode: " + (TestMode ? "Yes" : "No"));
-            log.Info("  Windows Service: " + (Environment.UserInteractive ? "No" : "Yes"));
-            log.InfoFormat(@"  User: {0}\{1}", Environment.UserDomainName, Environment.UserName);
-            log.Info("  Run as Administrator: " + (IsProcessElevated ? "Yes" : "No"));
+            _log.Info("  Version: " + Version);
+            _log.Info("  Test Mode: " + (TestMode ? "Yes" : "No"));
+            _log.Info("  Windows Service: " + (Environment.UserInteractive ? "No" : "Yes"));
+            _log.Info(@"  User: {0}\{1}", Environment.UserDomainName, Environment.UserName);
+            _log.Info("  Run as Administrator: " + (IsProcessElevated ? "Yes" : "No"));
+            _log.Info("  Configuration directory path: {0}", Path.GetFullPath("."));
 
             if (_ProxyDetails != null)
             {
-                log.Info("  " + _ProxyDetails);
+                _log.Info("  " + _ProxyDetails);
             }
 
-            log.Info("  Total Endpoints: " + Endpoints.Length);
-            log.Info("  Poll Interval Seconds: " + PollIntervalSeconds);
+            _log.Info("  Total Endpoints: " + Endpoints.Length);
+            _log.Info("  Poll Interval Seconds: " + PollIntervalSeconds);
 
             var sqlServerEndpoints = Endpoints.OfType<SqlServerEndpoint>().ToArray();
             if (sqlServerEndpoints.Any())
             {
-                log.InfoFormat("    SqlServerEndpoints: {0}", sqlServerEndpoints.Count());
-                log.InfoFormat("    PluginGUID: {0}", Constants.SqlServerComponentGuid);
+                _log.Info("    SqlServerEndpoints: {0}", sqlServerEndpoints.Count());
+                _log.Info("    PluginGUID: {0}", Constants.SqlServerComponentGuid);
                 foreach (ISqlEndpoint endpoint in sqlServerEndpoints)
                 {
-                    endpoint.ToLog(log);
+                    endpoint.ToLog();
                 }
-                log.Info(string.Empty);
+                _log.Info(string.Empty);
             }
             else
             {
-                log.Debug("No SQL Server endpoints configured.");
+                _log.Debug("No SQL Server endpoints configured.");
             }
 
             var azureEndpoints = Endpoints.OfType<AzureSqlEndpoint>().ToArray();
             if (azureEndpoints.Any())
             {
-                log.InfoFormat("    AzureEndpoints: {0}", azureEndpoints.Count());
-                log.InfoFormat("    PluginGUID: {0}", Constants.SqlAzureComponentGuid);
+                _log.Info("    AzureEndpoints: {0}", azureEndpoints.Count());
+                _log.Info("    PluginGUID: {0}", Constants.SqlAzureComponentGuid);
                 foreach (ISqlEndpoint endpoint in azureEndpoints)
                 {
-                    endpoint.ToLog(log);
+                    endpoint.ToLog();
                 }
-                log.Info(string.Empty);
+                _log.Info(string.Empty);
             }
             else
             {
-                log.Debug("No Azure SQL endpoints configured.");
+                _log.Debug("No Azure SQL endpoints configured.");
             }
         }
 

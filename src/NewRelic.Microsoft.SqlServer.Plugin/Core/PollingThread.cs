@@ -1,17 +1,17 @@
 using System;
 using System.Threading;
-using log4net;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
     internal class PollingThread
     {
-        private readonly ILog _log;
+        private static readonly Logger _log = Logger.GetLogger(typeof(MetricCollector).Name);
+
         private readonly PollingThreadState _threadState;
 
-        public PollingThread(PollingThreadSettings threadSettings, ILog log)
+        public PollingThread(PollingThreadSettings threadSettings)
         {
-            _log = log;
             ThreadSettings = threadSettings;
             _threadState = new PollingThreadState();
         }
@@ -85,7 +85,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
         {
             var errorCount = 0;
 
-            _log.DebugFormat("{0}: Entering Thread Loop", ThreadSettings.Name);
+            _log.Debug("{0}: Entering Thread Loop", ThreadSettings.Name);
 
             _threadState.Start();
 
@@ -110,25 +110,25 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
                             throw;
                         }
 
-                        _log.DebugFormat("Ignoring Error ({0} of 3):\r\n{1}", errorCount, ex);
+                        _log.Debug("Ignoring Error ({0} of 3):\r\n{1}", errorCount, ex);
                     }
                 }
                 else
                 {
-                    _log.DebugFormat("{0}: Paused - skipping pass", ThreadSettings.Name);
+                    _log.Debug("{0}: Paused - skipping pass", ThreadSettings.Name);
                 }
 
                 var interval = TimeSpan.FromSeconds(ThreadSettings.PollIntervalSeconds);
 
-                _log.DebugFormat("{0}: Sleeping for {1}", ThreadSettings.Name, interval);
+                _log.Debug("{0}: Sleeping for {1}", ThreadSettings.Name, interval);
 
                 if (ThreadSettings.AutoResetEvent.WaitOne(interval, true))
                 {
-                    _log.DebugFormat("{0}: Interrupted - woken up early", ThreadSettings.Name);
+                    _log.Debug("{0}: Interrupted - woken up early", ThreadSettings.Name);
                 }
             }
 
-            _log.DebugFormat("{0}: Exiting Thread Loop", ThreadSettings.Name);
+            _log.Debug("{0}: Exiting Thread Loop", ThreadSettings.Name);
         }
 
         private class PollingThreadState
