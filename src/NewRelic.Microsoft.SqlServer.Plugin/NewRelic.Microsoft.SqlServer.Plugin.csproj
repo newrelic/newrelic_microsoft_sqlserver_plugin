@@ -76,7 +76,7 @@
     <Compile Include="IMetricQuery.cs" />
     <Compile Include="IQueryContext.cs" />
     <Compile Include="ISqlEndpoint.cs" />
-    <Compile Include="Configuration\NewRelicConfigurationSection.cs" />
+    <Compile Include="Configuration\NewRelicConfiguration.cs" />
     <Compile Include="Configuration\ServiceElement.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="ISqlQuery.cs" />

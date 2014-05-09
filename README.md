@@ -17,7 +17,7 @@ Find the New Relic Microsoft SQL Server plugin in [Plugin Central](https://rpm.n
 This plugin can be installed one of the following ways:
 
 * [Option 1 - New Relic Platform Installer (Beta)](#option-1--install-with-the-new-relic-platform-installer-beta)
-* [Option 2 - Manual Install](#option-3--install-manually)
+* [Option 2 - Manual Install](#option-2--install-manually)
 
 ### Option 1 - Install with the New Relic Platform Installer (Beta)
 
@@ -78,13 +78,35 @@ The `plugin.json` file has a provided template in the `config` directory named `
 Below is an example of the `plugin.json` file's contents, you can add multiple objects to the "agents" array to monitor different instances:
 
 ```
-{  "agents": [    {      "type" : "sqlserver",      "name" : "Production Database",      "connectionString" : "Server=.\SQLExpress;Database=master;Trusted_Connection=True;",      "includeSystemDatabases" : "false",      "includes" : [        {
+{
+  "agents": [
+    {
+      "type" : "sqlserver",
+      "name" : "Production Database",
+      "connectionString" : "Server=.\SQLExpress;Database=master;Trusted_Connection=True;",
+      "includeSystemDatabases" : "false",
+      "includes" : [
+        {
           "name": "AdventureWorks",
-          "displayName": "My AdventureWorks Database"        }      ],      "excludes" : [        {
-          "name": "nameOfDatabaseToExclude"        }      ]    },    {      "type" : "azure",      "name" : "Azure Cloud Database",      "connectionString" : <Your SQL Azure connection string>    }  ]}
+          "displayName": "My AdventureWorks Database"
+        }
+      ],
+      "excludes" : [
+        {
+          "name": "nameOfDatabaseToExclude"
+        }
+      ]
+    },
+    {
+      "type" : "azure",
+      "name" : "Azure Cloud Database",
+      "connectionString" : <Your SQL Azure connection string>
+    }
+  ]
+}
 ```
 
-**note** - Set the "name" attribute to identify each Memcached host, e.g. "Production" as this will be used to identify specific instances in the New Relic UI. 
+**note** - Set the "name" attribute to identify each MS SQL host, e.g. "Production" as this will be used to identify specific instances in the New Relic UI. 
 
 **note** - Each JSON object in the 'agents' array should have a type of either 'sqlserver' or 'azure'.
 
@@ -263,8 +285,11 @@ Find a bug? Post it to [http://support.newrelic.com](http://support.newrelic.com
 
 ## Fork me!
 
-The New Relic Platform uses an extensible architecture that allows you to define new metrics beyond the provided defaults. To expose more data about your Memcached servers, fork this repository, create a new GUID, add the metrics you would like to collect to the code and then build summary metrics and dashboards to expose your newly collected metrics.
+The New Relic Platform uses an extensible architecture that allows you to define new metrics beyond the provided defaults. To expose more data about your MS SQL servers, fork this repository, create a new GUID, add the metrics you would like to collect to the code and then build summary metrics and dashboards to expose your newly collected metrics.
 
+## Contributing
+ 
+ You are welcome to send pull requests to us - however, by doing so you agree that you are granting New Relic a non-exclusive, non-revokable, no-cost license to use the code, algorithms, patents, and ideas in that code in our products if we so choose. You also agree the code is provided as-is and you provide no warranties as to its fitness or correctness for any purpose.
 
 ## Credits
 The New Relic Microsoft SQL Server plugin was originally authored by [Ed Chapel](https://github.com/edchapel), [Jesse Stromwick](https://github.com/jstromwick), and [Mike Merrill](https://github.com/infoone). Subsequent updates and support are provided by [New Relic](http://newrelic.com/platform).

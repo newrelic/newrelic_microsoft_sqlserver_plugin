@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Reflection;
+using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Platform.Sdk.Configuration;
 using NewRelic.Platform.Sdk.Extensions;
 using NewRelic.Platform.Sdk.Utils;
@@ -41,13 +42,13 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
             List<object> configuredAgents = pluginConfigContents["agents"] as List<object>;
 
-            NewRelicConfigurationSection newrelicConfigurationSection = new NewRelicConfigurationSection();
+            NewRelicConfiguration newrelicConfigurationSection = new NewRelicConfiguration();
 
             // Set service level changes (e.g. license key, service name, proxy)
             AddServiceElement(newrelicConfigurationSection, newrelicConfig);
             AddProxyElement(newrelicConfigurationSection, newrelicConfig);
 
-            //// Set details for the SQL instances that are to be monitored
+            // Set details for the SQL instances that are to be monitored
             AddSqlInstanceElements(newrelicConfigurationSection, configuredAgents);
 
             var settings = Settings.FromConfigurationSection(newrelicConfigurationSection);
@@ -56,7 +57,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             return settings;
         }
 
-        private static void AddServiceElement(NewRelicConfigurationSection configSection, INewRelicConfig newrelicConfig) 
+        private static void AddServiceElement(NewRelicConfiguration config, INewRelicConfig newrelicConfig) 
         {
             ServiceElement serviceElement = new ServiceElement();
             serviceElement.LicenseKey = newrelicConfig.LicenseKey;
@@ -66,10 +67,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                 serviceElement.PollIntervalSeconds = newrelicConfig.PollInterval.Value;
             }
 
-            configSection.Service = serviceElement;
+            config.Service = serviceElement;
         }
 
-        private static void AddProxyElement(NewRelicConfigurationSection configSection, INewRelicConfig newrelicConfig)
+        private static void AddProxyElement(NewRelicConfiguration config, INewRelicConfig newrelicConfig)
         {
             string proxyHost = newrelicConfig.ProxyHost;
             if (proxyHost.IsValidString())
@@ -92,11 +93,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                     element.Password = proxyPassword;
                 }
 
-                configSection.Proxy = element;
+                config.Proxy = element;
             }
         }
 
-        private static void AddSqlInstanceElements(NewRelicConfigurationSection configSection, List<object> agentConfigs)
+        private static void AddSqlInstanceElements(NewRelicConfiguration config, List<object> agentConfigs)
         {
             SqlServerCollection sqlCollection = new SqlServerCollection();
             AzureCollection azureCollection = new AzureCollection();
@@ -105,24 +106,24 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             {
                 var agentDictionary = (IDictionary<string, object>)agentDetails;
 
-                if ("sqlserver".Equals(agentDictionary["type"]))
+                if ("sqlserver".Equals(agentDictionary[Constants.TypeProperty]))
                 {
-                    string name = (string)agentDictionary["name"];
-                    string connectionString = (string)agentDictionary["connectionString"];
+                    string name = (string)agentDictionary[Constants.NameProperty];
+                    string connectionString = (string)agentDictionary[Constants.ConnectionStringProperty];
 
                     SqlServerElement element = new SqlServerElement();
                     element.Name = name;
                     element.ConnectionString = connectionString;
 
-                    if (agentDictionary.ContainsKey("includeSystemDatabases"))
+                    if (agentDictionary.ContainsKey(Constants.IncludeSystemDbsProperty))
                     {
-                        bool includeSystemDatabases = bool.Parse((string)agentDictionary["includeSystemDatabases"]);
+                        bool includeSystemDatabases = bool.Parse((string)agentDictionary[Constants.IncludeSystemDbsProperty]);
                         element.IncludeSystemDatabases = includeSystemDatabases;
                     }
 
-                    if (agentDictionary.ContainsKey("includes"))
+                    if (agentDictionary.ContainsKey(Constants.IncludesProperty))
                     {
-                        List<object> includedDbs = agentDictionary["includes"] as List<object>;
+                        List<object> includedDbs = agentDictionary[Constants.IncludesProperty] as List<object>;
 
                         DatabaseCollection dbCollection = new DatabaseCollection();
 
@@ -131,8 +132,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                             IDictionary<string, object> database = (IDictionary<string, object>)includedDb;
                             DatabaseElement dbElement = new DatabaseElement();
 
-                            dbElement.Name = (string)database["name"];
-                            dbElement.DisplayName = (string)database["displayName"];
+                            dbElement.Name = (string)database[Constants.NameProperty];
+                            dbElement.DisplayName = (string)database[Constants.DisplayNameProperty];
 
                             dbCollection.Add(dbElement);
                         }
@@ -140,9 +141,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                         element.IncludedDatabases = dbCollection;
                     }
 
-                    if (agentDictionary.ContainsKey("excludes"))
+                    if (agentDictionary.ContainsKey(Constants.ExcludesProperty))
                     {
-                        List<object> excludedDbs = agentDictionary["excludes"] as List<object>;
+                        List<object> excludedDbs = agentDictionary[Constants.ExcludesProperty] as List<object>;
 
                         DatabaseCollection dbCollection = new DatabaseCollection();
 
@@ -151,7 +152,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                             IDictionary<string, object> database = (IDictionary<string, object>)excludedDb;
                             DatabaseElement dbElement = new DatabaseElement();
 
-                            dbElement.Name = (string)database["name"];
+                            dbElement.Name = (string)database[Constants.NameProperty];
 
                             dbCollection.Add(dbElement);
                         }
@@ -161,10 +162,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 
                     sqlCollection.Add(element);
                 }
-                else if ("azure".Equals(agentDictionary["type"]))
+                else if ("azure".Equals(agentDictionary[Constants.TypeProperty]))
                 {
-                    string name = (string)agentDictionary["name"];
-                    string connectionString = (string)agentDictionary["connectionString"];
+                    string name = (string)agentDictionary[Constants.NameProperty];
+                    string connectionString = (string)agentDictionary[Constants.ConnectionStringProperty];
 
                     AzureSqlDatabaseElement element = new AzureSqlDatabaseElement();
                     element.Name = name;
@@ -178,8 +179,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                 }
             }
 
-            configSection.SqlServers = sqlCollection;
-            configSection.AzureSqlDatabases = azureCollection;
+            config.SqlServers = sqlCollection;
+            config.AzureSqlDatabases = azureCollection;
         }
     }
 }

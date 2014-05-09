@@ -51,9 +51,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             }
         }
 
-        internal static Settings FromConfigurationSection(NewRelicConfigurationSection section)
+        internal static Settings FromConfigurationSection(NewRelicConfiguration config)
         {
-            var sqlEndpoints = section.SqlServers
+            var sqlEndpoints = config.SqlServers
                                       .Select(s =>
                                               {
                                                   var includedDatabaseNames = s.IncludedDatabases.Select(d => d.ToDatabase()).ToArray();
@@ -61,16 +61,16 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
                                                   return
                                                       (ISqlEndpoint) new SqlServerEndpoint(s.Name, s.ConnectionString, s.IncludeSystemDatabases, includedDatabaseNames, excludedDatabaseNames);
                                               })
-                                      .Union(section.AzureSqlDatabases.Select(s => (ISqlEndpoint) new AzureSqlEndpoint(s.Name, s.ConnectionString)));
+                                      .Union(config.AzureSqlDatabases.Select(s => (ISqlEndpoint) new AzureSqlEndpoint(s.Name, s.ConnectionString)));
 
-            var service = section.Service;
+            var service = config.Service;
             var settings = new Settings(sqlEndpoints.ToArray())
                            {
                                LicenseKey = service.LicenseKey,
                                PollIntervalSeconds = service.PollIntervalSeconds,
                            };
 
-            var webProxy = GetWebProxy(section);
+            var webProxy = GetWebProxy(config);
             if (webProxy != null)
             {
                 WebRequest.DefaultWebProxy = webProxy;
@@ -79,9 +79,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             return settings;
         }
 
-        private static IWebProxy GetWebProxy(NewRelicConfigurationSection section)
+        private static IWebProxy GetWebProxy(NewRelicConfiguration config)
         {
-            var proxyElement = section.Proxy;
+            var proxyElement = config.Proxy;
             if (proxyElement == null || !proxyElement.ElementInformation.IsPresent) return null;
 
             Uri uri;
