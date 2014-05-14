@@ -61,7 +61,8 @@ Step 3 showed you how to run the plugin; however, there are several problems wit
 
 If you prefer to be more involved in the maintaince of the process, consider one of these tools for managing your plugin process (bear in mind that some of these are OS-specific):
 
-- [WinSW](https://github.com/kohsuke/winsw)
+- [WinSW - Third-party Service Wrapper](https://github.com/kohsuke/winsw)
+- [SC - Native to Windows](https://support.microsoft.com/kb/251192?SmcNavTabIndex=1)
 
 ----
 
@@ -78,33 +79,12 @@ The `plugin.json` file has a provided template in the `config` directory named `
 Below is an example of the `plugin.json` file's contents, you can add multiple objects to the "agents" array to monitor different instances:
 
 ```
-{
-  "agents": [
-    {
-      "type" : "sqlserver",
-      "name" : "Production Database",
-      "connectionString" : "Server=.\SQLExpress;Database=master;Trusted_Connection=True;",
-      "includeSystemDatabases" : "false",
-      "includes" : [
-        {
+{  "agents": [    {      "type" : "sqlserver",      "name" : "Production Database",      "connectionString" : "Server=.\\SQLExpress;Database=master;Trusted_Connection=True;",      "includeSystemDatabases" : "false",      "includes" : [        {
           "name": "AdventureWorks",
-          "displayName": "My AdventureWorks Database"
-        }
-      ],
-      "excludes" : [
-        {
-          "name": "nameOfDatabaseToExclude"
-        }
-      ]
-    },
-    {
-      "type" : "azure",
-      "name" : "Azure Cloud Database",
-      "connectionString" : <Your SQL Azure connection string>
-    }
-  ]
-}
+          "displayName": "My AdventureWorks Database"        }      ],      "excludes" : [        {
+          "name": "nameOfDatabaseToExclude"        }      ]    },    {      "type" : "azure",      "name" : "Azure Cloud Database",      "connectionString" : <Your SQL Azure connection string>    }  ]}
 ```
+**note** - Notice you must escape '\' characters in your connection strings.
 
 **note** - Set the "name" attribute to identify each MS SQL host, e.g. "Production" as this will be used to identify specific instances in the New Relic UI. 
 

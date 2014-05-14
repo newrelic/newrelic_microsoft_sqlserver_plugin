@@ -4,7 +4,7 @@
       "_comment" : "This is an example of how you would monitor an on-premises SQL instance, remove this section if you are not using SQL Server or duplicate this section if you have multiple servers.",
       "type" : "sqlserver",
       "name" : "Production Database",
-      "connectionString" : "Server=.\SQLExpress;Database=master;Trusted_Connection=True;",
+      "connectionString" : "Server=.\\SQLExpress;Database=master;Trusted_Connection=True;",
       "includeSystemDatabases" : "true",
 	  "_includesComment" : "An array of JSON objects containing a property 'name' which is the name of the database you would like to include in your monitoring.",
       "includes" : [
