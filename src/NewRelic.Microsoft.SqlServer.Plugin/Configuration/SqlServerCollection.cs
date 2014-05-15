@@ -3,32 +3,37 @@ using System.Configuration;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
 {
-	[ConfigurationCollection(typeof (SqlServerElement), AddItemName = "sqlServer")]
-	internal class SqlServerCollection : ConfigurationElementCollection, IEnumerable<SqlServerElement>
-	{
-		public SqlServerElement this[int index]
-		{
-			get { return (SqlServerElement) BaseGet(index); }
-		}
+    [ConfigurationCollection(typeof (SqlServerElement), AddItemName = "sqlServer")]
+    internal class SqlServerCollection : ConfigurationElementCollection, IEnumerable<SqlServerElement>
+    {
+        public SqlServerElement this[int index]
+        {
+            get { return (SqlServerElement) BaseGet(index); }
+        }
 
-		IEnumerator<SqlServerElement> IEnumerable<SqlServerElement>.GetEnumerator()
-		{
-			var elements = new List<SqlServerElement>();
-			foreach (SqlServerElement element in this)
-			{
-				elements.Add(element);
-			}
-			return elements.GetEnumerator();
-		}
+        internal void Add(SqlServerElement element)
+        {
+            this.BaseAdd(element);
+        }
 
-		protected override ConfigurationElement CreateNewElement()
-		{
-			return new SqlServerElement();
-		}
+        IEnumerator<SqlServerElement> IEnumerable<SqlServerElement>.GetEnumerator()
+        {
+            var elements = new List<SqlServerElement>();
+            foreach (SqlServerElement element in this)
+            {
+                elements.Add(element);
+            }
+            return elements.GetEnumerator();
+        }
 
-		protected override object GetElementKey(ConfigurationElement element)
-		{
-			return ((SqlServerElement) (element)).Name;
-		}
-	}
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new SqlServerElement();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((SqlServerElement) (element)).Name;
+        }
+    }
 }

@@ -4,19 +4,18 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
-using log4net;
-
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
 using NewRelic.Microsoft.SqlServer.Plugin.QueryTypes;
+using NewRelic.Platform.Sdk.Utils;
+using NewRelic.Platform.Sdk.Configuration;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     public abstract class SqlEndpointBase : ISqlEndpoint
     {
-        private static readonly ILog _ErrorDetailOutputLogger = LogManager.GetLogger(Constants.ErrorDetailLogger);
-        private static readonly ILog _VerboseSqlOutputLogger = LogManager.GetLogger(Constants.VerboseSqlLogger);
+        private static readonly Logger _log = Logger.GetLogger(typeof(MetricCollector).Name);
 
         private SqlQuery[] _queries;
 
@@ -52,12 +51,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             _queries = FilterQueries(queries).ToArray();
         }
 
-        public virtual IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+        public virtual IEnumerable<IQueryContext> ExecuteQueries()
         {
-            return ExecuteQueries(_queries, ConnectionString, log);
+            return ExecuteQueries(_queries, ConnectionString);
         }
 
-        public virtual void ToLog(ILog log)
+        public virtual void ToLog()
         {
             // Remove password from logging
             var safeConnectionString = new SqlConnectionStringBuilder(ConnectionString);
@@ -66,21 +65,21 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 safeConnectionString.Password = "[redacted]";
             }
 
-            log.InfoFormat("      {0}: {1}", Name, safeConnectionString);
+            _log.Info("      {0}: {1}", Name, safeConnectionString);
 
             // Validate that connection string do not provide both Trusted Security AND user/password
             bool hasUserCreds = !string.IsNullOrEmpty(safeConnectionString.UserID) || !string.IsNullOrEmpty(safeConnectionString.Password);
             if (safeConnectionString.IntegratedSecurity == hasUserCreds)
             {
-                log.Error("==================================================");
-                log.ErrorFormat("Connection string for '{0}' may not contain both Integrated Security and User ID/Password credentials. " +
+                _log.Error("==================================================");
+                _log.Error("Connection string for '{0}' may not contain both Integrated Security and User ID/Password credentials. " +
                                 "Review the readme.md and update the config file.",
                     safeConnectionString.DataSource);
-                log.Error("==================================================");
+                _log.Error("==================================================");
             }
         }
 
-        protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString, ILog log)
+        protected IEnumerable<IQueryContext> ExecuteQueries(SqlQuery[] queries, string connectionString)
         {
             // Remove password from logging
             var safeConnectionString = new SqlConnectionStringBuilder(connectionString);
@@ -89,7 +88,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 safeConnectionString.Password = "[redacted]";
             }
 
-            _VerboseSqlOutputLogger.InfoFormat("Connecting with {0}", safeConnectionString);
+            _log.Info("Connecting with {0}", safeConnectionString);
 
             using (var conn = new SqlConnection(connectionString))
             {
@@ -103,12 +102,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                         // Log them
                         LogVerboseSqlResults(query, results);
                         // Allow them to be transformed
-                        results = OnQueryExecuted(query, results, log);
+                        results = OnQueryExecuted(query, results);
                     }
                     catch (Exception e)
                     {
-                        _ErrorDetailOutputLogger.Error(string.Format("Error with query '{0}' at endpoint '{1}'", query.QueryName, safeConnectionString), e);
-                        LogErrorSummary(log, e, query);
+                        _log.Error(string.Format("Error with query '{0}' at endpoint '{1}'", query.QueryName, safeConnectionString), e);
+                        LogErrorSummary(e, query);
                         continue;
                     }
                     yield return CreateQueryContext(query, results);
@@ -119,7 +118,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
         protected static void LogVerboseSqlResults(ISqlQuery query, IEnumerable<object> results)
         {
             // This could be slow, so only proceed if it actually gets logged
-            if (!_VerboseSqlOutputLogger.IsInfoEnabled) return;
+            if (Logger.LogLevel != LogLevel.Debug) return;
 
             var verboseLogging = new StringBuilder();
             verboseLogging.AppendFormat("Executed {0}", query.ResourceName).AppendLine();
@@ -129,7 +128,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                 verboseLogging.AppendLine(result.ToString());
             }
 
-            _VerboseSqlOutputLogger.Info(verboseLogging.ToString());
+            _log.Info(verboseLogging.ToString());
         }
 
         internal QueryContext CreateQueryContext(IMetricQuery query, IEnumerable<object> results)
@@ -139,10 +138,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
         protected internal abstract IEnumerable<SqlQuery> FilterQueries(IEnumerable<SqlQuery> queries);
 
-        protected virtual object[] OnQueryExecuted(ISqlQuery query, object[] results, ILog log)
+        protected virtual object[] OnQueryExecuted(ISqlQuery query, object[] results)
         {
             // TODO: We should be able to remove the special casing of SqlDmlActivity here, but simply changing it to a delta counter doe
-            return query.QueryType == typeof (SqlDmlActivity) ? CalculateSqlDmlActivityIncrease(results, log) : results;
+            return query.QueryType == typeof (SqlDmlActivity) ? CalculateSqlDmlActivityIncrease(results) : results;
         }
 
         public override string ToString()
@@ -150,11 +149,11 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             return string.Format("Name: {0}, ConnectionString: {1}", Name, ConnectionString);
         }
 
-        internal object[] CalculateSqlDmlActivityIncrease(object[] inputResults, ILog log)
+        internal object[] CalculateSqlDmlActivityIncrease(object[] inputResults)
         {
             if (inputResults == null || inputResults.Length == 0)
             {
-                log.Error("No values passed to CalculateSqlDmlActivityIncrease");
+                _log.Error("No values passed to CalculateSqlDmlActivityIncrease");
                 return inputResults;
             }
 
@@ -162,7 +161,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
             if (!sqlDmlActivities.Any())
             {
-                log.Error("In trying to Process results for SqlDmlActivity, results were NULL or not of the appropriate type");
+                _log.Error("In trying to Process results for SqlDmlActivity, results were NULL or not of the appropriate type");
                 return inputResults;
             }
 
@@ -229,11 +228,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             //Current Becomes the new history
             SqlDmlActivityHistory = currentValues;
 
-            if (_VerboseSqlOutputLogger.IsInfoEnabled)
-            {
-                _VerboseSqlOutputLogger.InfoFormat("SQL DML Activity: Reads={0} Writes={1}", reads, writes);
-                _VerboseSqlOutputLogger.Info("");
-            }
+            _log.Info("SQL DML Activity: Reads={0} Writes={1}", reads, writes);
+            _log.Info("");
 
             //return the sum of all increases for reads and writes
             //if there is was no history (first time for this db) then reads and writes will be 0
@@ -247,12 +243,12 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
                    };
         }
 
-        private void LogErrorSummary(ILog log, Exception e, ISqlQuery query)
+        private void LogErrorSummary(Exception e, ISqlQuery query)
         {
             var sqlException = e.InnerException as SqlException;
             if (sqlException == null) return;
 
-            log.LogSqlException(sqlException, query, ConnectionString);
+            SqlErrorReporter.LogSqlException(sqlException, query, ConnectionString);
         }
     }
 }

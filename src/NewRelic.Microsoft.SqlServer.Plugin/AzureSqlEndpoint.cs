@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using log4net;
+
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core;
 using NewRelic.Microsoft.SqlServer.Plugin.Properties;
@@ -38,9 +38,9 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 			return queries.Where(q => q.QueryAttribute is AzureSqlQueryAttribute);
 		}
 
-		public override IEnumerable<IQueryContext> ExecuteQueries(ILog log)
+		public override IEnumerable<IQueryContext> ExecuteQueries()
 		{
-			return base.ExecuteQueries(log).Concat(PerformThrottlingQuery(log));
+			return base.ExecuteQueries().Concat(PerformThrottlingQuery());
 		}
 
 		/// <summary>
@@ -48,10 +48,10 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 		/// </summary>
 		/// <param name="log"></param>
 		/// <returns></returns>
-		internal IEnumerable<IQueryContext> PerformThrottlingQuery(ILog log)
+		internal IEnumerable<IQueryContext> PerformThrottlingQuery()
 		{
 			var queries = new QueryLocator(new DapperWrapper()).PrepareQueries(new[] {typeof (AzureServiceInterruptionEvents)}, false).ToArray();
-			return ExecuteQueries(queries, _masterConnectionString, log);
+			return ExecuteQueries(queries, _masterConnectionString);
 		}
 	}
 }

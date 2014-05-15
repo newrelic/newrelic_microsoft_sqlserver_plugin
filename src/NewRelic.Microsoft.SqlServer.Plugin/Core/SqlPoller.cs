@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Threading;
-using log4net;
 using NewRelic.Microsoft.SqlServer.Plugin.Configuration;
 using NewRelic.Microsoft.SqlServer.Plugin.Core.Extensions;
-using NewRelic.Microsoft.SqlServer.Plugin.Properties;
+using NewRelic.Platform.Sdk.Utils;
 
 namespace NewRelic.Microsoft.SqlServer.Plugin.Core
 {
     public class SqlPoller
     {
-        private readonly ILog _log;
+        private static readonly Logger _log = Logger.GetLogger(typeof(SqlPoller).Name);
+
         private readonly MetricCollector _metricCollector;
         private readonly Settings _settings;
         private readonly object _syncRoot;
         private PollingThread _pollingThread;
 
-        public SqlPoller(Settings settings, ILog log = null)
+        public SqlPoller(Settings settings)
         {
             _settings = settings;
             _syncRoot = new object();
-            _log = log ?? LogManager.GetLogger(Constants.SqlMonitorLogger);
-            _metricCollector = new MetricCollector(settings, _log);
+            _metricCollector = new MetricCollector(settings);
         }
 
         public void Start()
@@ -48,7 +47,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
                                                     AutoResetEvent = new AutoResetEvent(false),
                                                 };
 
-                    _pollingThread = new PollingThread(pollingThreadSettings, _log);
+                    _pollingThread = new PollingThread(pollingThreadSettings);
                     _pollingThread.ExceptionThrown += e => _log.Error("Polling thread exception", e);
 
                     _log.Debug("Service Threads Starting...");
@@ -61,7 +60,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Core
             catch (Exception e)
             {
                 _log.Fatal("Failed while attempting to start service");
-                _log.Warn(e);
+                _log.Warn("{0}\n{1}", e.Message, e.StackTrace);
                 throw;
             }
         }

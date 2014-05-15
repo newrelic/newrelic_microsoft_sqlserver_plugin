@@ -1,0 +1,24 @@
+﻿{
+  "agents": [
+    {
+      "_comment" : "This is an example of how you would monitor an on-premises SQL instance, remove this section if you are not using SQL Server or duplicate this section if you have multiple servers.",
+      "type" : "sqlserver",
+      "name" : "Production Database",
+      "connectionString" : "Server=.\\SQLExpress;Database=master;Trusted_Connection=True;",
+      "includeSystemDatabases" : "true",
+	  "_includesComment" : "An array of JSON objects containing a property 'name' which is the name of the database you would like to include in your monitoring.",
+      "includes" : [
+
+      ],
+      "excludes" : [
+
+      ]
+    },
+    {
+      "_comment" : "This is an example of how you would monitor a SQL Azure instance, remove this section if you are not using SQL Azure or duplicate this section if you have multiple servers.",
+      "type" : "azure",
+      "name" : "Azure Cloud Database",
+      "connectionString" : "Server=tcp:{Azure SQL Server Name}.database.windows.net,1433;Database={Azure SQL Database Name};User ID={Azure SQL User Name}@{Azure SQL Server Name};Password={Password for User Name};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;"
+    }
+  ]
+}

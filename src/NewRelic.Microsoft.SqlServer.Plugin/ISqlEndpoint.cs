@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using log4net;
-
 namespace NewRelic.Microsoft.SqlServer.Plugin
 {
     public interface ISqlEndpoint
@@ -14,8 +12,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
 
         void SetQueries(IEnumerable<SqlQuery> queries);
 
-        IEnumerable<IQueryContext> ExecuteQueries(ILog log);
+        IEnumerable<IQueryContext> ExecuteQueries();
 
-        void ToLog(ILog log);
+        void ToLog();
     }
 }

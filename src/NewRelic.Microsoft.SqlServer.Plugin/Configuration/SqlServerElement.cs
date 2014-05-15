@@ -29,12 +29,14 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         public DatabaseCollection IncludedDatabases
         {
             get { return ((DatabaseCollection) (base["includes"])); }
+            set { base["includes"] = (DatabaseCollection)value; }
         }
 
         [ConfigurationProperty("excludes")]
         public DatabaseCollection ExcludedDatabases
         {
             get { return ((DatabaseCollection) (base["excludes"])); }
+            set { base["excludes"] = (DatabaseCollection)value; }
         }
     }
 }

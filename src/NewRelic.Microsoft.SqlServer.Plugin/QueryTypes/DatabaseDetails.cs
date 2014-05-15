@@ -61,8 +61,8 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.QueryTypes
         public bool is_cdc_enabled { get; set; }
         public bool? is_encrypted { get; set; }
         public bool? is_honor_broker_priority_on { get; set; }
-        public string replica_id { get; set; }
-        public string group_database_id { get; set; }
+        public object replica_id { get; set; }
+        public object group_database_id { get; set; }
         public short? default_language_lcid { get; set; }
         public string default_language_name { get; set; }
         public int? default_fulltext_language_lcid { get; set; }
