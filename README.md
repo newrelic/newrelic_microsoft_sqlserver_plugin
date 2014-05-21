@@ -16,12 +16,12 @@ Find the New Relic Microsoft SQL Server plugin in [Plugin Central](https://rpm.n
 
 This plugin can be installed one of the following ways:
 
-* [Option 1 - New Relic Platform Installer (Beta)](#option-1--install-with-the-new-relic-platform-installer-beta)
+* [Option 1 - New Relic Platform Installer](#option-1--install-with-the-new-relic-platform-installer)
 * [Option 2 - Manual Install](#option-2--install-manually)
 
-### Option 1 - Install with the New Relic Platform Installer (Beta)
+### Option 1 - Install with the New Relic Platform Installer
 
-The New Relic Platform Installer (NPI) is a simple, lightweight command line tool that helps you easily download, configure and manage New Relic Platform Plugins.  If you're interested in participating in our public beta, simply go to [our forum category](https://discuss.newrelic.com/category/platform-plugins/platform-installer-beta) and checkout the ['Getting Started' section](https://discuss.newrelic.com/t/getting-started-for-the-platform-installer-beta/842).  If you have any questions, concerns or feedback, please do not hesitate to reach out through the forums as we greatly appreciate your feedback!
+The New Relic Platform Installer (NPI) is a simple, lightweight command line tool that helps you easily download, configure and manage New Relic Platform Plugins.  If you're interested in learning more simply go to [our forum category](https://discuss.newrelic.com/category/platform-plugins/platform-installer) and checkout the ['Getting Started' section](https://discuss.newrelic.com/t/getting-started-for-the-platform-installer/842).  If you have any questions, concerns or feedback, please do not hesitate to reach out through the forums as we greatly appreciate your feedback!
 
 Once you've installed the NPI tool, run the following command:
 
@@ -37,7 +37,7 @@ This command will take care of the creation of `newrelic.json` and `plugin.json`
 
 The latest version of the plugin can be downloaded [here](https://rpm.newrelic.com/extensions/com.newrelic.platform.microsoft.sqlserver).  Once the plugin is on your box, extract it to a location of your choosing.
 
-**note** - This plugin is distributed in tar.gz format and can be extracted with the following command on Unix-based systems (Windows users will need to download a third-party extraction tool or use the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer-beta/842)):
+**note** - This plugin is distributed in tar.gz format and can be extracted with the following command on Unix-based systems (Windows users will need to download a third-party extraction tool or use the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer/842)):
 
 ```
 	tar -xvzf newrelic_sqlserver_plugin-vX.Y.Z.tar.gz
@@ -57,7 +57,7 @@ To run the plugin, execute the following command from a terminal or command wind
  
 #### Step 4 - Keeping the Plugin Running
 
-Step 3 showed you how to run the plugin; however, there are several problems with running the process directly in the foreground (For example, when the machine reboots the process will not be started again).  That said, there are several common ways to keep a plugin running, but they do require more advanced knowledge or additional tooling.  We highly recommend considering using the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer-beta/842) as it will take care of most of the heavy lifting for you.  
+Step 3 showed you how to run the plugin; however, there are several problems with running the process directly in the foreground (For example, when the machine reboots the process will not be started again).  That said, there are several common ways to keep a plugin running, but they do require more advanced knowledge or additional tooling.  We highly recommend considering using the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer/842) as it will take care of most of the heavy lifting for you.  
 
 If you prefer to be more involved in the maintaince of the process, consider one of these tools for managing your plugin process (bear in mind that some of these are OS-specific):
 
