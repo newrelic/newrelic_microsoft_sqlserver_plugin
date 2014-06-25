@@ -35,7 +35,7 @@ This command will take care of the creation of `newrelic.json` and `plugin.json`
 
 #### Step 1 - Downloading and Extracting the Plugin
 
-The latest version of the plugin can be downloaded [here](https://rpm.newrelic.com/extensions/com.newrelic.platform.microsoft.sqlserver).  Once the plugin is on your box, extract it to a location of your choosing.
+The latest version of the plugin can be downloaded [here](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/tree/develop/dist).  Once the plugin is on your box, extract it to a location of your choosing.
 
 **note** - This plugin is distributed in tar.gz format and can be extracted with the following command on Unix-based systems (Windows users will need to download a third-party extraction tool or use the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer/842)):
 
