@@ -82,7 +82,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         private static IWebProxy GetWebProxy(NewRelicConfiguration config)
         {
             var proxyElement = config.Proxy;
-            if (proxyElement == null || !proxyElement.ElementInformation.IsPresent) return null;
+            if (proxyElement == null) return null;
 
             Uri uri;
             if (!Uri.TryCreate(proxyElement.Host, UriKind.RelativeOrAbsolute, out uri))

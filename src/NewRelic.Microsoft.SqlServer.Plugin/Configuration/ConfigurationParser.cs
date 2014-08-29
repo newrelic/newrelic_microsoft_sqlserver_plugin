@@ -75,25 +75,23 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
             string proxyHost = newrelicConfig.ProxyHost;
             if (proxyHost.IsValidString())
             {
-                ProxyElement element = new ProxyElement();
+               config.Proxy = new ProxyElement();
 
-                element.Host = proxyHost;
+               config.Proxy.Host = proxyHost;
 
                 string proxyPort = newrelicConfig.ProxyPort.ToString();
                 if (proxyPort.IsValidString())
                 {
-                    element.Port = proxyPort;
+                    config.Proxy.Port = proxyPort;
                 }
 
                 string proxyUsername = newrelicConfig.ProxyUserName;
                 string proxyPassword = newrelicConfig.ProxyPassword;
                 if (proxyUsername.IsValidString() && proxyPassword.IsValidString())
                 {
-                    element.User = proxyUsername;
-                    element.Password = proxyPassword;
+                    config.Proxy.User = proxyUsername;
+                    config.Proxy.Password = proxyPassword;
                 }
-
-                config.Proxy = element;
             }
         }
 

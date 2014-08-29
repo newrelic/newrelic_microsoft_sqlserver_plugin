@@ -85,7 +85,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin
             }
             catch (Exception e)
             {
-                _log.Error("Error sending data to connector", e);
+                _log.Error("Error sending data to the collector", e);
             }
         }
     }
