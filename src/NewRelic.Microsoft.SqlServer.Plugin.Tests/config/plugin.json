@@ -1,0 +1,42 @@
+﻿{
+    "agents": [
+        {
+            "_comment": "This is an example of how you would monitor an on-premises SQL instance, remove this section if you are not using SQL Server or duplicate this section if you have multiple servers.",
+            "type": "sqlserver",
+            "name": "Local",
+            "connectionString": "Server=.;Database=master;Trusted_Connection=True;",
+            "includeSystemDatabases": "true",
+            "_includesComment": "An array of JSON objects containing a property 'name' which is the name of the database you would like to include in your monitoring.",
+            "includes": [
+                { "name": "Northwind", "displayName": "Southbreeze" },
+                { "name": "tempdb", "displayName": "tempdb" },
+                { "name": "master", "displayName": "master" },
+                { "name": "model", "displayName": "model" },
+                { "name": "msdb", "displayName": "msdb" }
+            ],
+            "excludes": [
+
+            ]
+        },
+        {
+            "_comment": "This is an example of how you would monitor an on-premises SQL instance, remove this section if you are not using SQL Server or duplicate this section if you have multiple servers.",
+            "type": "sqlserver",
+            "name": "Important Server",
+            "connectionString": "Server=192.168.10.123,1234;Database=master;User Id=foo;Password=bar;",
+            "excludes": [
+                { "name": "foo", "displayName": "foo" },
+                { "name": "bar", "displayName": "bar" }
+            ]
+        },
+        {
+            "_comment": "This is an example of how you would monitor a SQL Azure instance, remove this section if you are not using SQL Azure or duplicate this section if you have multiple servers.",
+            "type": "azure",
+            "name": "CloudFtw",
+            "connectionString": "Server=zzz,1433;Database=CloudFtw;User ID=NewRelic;Password=aaa;Trusted_Connection=false;Encrypt=true;Connection Timeout=30;",
+            "excludes": [
+                { "name": "foo", "displayName": "foo" },
+                { "name": "bar", "displayName": "bar" }
+            ]
+        }
+    ]
+}

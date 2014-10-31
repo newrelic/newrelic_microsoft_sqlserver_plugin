@@ -1,0 +1,7 @@
+﻿{
+  "license_key": "FooGuid",
+  "log_level": "info",
+  "log_file_name": "newrelic_plugin.log",
+  "log_file_path": "logs",
+  "poll_interval": "45"
+}
