@@ -176,7 +176,7 @@ You will need to modify the example connection string found in the plugin.json f
 
 **note** - Please make sure to escape the backslashes, "\", in your connection string by using two backslashes, "\\".
 
-##### SQL Server
+##### SQL Server Databases (not hosted in Azure)
 
 Below is the example connection string included in the plugin.json: (without quotes)
 
@@ -211,7 +211,7 @@ If using the default the connection string can be simplified like the following:
 Server=remote-server;Database=master;Trusted_Connection=True;
 ```
 
-##### Azure SQL
+##### Azure-hosted SQL Databases
 
 The connection string for an Azure SQL database is slightly different.  The example from the plugin.json is below:
 
