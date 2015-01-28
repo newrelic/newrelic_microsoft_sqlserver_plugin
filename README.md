@@ -170,6 +170,51 @@ Example:
 }
 ```
 
+#### Configure connectionString
+
+You will need to modify the example connection string found in the plugin.json file in order for the plugin to find and connect to your SQL server.  The connectionString is standard Microsoft SQL connection string.  You can find more details about connection strings [here](https://www.connectionstrings.com/sql-server/).
+
+**note** - Please make sure to escape the backslashes, "\", in your connection string by using two backslashes, "\\".
+
+##### SQL Server
+
+Below is the example connection string included in the plugin.json: (without quotes)
+
+```
+Server=.\\SQLExpress;Database=master;Trusted_Connection=True;
+```
+
+Below is the break down of what each value represents:
+
+Server Name: .  (shorthand for local server)
+SQL Instance: SQLExpress
+Database to connect to: Database=master
+Connection type: Trusted_Connection=True
+
+This tells the plugin: "As the current user of the process, connect to the local server and then attach to the SQLExpress instance and open the database named master".  
+
+Connecting to another server would require the server name to be used in place of ".". For example:
+
+```
+Server=remote-server\\SQLExpress;Database=master;Trusted_Connection=True;
+```
+
+If you are not attempting to connect to the default SQL instance the SQL instance name must be provided like in the example below:
+
+```
+Server=.\\MyCustomInstance;Database=master;Trusted_Connection=True;
+```
+
+If using the default the connection string can be simplified like the following:
+
+```
+Server=remote-server;Database=master;Trusted_Connection=True;
+```
+
+##### Azure SQL
+
+TODO
+
 ### Additional Configuration
  
 #### Configure permissions
