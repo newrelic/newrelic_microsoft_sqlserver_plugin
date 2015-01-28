@@ -213,6 +213,25 @@ Server=remote-server;Database=master;Trusted_Connection=True;
 
 ##### Azure SQL
 
+The connection string for an Azure SQL database is slightly different.  The example from the plugin.json is below:
+
+```
+Server=tcp:{Azure SQL Server Name}.database.windows.net,1433;Database={Azure SQL Database Name};User ID={Azure SQL User Name}@{Azure SQL Server Name};Password={Password for User Name};Trusted_Connection=False;Encrypt=True;Connection Timeout=30;
+```
+
+It recommend to simply insert the requested details and not alter this connection string to much since it is specifically designed to work with Azure.  You will only need to fill in the following details:
+
+Azure SQL Server Name (in two places)
+Azure SQL Database Name
+Azure SQL User Name
+Password for User Name
+
+Below is a string that has been filled out with some test data:
+
+```
+Server=tcp:azure-sql-svr.database.windows.net,1433;Database=my-database;User ID=myUser@azure-sql-svr;Password=password;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;
+```
+
 TODO
 
 ### Additional Configuration
