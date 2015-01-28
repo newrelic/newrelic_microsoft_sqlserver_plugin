@@ -170,7 +170,7 @@ Example:
 }
 ```
 
-#### Configure connectionString
+#### Configuring the connectionString
 
 You will need to modify the example connection string found in the plugin.json file in order for the plugin to find and connect to your SQL server.  The connectionString is standard Microsoft SQL connection string.  You can find more details about connection strings [here](https://www.connectionstrings.com/sql-server/).
 
