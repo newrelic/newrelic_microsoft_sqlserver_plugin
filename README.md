@@ -186,10 +186,10 @@ Server=.\\SQLExpress;Database=master;Trusted_Connection=True;
 
 Below is the break down of what each value represents:
 
-Server Name: .  (shorthand for local server)
-SQL Instance: SQLExpress
-Database to connect to: Database=master
-Connection type: Trusted_Connection=True
+* Server Name: .  (shorthand for local server)
+* SQL Instance: SQLExpress
+* Database to connect to: Database=master
+* Connection type: Trusted_Connection=True
 
 This tells the plugin: "As the current user of the process, connect to the local server and then attach to the SQLExpress instance and open the database named master".  
 
@@ -221,18 +221,16 @@ Server=tcp:{Azure SQL Server Name}.database.windows.net,1433;Database={Azure SQL
 
 It recommend to simply insert the requested details and not alter this connection string to much since it is specifically designed to work with Azure.  You will only need to fill in the following details:
 
-Azure SQL Server Name (in two places)
-Azure SQL Database Name
-Azure SQL User Name
-Password for User Name
+* Azure SQL Server Name (in two places)
+* Azure SQL Database Name
+* Azure SQL User Name
+* Password for User Name
 
 Below is a string that has been filled out with some test data:
 
 ```
 Server=tcp:azure-sql-svr.database.windows.net,1433;Database=my-database;User ID=myUser@azure-sql-svr;Password=password;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;
 ```
-
-TODO
 
 ### Additional Configuration
  
