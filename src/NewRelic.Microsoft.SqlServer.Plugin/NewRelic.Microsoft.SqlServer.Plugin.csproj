@@ -83,6 +83,7 @@
     <Compile Include="MetricQuery.cs" />
     <Compile Include="QueryTypes\AzureServiceInterruptionEvents.cs" />
     <Compile Include="QueryTypes\AzureSqlDatabaseSummary.cs" />
+    <Compile Include="QueryTypes\ResourceStats.cs" />
     <Compile Include="QueryTypes\SqlServerDetails.cs" />
     <Compile Include="QueryTypes\DatabaseDetails.cs" />
     <Compile Include="QueryTypes\RecompileMaximums.cs" />
@@ -172,7 +173,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Queries\DatabaseDetails.SqlServer.sql" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\ResourceStats.AzureSql.sql" />
+  </ItemGroup>
   <Import Project="..\Common\NewRelic.Microsoft.SqlServer.Plugin.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
