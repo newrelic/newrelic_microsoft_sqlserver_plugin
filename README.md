@@ -142,7 +142,7 @@ Example:
 
 ```
 {
-  "license_key": "YOUR_LICENSE_KEY_HERE"
+  "license_key": "YOUR_LICENSE_KEY_HERE",
   "log_level": "debug",
   "log_file_path": "C:\\Logs"
 }
@@ -272,6 +272,35 @@ Azure SQL
         [waiting_tasks_count]								AS [WaitCount],
         [wait_time_ms] * 100 / SUM([wait_time_ms]) OVER ()	AS [Percentage]
     FROM sys.dm_db_wait_stats
+
+**Testing a Connection String With a UDL file**
+
+A UDL file is a plain text file with a .udl extension.  Files with this extension are given a special user interface that makes it possible to confirm database connectivity.
+
+1. Create a new empty text file on your desktop (just right click>New>Text Document is fine)
+ 
+2. Rename the file to **SQL test.udl**  (the extension is key)
+ 
+3. Double click it to open it and you should be on the Data Link Properties tab.
+ 
+4. Either find the server name in drop down for Item 1 in dialog or type the server name manually.
+You can also include an instance if that is required for your configuration in the format of `ServerName\InstanceName`
+ 
+5. Under Item 2, select **Use Windows NT Integrated Security**.
+ 
+6. For Item 3, either select the database from the dropdown or type it in manually.
+ 
+7. Click **Test Connection**
+ 
+If this works then the server is accessible.  You can now open the UDL file and extract the functional connection string.  The string will not work as is with he MS SQL plugin, however.  You will need to remove `Provider=SQLOLEDB.1;` from the beginning of the string to make it compatible with the MS SQL plugin./
+
+Below are ways to fix two common errors:
+ 
+* No Server name in drop down:  The SQL Browser service is likely off, typing it manually should work.
+ 
+* When trying to expand the Database dropdown an error similar to `Server does not exist or access denied.`: If you didn't supply an instance name in Item 1 , go ahead and add the instance name and see if that helps.
+ 
+If you get an error at any point and the above didn't help then the SQL Plugin will also have trouble connecting and you will need to work with your database administrator to either configure the server to allow remote access, grant additional permissions, or correct other the problems being reported by the connection test.
 
 ----
 
