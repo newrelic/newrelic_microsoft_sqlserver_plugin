@@ -7,7 +7,7 @@ Find the New Relic Microsoft SQL Server plugin in [Plugin Central](https://rpm.n
 ## System Requirements
 
 - A New Relic account. Sign up for a free account [here](http://newrelic.com)
-- .NET 3.5 or later
+- .NET 3.5
 - Windows 7/Server 2008 or later
 - SQL Server 2005 or later
 - Network access to New Relic
