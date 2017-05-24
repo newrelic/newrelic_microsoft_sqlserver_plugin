@@ -275,6 +275,14 @@ Azure SQL
 
 ----
 
+To determine SQL SERVER Instance
+	  SELECT SERVERPROPERTY('ComputerNamePhysicalNetBIOS') AS ServerName, 
+       		@@SERVERNAME AS FullInstanceName, @@SERVICENAME AS InstanceName, 
+      		local_net_address AS InstanceIPAddress, local_tcp_port AS InstancePort
+  	FROM sys.dm_exec_connections WHERE session_id = @@spid
+	
+If InstanceName is like MSSQLSERVER then server syntax should be Server={FullInstanceName};Database=master;
+
 ## Support
 
 Find a bug? Post it to [http://support.newrelic.com](http://support.newrelic.com).
