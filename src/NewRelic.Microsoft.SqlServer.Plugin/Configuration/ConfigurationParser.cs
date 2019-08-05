@@ -22,7 +22,7 @@ namespace NewRelic.Microsoft.SqlServer.Plugin.Configuration
         /// </exception>
         public static Settings ParseSettings()
         {
-            const string defaultConfigPath = @".\config\plugin.json";
+            string defaultConfigPath = Path.Combine("config", "plugin.json");
 
             INewRelicConfig newrelicConfig = NewRelicConfig.Instance;
             string pluginConfigPath = Path.Combine(Assembly.GetExecutingAssembly().GetLocalPath(), defaultConfigPath);
