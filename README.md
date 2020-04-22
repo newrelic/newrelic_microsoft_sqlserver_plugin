@@ -1,3 +1,5 @@
+[![Archived header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Archived.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#archived)
+
 ## New Relic Microsoft SQL Server Plugin - .NET
 
 Find the New Relic Microsoft SQL Server plugin in the [New Relic storefront](http://newrelic.com/plugins/new-relic-inc/55)
@@ -7,7 +9,7 @@ Find the New Relic Microsoft SQL Server plugin in [Plugin Central](https://rpm.n
 ## System Requirements
 
 - A New Relic account. Sign up for a free account [here](http://newrelic.com)
-- .NET 3.5 or later
+- .NET 3.5
 - Windows 7/Server 2008 or later
 - SQL Server 2005 or later
 - Network access to New Relic
@@ -26,7 +28,7 @@ The New Relic Platform Installer (NPI) is a simple, lightweight command line too
 Once you've installed the NPI tool, run the following command:
 
 ```
-	./npi install com.newrelic.platform.microsoft.sqlserver
+	npi install com.newrelic.platform.microsoft.sqlserver
 ```	
 
 This command will take care of the creation of `newrelic.json` and `plugin.json` configuration files.  See the [configuration information](#configuration-information) section for more information.
@@ -35,13 +37,7 @@ This command will take care of the creation of `newrelic.json` and `plugin.json`
 
 #### Step 1 - Downloading and Extracting the Plugin
 
-The latest version of the plugin can be downloaded [here](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/tree/develop/dist).  Once the plugin is on your box, extract it to a location of your choosing.
-
-**note** - This plugin is distributed in tar.gz format and can be extracted with the following command on Unix-based systems (Windows users will need to download a third-party extraction tool or use the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer/842)):
-
-```
-	tar -xvzf newrelic_sqlserver_plugin-vX.Y.Z.tar.gz
-```
+The latest version of the plugin can be downloaded [here](https://github.com/newrelic-platform/newrelic_microsoft_sqlserver_plugin/releases).  Once the plugin is on your box, extract it to a location of your choosing.
 
 #### Step 2 - Configuring the Plugin
 
@@ -52,17 +48,16 @@ Check out the [configuration information](#configuration-information) section fo
 To run the plugin, execute the following command from a terminal or command window (assuming you are in the directory where the plugin was extracted):
 
 ```
-	.\plugin.exe
+	plugin.exe
 ```
  
 #### Step 4 - Keeping the Plugin Running
 
 Step 3 showed you how to run the plugin; however, there are several problems with running the process directly in the foreground (For example, when the machine reboots the process will not be started again).  That said, there are several common ways to keep a plugin running, but they do require more advanced knowledge or additional tooling.  We highly recommend considering using the [New Relic Platform Installer](https://discuss.newrelic.com/t/getting-started-with-the-platform-installer/842) as it will take care of most of the heavy lifting for you.  
 
-If you prefer to be more involved in the maintaince of the process, consider one of these tools for managing your plugin process (bear in mind that some of these are OS-specific):
+If you prefer to be more involved in the maintaince of the process, you can use the following tool to create a Windows service.  
 
 - [WinSW - Third-party Service Wrapper](https://github.com/kohsuke/winsw)
-- [SC - Native to Windows](https://support.microsoft.com/kb/251192?SmcNavTabIndex=1)
 
 ----
 
@@ -79,11 +74,34 @@ The `plugin.json` file has a provided template in the `config` directory named `
 Below is an example of the `plugin.json` file's contents, you can add multiple objects to the "agents" array to monitor different instances:
 
 ```
-{  "agents": [    {      "type" : "sqlserver",      "name" : "Production Database",      "connectionString" : "Server=.\\SQLExpress;Database=master;Trusted_Connection=True;",      "includeSystemDatabases" : "false",      "includes" : [        {
+{
+  "agents": [
+    {
+      "type" : "sqlserver",
+      "name" : "Production Database",
+      "connectionString" : "Server=hostname\\instanceName;Database=master;Trusted_Connection=True;",
+      "includeSystemDatabases" : "false",
+      "includes" : [
+        {
           "name": "AdventureWorks",
-          "displayName": "My AdventureWorks Database"        }      ],      "excludes" : [        {
-          "name": "nameOfDatabaseToExclude"        }      ]    },    {      "type" : "azure",      "name" : "Azure Cloud Database",      "connectionString" : <Your SQL Azure connection string>    }  ]}
+          "displayName": "My AdventureWorks Database"
+        }
+      ],
+      "excludes" : [
+        {
+          "name": "nameOfDatabaseToExclude"
+        }
+      ]
+    },
+    {
+      "type" : "azure",
+      "name" : "Azure Cloud Database",
+      "connectionString" : <Your SQL Azure connection string>
+    }
+  ]
+}
 ```
+
 **note** - Notice you must escape '\' characters in your connection strings.
 
 **note** - Set the "name" attribute to identify each MS SQL host, e.g. "Production" as this will be used to identify specific instances in the New Relic UI. 
@@ -126,9 +144,9 @@ Example:
 
 ```
 {
-  "license_key": "YOUR_LICENSE_KEY_HERE"
+  "license_key": "YOUR_LICENSE_KEY_HERE",
   "log_level": "debug",
-  "log_file_path": "/var/logs/newrelic"
+  "log_file_path": "C:\\Logs"
 }
 ```
 
