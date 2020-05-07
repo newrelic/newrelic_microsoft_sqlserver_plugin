@@ -1,6 +1,9 @@
 # Configuration files
 newrelic.json
 plugin.json
+# but track test config files
+!src/NewRelic.Microsoft.SqlServer.Plugin.Tests/config/newrelic.json
+!src/NewRelic.Microsoft.SqlServer.Plugin.Tests/config/plugin.json
 
 # Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
 [Bb]in/
