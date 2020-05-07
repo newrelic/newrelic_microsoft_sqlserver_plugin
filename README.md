@@ -89,7 +89,8 @@ Below is an example of the `plugin.json` file's contents, you can add multiple o
       ],
       "excludes" : [
         {
-          "name": "nameOfDatabaseToExclude"
+          "name": "nameOfDatabaseToExclude",
+          "displayName": "Name of Database to Exclude"
         }
       ]
     },
@@ -109,6 +110,9 @@ Below is an example of the `plugin.json` file's contents, you can add multiple o
 **note** - Each JSON object in the 'agents' array should have a type of either 'sqlserver' or 'azure'.
 
 **note** - Get your SQL Azure connection string from the [Azure Portal](https://manage.windowsazure.com/#Workspaces/SqlAzureExtension/Databases).
+
+**note** - The objects in the `includes` and `excludes` lists have two required attributes: `name` and `displayName`.
+
 
 #### Configuring the `newrelic.json` file: 
 
